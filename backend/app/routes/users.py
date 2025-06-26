@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from app.core.security import get_current_user
 from app.schemas.users import UserCreate, UserOut
 from app.services.users_services import create_user
 
@@ -15,5 +16,5 @@ async def signup(user: UserCreate):
     return created_user
 
 @router.get("/me", response_model=UserOut)
-async def get_current_user(current_user: UserOut):
+async def get_current_user_route(current_user: UserOut = Depends(get_current_user)):
     return current_user

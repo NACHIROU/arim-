@@ -17,7 +17,7 @@ async def create_user(user: UserCreate) -> dict:
 
     # Préparer le document utilisateur
     user_dict = user.dict()
-    user_dict["role"] = "user"  # Par défaut
+    user_dict["role"] = "merchant"  # Par défaut
     user_dict["password"] = hash_password(user.password)
 
     # Insérer en base
