@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import users, auth, shop
+from app.routes import users, auth, shop, product
 from fastapi.openapi.utils import get_openapi
 from fastapi.security import OAuth2PasswordBearer
 
@@ -12,6 +12,7 @@ app = FastAPI()
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(shop.router)
+app.include_router(product.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
