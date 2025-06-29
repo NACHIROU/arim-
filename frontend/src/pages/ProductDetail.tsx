@@ -56,7 +56,7 @@ const ProductDetail = () => {
               </div>
               <span className="text-sm text-muted-foreground">(128 avis)</span>
             </div>
-            <p className="text-3xl font-bold text-primary mb-6">{product.price.toFixed(2)} €</p>
+            <p className="text-3xl font-bold text-primary mb-6">{product.price.toFixed(2)} FCFA</p>
           </div>
 
           {/* Description détaillée */}
@@ -140,7 +140,7 @@ const ProductDetail = () => {
                 <CardContent className="p-4">
                   <h3 className="font-semibold mb-1">{similarProduct.name}</h3>
                   <p className="text-sm text-muted-foreground mb-2">par {similarProduct.seller}</p>
-                  <p className="font-bold">{similarProduct.price.toFixed(2)} €</p>
+                  <p className="font-bold">{similarProduct.price.toFixed(2)} FCFA</p>
                 </CardContent>
               </Card>
             </Link>

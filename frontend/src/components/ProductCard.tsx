@@ -40,7 +40,7 @@ const ProductCard = ({ id, imageUrl, name, seller, price, shopId, showShopLink =
         <p className="text-sm text-muted-foreground">par {seller}</p>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <p className="font-bold text-lg">{price.toFixed(2)} €</p>
+        <p className="font-bold text-lg">{price.toFixed(2)} FCFA</p>
       </CardFooter>
     </Card>
   );

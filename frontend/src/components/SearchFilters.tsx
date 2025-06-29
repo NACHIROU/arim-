@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -92,7 +91,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
             className="search-input"
           />
           <Button onClick={handleSearch} className="search-button">
-            <Search className="search-icon" />
+            Rechercher
           </Button>
         </div>
         
