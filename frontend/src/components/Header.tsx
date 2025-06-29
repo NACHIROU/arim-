@@ -27,7 +27,7 @@ const Header = () => {
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center gap-2">
             <Store className="h-6 w-6 text-orange-500" />
-            <span className="font-bold text-lg">arimin</span>
+            <span className="font-bold text-lg">ahimin</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm">
             {navLinks.map((link) => (

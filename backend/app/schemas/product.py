@@ -34,3 +34,12 @@ class ProductOut(ProductBase):
             image_url=data.get("image_url", ""),
             shop_id=str(data["shop_id"]),
         )
+
+
+class ShopInfo(BaseModel):
+    id: str
+    name: str
+
+class ProductWithShopInfo(ProductOut):
+    seller: Optional[str] = None
+    shop: Optional[ShopInfo] = None

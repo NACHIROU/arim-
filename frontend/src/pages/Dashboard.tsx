@@ -155,7 +155,6 @@ const Dashboard: React.FC = () => {
       <div className="dashboard-header">
         <div className="dashboard-header-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h1>Dashboard Marchand</h1>
-          <Button variant="outline" onClick={handleLogout}>Déconnexion</Button>
         </div>
         <p>Gérez vos boutiques et produits</p>
         <Button variant="outline" onClick={() => navigate('/shops')}>Voir toutes les boutiques</Button>

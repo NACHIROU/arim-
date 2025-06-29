@@ -134,7 +134,7 @@ const ShopDetail = () => {
                       name={product.name}
                       seller={shop.name}
                       price={product.price}
-                      shopId={product.shop_id}
+                      shopId={product.shop_id.toString()}
                     />
                   </div>
                 ))}

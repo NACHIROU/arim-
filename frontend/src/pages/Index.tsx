@@ -16,13 +16,6 @@ const Index = () => {
 
   return (
     <>
-      {/* Boutons seulement si l'utilisateur n'est pas connecté */}
-      {!role && (
-        <div className="text-center my-4">
-          <Link to="/login" className="mr-4 underline text-blue-600">Se connecter</Link>
-          <Link to="/register" className="underline text-blue-600">S'inscrire</Link>
-        </div>
-      )}
 
       {/* Hero Section */}
       <section style={{ 
@@ -73,7 +66,14 @@ const Index = () => {
               const shop = shops.find(s => s.name === product.seller);
               return (
                 <div key={product.id}>
-                  <ProductCard {...product} shopId={shop?.id} showShopLink />
+                  {/* ====== DÉBUT DE LA CORRECTION ====== */}
+                  <ProductCard 
+                    {...product} // 1. Passe toutes les props (y compris id: number)
+                    id={product.id.toString()} // 2. Écrase la prop 'id' avec sa version string
+                    shopId={shop?.id?.toString()} 
+                    showShopLink 
+                  />
+                  {/* ====== FIN DE LA CORRECTION ====== */}
                 </div>
               );
             })}

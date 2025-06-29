@@ -4,8 +4,8 @@ from typing import List
 
 from app.core.cloudinary import upload_images_to_cloudinary
 from app.core.dependencies import get_current_merchant
-from app.db.database import products
-from app.schemas.product import ProductCreate, ProductOut, ProductUpdate
+from app.db.database import products, shops
+from app.schemas.product import ProductCreate, ProductOut, ProductUpdate, ProductWithShopInfo
 from app.models.product import Product
 
 router = APIRouter()
@@ -113,3 +113,33 @@ async def delete_product(product_id: str, current_user=Depends(get_current_merch
     return {"message": "Product deleted successfully"}
 
 
+@router.get("/get-all-products/", response_model=List[ProductWithShopInfo])
+async def get_all_products():
+    """
+    Récupère tous les produits et les enrichit avec les informations de leur boutique.
+    """
+    # ... (le reste de votre fonction reste exactement le même)
+    all_products = []
+    products_cursor = products.find({})
+
+    async for product in products_cursor:
+        shop = None
+        if "shop_id" in product and product["shop_id"]:
+            shop = await shops.find_one({"_id": product["shop_id"]})
+
+        product_response = {
+            "id": str(product["_id"]),
+            "name": product["name"],
+            "description": product["description"],
+            "price": product["price"],
+            "image_url": product["image_url"],
+            "shop_id": str(product["shop_id"]),
+            "seller": shop["name"] if shop else "Vendeur inconnu",
+            "shop": {
+                "id": str(shop["_id"]),
+                "name": shop["name"]
+            } if shop else None
+        }
+        all_products.append(product_response)
+
+    return all_products
