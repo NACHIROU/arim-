@@ -11,15 +11,14 @@ from app.models.product import Product
 router = APIRouter()
 
 
-@router.post("/products/", response_model=ProductOut)
-@router.post("/products/", response_model=ProductOut)
+
+@router.post("/create-products/", response_model=ProductOut)
 async def create_product(
     name: str = Form(...),
     description: str = Form(...),
     price: float = Form(...),
     shop_id: str = Form(...),
     image: UploadFile = File(...),
-    current_user=Depends(get_current_merchant),
 ):
     image_urls = await upload_images_to_cloudinary([image])
     image_url = image_urls[0] if image_urls else ""
@@ -43,25 +42,6 @@ async def create_product(
 
     return ProductOut.from_mongo(product.to_mongo())
 
-
-
-@router.get("/shops/{shop_id}/products/", response_model=list[ProductOut])
-async def get_products_by_shop(shop_id: str):
-    try:
-        shop_object_id = ObjectId(shop_id)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid shop_id format")
-
-    shop_products = []
-    cursor = products.find({"shop_id": shop_object_id})
-    async for product in cursor:
-        product["id"] = str(product["_id"])
-        del product["_id"]
-        shop_products.append(product)
-
-    return shop_products
-
-
 @router.get("/products/{product_id}", response_model=ProductOut)
 async def get_product_by_id(product_id: str):
     try:
@@ -81,7 +61,7 @@ async def get_product_by_id(product_id: str):
     return product
 
 
-@router.put("/products/{product_id}", response_model=ProductOut)
+@router.put("/update-products/{product_id}", response_model=ProductOut)
 async def update_product(
     product_id: str,
     name: str = Form(None),

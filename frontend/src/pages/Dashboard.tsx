@@ -13,14 +13,17 @@ interface Boutique {
   name: string;
   description: string;
   location: string;
-  // Ajoute d'autres champs si tu veux
+  image_url?: string;
+  is_published: boolean;
 }
 
 interface Produit {
-  id: number;
-  nom: string;
-  prix: number;
-  image: string;
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image_url: string;
+  shop_id: string;
 }
 
 const Dashboard: React.FC = () => {
@@ -28,47 +31,86 @@ const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'boutiques' | 'produits'>('boutiques');
   const [boutiques, setBoutiques] = useState<Boutique[]>([]);
   const [produits, setProduits] = useState<Produit[]>([]);
-  const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const [selectedShopId, setSelectedShopId] = useState<string>('');
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
 
   const token = localStorage.getItem('token');
 
-  useEffect(() => {
-    const fetchBoutiques = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/shops/retrieve-all-shops/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+  const fetchBoutiques = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/shops/retrieve-all-shops/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        if (!response.ok) {
-          console.error("Erreur lors du chargement des boutiques");
-          return;
-        }
-
+      if (response.ok) {
         const data = await response.json();
         setBoutiques(data);
-      } catch (error) {
-        console.error("Erreur réseau :", error);
+      } else {
+        console.error("Erreur lors du chargement des boutiques");
       }
-    };
+    } catch (error) {
+      console.error("Erreur réseau :", error);
+    }
+  };
 
+  useEffect(() => {
     fetchBoutiques();
   }, [token]);
 
-  const handleAddBoutique = (nouvelleBoutique: Boutique) => {
-    setBoutiques([...boutiques, nouvelleBoutique]);
+  const fetchProduitsByShop = async (shopId: string) => {
+    try {
+      const response = await fetch(`http://localhost:8000/shops/${shopId}/products/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProduits(data);
+      } else {
+        console.error("Erreur lors du chargement des produits");
+      }
+    } catch (error) {
+      console.error("Erreur réseau :", error);
+    }
   };
 
-  const handleSubmitProduit = (productData: Produit) => {
-    if (editingProductId !== null) {
-      setProduits(produits.map(p =>
-        p.id === editingProductId ? { ...p, ...productData } : p
-      ));
+  useEffect(() => {
+    if (selectedShopId) {
+      fetchProduitsByShop(selectedShopId);
     } else {
-      setProduits([...produits, { ...productData, id: Date.now() }]);
+      setProduits([]);
     }
-    setEditingProductId(null);
+  }, [selectedShopId, token]);
+
+  const handleAddBoutique = (nouvelleBoutique: Boutique) => {
+    setBoutiques((prev) => [...prev, nouvelleBoutique]);
+  };
+
+  const handlePublishToggle = async (id: string, publish: boolean) => {
+    const endpoint = publish
+      ? `http://localhost:8000/shops/publish/${id}`
+      : `http://localhost:8000/shops/unpublish/${id}`;
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        fetchBoutiques();
+      } else {
+        console.error("Erreur lors de la mise à jour de la boutique");
+      }
+    } catch (error) {
+      console.error("Erreur réseau :", error);
+    }
+  };
+
+  const handleSubmitProduitSuccess = () => {
+    if (selectedShopId) {
+      fetchProduitsByShop(selectedShopId);
+    }
   };
 
   const handleEditProduit = (produit: Produit) => {
@@ -81,8 +123,24 @@ const Dashboard: React.FC = () => {
     setEditingProductId(null);
   };
 
-  const handleDeleteProduit = (id: number) => {
-    setProduits(produits.filter(p => p.id !== id));
+  const handleDeleteProduit = async (id: string) => {
+    const confirmDelete = window.confirm("Voulez-vous vraiment supprimer ce produit ?");
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/products/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        fetchProduitsByShop(selectedShopId);
+      } else {
+        console.error("Erreur lors de la suppression du produit");
+      }
+    } catch (error) {
+      console.error("Erreur réseau :", error);
+    }
   };
 
   const handleLogout = () => {
@@ -97,11 +155,10 @@ const Dashboard: React.FC = () => {
       <div className="dashboard-header">
         <div className="dashboard-header-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h1>Dashboard Marchand</h1>
+          <Button variant="outline" onClick={handleLogout}>Déconnexion</Button>
         </div>
         <p>Gérez vos boutiques et produits</p>
-        <Button variant="outline" onClick={() => navigate('/shops')}>
-          Voir toutes les boutiques
-        </Button>
+        <Button variant="outline" onClick={() => navigate('/shops')}>Voir toutes les boutiques</Button>
       </div>
 
       <DashboardTabs activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -109,22 +166,41 @@ const Dashboard: React.FC = () => {
       {activeTab === 'boutiques' && (
         <div className="tab-content">
           <BoutiqueForm onAddBoutique={handleAddBoutique} />
-          <BoutiquesList boutiques={boutiques} />
+          <BoutiquesList boutiques={boutiques} onPublishToggle={handlePublishToggle} />
         </div>
       )}
 
       {activeTab === 'produits' && (
         <div className="tab-content">
+          <h3>Choisissez une boutique :</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+            {boutiques.map((boutique) => (
+              <div
+                key={boutique.id}
+                className={`border rounded-lg p-4 cursor-pointer transition hover:shadow-lg ${selectedShopId === boutique.id ? 'bg-primary text-white' : 'bg-white'}`}
+                onClick={() => setSelectedShopId(boutique.id)}
+              >
+                <h4 className="font-semibold text-lg">{boutique.name}</h4>
+              </div>
+            ))}
+          </div>
+
           <ProduitForm
-            onSubmit={handleSubmitProduit}
+            boutiques={boutiques}
+            selectedShopId={selectedShopId}
+            setSelectedShopId={setSelectedShopId}
+            onSuccess={handleSubmitProduitSuccess}
             editingProduct={editingProduct}
             onCancelEdit={handleCancelEdit}
           />
-          <ProduitsList
-            produits={produits}
-            onEdit={handleEditProduit}
-            onDelete={handleDeleteProduit}
-          />
+
+          {selectedShopId && (
+            <ProduitsList
+              produits={produits}
+              onEdit={handleEditProduit}
+              onDelete={handleDeleteProduit}
+            />
+          )}
         </div>
       )}
     </div>

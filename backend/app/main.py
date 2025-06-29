@@ -8,8 +8,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 app = FastAPI()
 
-app.include_router(users.router, prefix="/users", tags=["Users"])
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+app.include_router(users.router, tags=["Users"])
+app.include_router(auth.router, tags=["Auth"])
 app.include_router(shop.router, prefix="/shops", tags=["Shops"])        # ✅ ✅ ✅
 app.include_router(product.router, prefix="/products", tags=["Products"])
 

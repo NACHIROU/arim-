@@ -87,7 +87,7 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({ onAddBoutique }) => {
           <div className="form-row">
             <div className="form-group">
               <label>Nom de la boutique</label>
-              <Input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Ma Super Boutique" required />
+              <Input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Ali et Fils" required />
             </div>
             <div className="form-group">
               <label>Localisation</label>

@@ -5,12 +5,12 @@ import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
 
 interface ProductCardProps {
-  id: number;
+  id: string;
   imageUrl: string;
   name: string;
   seller: string;
   price: number;
-  shopId?: number;
+  shopId?: string;
   showShopLink?: boolean;
 }
 

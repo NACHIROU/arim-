@@ -1,11 +1,12 @@
 from bson import ObjectId
 from fastapi import APIRouter, Form, File, HTTPException, UploadFile, Depends
-
+from app.db.database import products
 from app.core.cloudinary import upload_images_to_cloudinary
 from app.core.dependencies import get_current_merchant
 from app.db.database import shops
 from app.schemas.shop import ShopOut, ShopBase
 from app.schemas.users import UserOut
+from app.schemas.product import ProductOut
 
 router = APIRouter()
 
@@ -65,9 +66,25 @@ async def retrieve_shop(shop_id: str):
     del shop["_id"]
     return shop
 
+@router.get("/{shop_id}/products/", response_model=list[ProductOut])
+async def get_products_by_shop(shop_id: str):
+    """
+    Récupérer les produits d'une boutique spécifique.
+    """
+    try:
+        shop_object_id = ObjectId(shop_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid shop_id format")
 
+    shop_products = []
+    cursor = products.find({"shop_id": shop_object_id})
+    async for product in cursor:
+        product["id"] = str(product["_id"])
+        product["shop_id"] = str(product["shop_id"])
+        del product["_id"]
+        shop_products.append(product)
 
-
+    return shop_products
 
 @router.put("/update-shop/{shop_id}", response_model=ShopOut)
 async def update_shop(shop_id: str, updated_data: ShopBase, current_user: dict = Depends(get_current_merchant)):
@@ -107,4 +124,36 @@ async def delete_shop(shop_id: str, current_user: dict = Depends(get_current_mer
     await shops.delete_one({"_id": ObjectId(shop_id)})
     return {"message": "Boutique supprimée"}
 
+@router.patch("/publish/{shop_id}")
+async def publish_shop(shop_id: str):
+    try:
+        shop_object_id = ObjectId(shop_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid shop_id format")
 
+    result = await shops.update_one(
+        {"_id": shop_object_id},
+        {"$set": {"is_published": True}}
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Boutique non trouvée ou déjà publiée")
+
+    return {"message": "Boutique publiée avec succès"}
+
+@router.patch("/unpublish/{shop_id}")
+async def unpublish_shop(shop_id: str):
+    try:
+        shop_object_id = ObjectId(shop_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid shop_id format")
+
+    result = await shops.update_one(
+        {"_id": shop_object_id},
+        {"$set": {"is_published": False}}
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Boutique non trouvée ou déjà non publiée")
+
+    return {"message": "Boutique dépubliée avec succès"}

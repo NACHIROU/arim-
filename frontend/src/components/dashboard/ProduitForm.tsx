@@ -4,39 +4,94 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Pencil } from "lucide-react";
 
+interface Boutique {
+  id: string;
+  name: string;
+}
+
 interface ProduitFormProps {
-  onSubmit: (productData: any) => void;
+  boutiques: Boutique[];
+  selectedShopId: string;
+  setSelectedShopId: (id: string) => void;
+  onSuccess: () => void;
   editingProduct: any | null;
   onCancelEdit: () => void;
 }
 
-const ProduitForm: React.FC<ProduitFormProps> = ({ onSubmit, editingProduct, onCancelEdit }) => {
-  const [nom, setNom] = useState('');
-  const [prix, setPrix] = useState('');
-  const [image, setImage] = useState('');
+const ProduitForm: React.FC<ProduitFormProps> = ({
+  boutiques,
+  selectedShopId,
+  setSelectedShopId,
+  onSuccess,
+  editingProduct,
+  onCancelEdit,
+}) => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (editingProduct) {
-      setNom(editingProduct.nom);
-      setPrix(String(editingProduct.prix));
-      setImage(editingProduct.image);
+      setName(editingProduct.name);
+      setDescription(editingProduct.description);
+      setPrice(String(editingProduct.price));
+      setSelectedShopId(editingProduct.shop_id);
     } else {
-      setNom('');
-      setPrix('');
-      setImage('');
+      setName('');
+      setDescription('');
+      setPrice('');
+      setImageFile(null);
+      setSelectedShopId('');
     }
-  }, [editingProduct]);
+  }, [editingProduct, setSelectedShopId]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const imageUrl = URL.createObjectURL(e.target.files[0]);
-      setImage(imageUrl);
+      setImageFile(e.target.files[0]);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ nom, prix: parseFloat(prix), image });
+
+    if (!imageFile) {
+      alert('Veuillez sélectionner une image');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('price', price);
+    formData.append('shop_id', selectedShopId);
+    formData.append('image', imageFile);
+
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch('http://localhost:8000/products/create-products/', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(errorData);
+        alert(errorData.detail || 'Erreur lors de la création du produit');
+        return;
+      }
+
+      alert('Produit créé avec succès');
+      onSuccess();
+      onCancelEdit();
+    } catch (error) {
+      console.error('Erreur réseau ou serveur', error);
+      alert('Erreur réseau ou serveur');
+    }
   };
 
   return (
@@ -44,30 +99,42 @@ const ProduitForm: React.FC<ProduitFormProps> = ({ onSubmit, editingProduct, onC
       <CardHeader>
         <CardTitle>{editingProduct ? 'Modifier le produit' : 'Ajouter un produit'}</CardTitle>
         <CardDescription>
-          {editingProduct ? 'Mettez à jour les informations du produit.' : 'Ajoutez un nouveau produit à votre catalogue'}
+          {editingProduct ? 'Mettez à jour les informations du produit.' : 'Ajoutez un nouveau produit à votre boutique'}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="produit-form">
-          <div className="form-row">
-            <div className="form-group">
-              <label>Nom du produit</label>
-              <Input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Mon Super Produit" required />
-            </div>
-            <div className="form-group">
-              <label>Prix (FCFA)</label>
-              <Input type="number" step="0.01" value={prix} onChange={(e) => setPrix(e.target.value)} placeholder="25000" required />
-            </div>
+          <div className="form-group">
+            <label>Nom</label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label>Image du produit</label>
-            <Input type="file" accept="image/*" onChange={handleImageUpload} />
-            {image && <img src={image} alt="Aperçu produit" className="image-preview" />}
+            <label>Description</label>
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label>Prix</label>
+            <Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label>Sélectionner une boutique</label>
+            <select value={selectedShopId} onChange={(e) => setSelectedShopId(e.target.value)} required>
+              <option value="">Cliquez pour choisir la boutique</option>
+              {boutiques.map((boutique) => (
+                <option key={boutique.id} value={boutique.id}>
+                  {boutique.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Image</label>
+            <Input type="file" accept="image/*" onChange={handleImageUpload} required />
           </div>
           <div className="form-actions">
-            <Button type="submit" className="submit-button">
+            <Button type="submit">
               {editingProduct ? <Pencil className="button-icon" /> : <Plus className="button-icon" />}
-              {editingProduct ? 'Modifier le produit' : 'Ajouter le produit'}
+              {editingProduct ? 'Modifier' : 'Ajouter'}
             </Button>
             {editingProduct && (
               <Button type="button" variant="ghost" onClick={onCancelEdit}>Annuler</Button>
