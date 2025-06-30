@@ -26,18 +26,29 @@ async def create_shop(
         "name": name,
         "description": description,
         "location": location,
-        "images": image_urls,  
-        "owner_id": current_user.id
+        "images": image_urls,
+        "owner_id": ObjectId(current_user.id) # Il est bon de s'assurer que c'est un ObjectId si votre base est cohérente
     }
 
-    new_shop = await shops.insert_one(shop_data)
-    created_shop = await shops.find_one({"_id": new_shop.inserted_id})
+    new_shop_result = await shops.insert_one(shop_data)
+    created_shop_from_db = await shops.find_one({"_id": new_shop_result.inserted_id})
 
-    # Transformation pour correspondre à ShopOut
-    created_shop["id"] = str(created_shop["_id"])
-    del created_shop["_id"]
+    if not created_shop_from_db:
+        raise HTTPException(status_code=500, detail="Erreur : la boutique a été créée mais n'a pas pu être récupérée.")
 
-    return created_shop
+
+    shop_to_return = {
+        "id": str(created_shop_from_db["_id"]),
+        "name": created_shop_from_db["name"],
+        "description": created_shop_from_db["description"],
+        "location": created_shop_from_db["location"],
+        "images": created_shop_from_db.get("images", []), # .get est plus sûr
+        
+        # La ligne cruciale : on inclut owner_id et on le convertit en string
+        "owner_id": str(created_shop_from_db["owner_id"])
+    }
+
+    return shop_to_return
 
 
 @router.get("/retrieve-all-shops/", response_model=list[ShopOut])

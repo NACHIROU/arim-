@@ -22,6 +22,25 @@ interface ShopFromAPI {
   images?: string[];
 }
 
+
+const SearchResultsDropdown = ({ results }) => (
+  <div className="search-results-dropdown">
+    {results.length > 0 ? (
+      results.map(shop => (
+        <Link to={`/shops/${shop.id}`} key={shop.id} className="result-item">
+          <img src={shop.images?.[0] || '/default-shop.jpg'} alt={shop.name} />
+          <div className="result-info">
+            <h4>{shop.name}</h4>
+            <p>{shop.description}</p>
+          </div>
+        </Link>
+      ))
+    ) : (
+      <p className="no-results">Aucune boutique trouvée.</p>
+    )}
+  </div>
+);
+
 const Index = () => {
   // États pour les boutiques, les produits, etc. (inchangés)
   const [shops, setShops] = useState<ShopFromAPI[]>([]);

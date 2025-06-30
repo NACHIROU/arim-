@@ -42,7 +42,7 @@ async def create_product(
 
     return ProductOut.from_mongo(product.to_mongo())
 
-@router.get("/products/{product_id}", response_model=ProductOut)
+@router.get("/{product_id}", response_model=ProductOut)
 async def get_product_by_id(product_id: str):
     try:
         object_id = ObjectId(product_id)
@@ -54,14 +54,14 @@ async def get_product_by_id(product_id: str):
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    # Transformation pour respecter ProductOut
     product["id"] = str(product["_id"])
+    product["shop_id"] = str(product["shop_id"])
     del product["_id"]
 
     return product
 
 
-@router.put("/update-products/{product_id}", response_model=ProductOut)
+@router.put("/{product_id}", response_model=ProductOut)
 async def update_product(
     product_id: str,
     name: str = Form(None),
