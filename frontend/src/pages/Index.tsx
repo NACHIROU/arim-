@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import ProductCard from "@/components/ProductCard";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import SearchFilters from '@/components/SearchFilters'; // ÉTAPE 1 : On réimporte le composant
+import SearchFilters from '@/components/SearchFilters';
+import SearchResultsDropdown from '@/components/SearchResultsDropdown';
 
-// Interfaces pour les données de l'API (inchangées)
+// Interfaces pour les données de l'API
 interface ProductFromAPI {
   id: string;
   name: string;
@@ -22,33 +23,19 @@ interface ShopFromAPI {
   images?: string[];
 }
 
-
-const SearchResultsDropdown = ({ results }) => (
-  <div className="search-results-dropdown">
-    {results.length > 0 ? (
-      results.map(shop => (
-        <Link to={`/shops/${shop.id}`} key={shop.id} className="result-item">
-          <img src={shop.images?.[0] || '/default-shop.jpg'} alt={shop.name} />
-          <div className="result-info">
-            <h4>{shop.name}</h4>
-            <p>{shop.description}</p>
-          </div>
-        </Link>
-      ))
-    ) : (
-      <p className="no-results">Aucune boutique trouvée.</p>
-    )}
-  </div>
-);
-
 const Index = () => {
-  // États pour les boutiques, les produits, etc. (inchangés)
+  // États pour l'affichage initial de la page
   const [shops, setShops] = useState<ShopFromAPI[]>([]);
   const [products, setProducts] = useState<ProductFromAPI[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingInitial, setLoadingInitial] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // useEffect pour charger les données initiales (inchangé)
+  // États pour la recherche en temps réel
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Effet pour charger les données initiales (boutiques et produits à la une)
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -56,54 +43,64 @@ const Index = () => {
           fetch("http://localhost:8000/shops/retrieve-all-shops/"),
           fetch("http://localhost:8000/products/get-all-products/")
         ]);
-
-        if (!shopsResponse.ok || !productsResponse.ok) {
-          throw new Error("Erreur lors de la récupération des données.");
-        }
-
+        if (!shopsResponse.ok || !productsResponse.ok) throw new Error("Erreur de récupération des données.");
+        
         const shopsData = await shopsResponse.json();
         const productsData = await productsResponse.json();
-
         setShops(shopsData);
         setProducts(productsData);
-
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Une erreur inconnue est survenue.";
-        setError(message);
-        console.error("Erreur de fetch:", err);
+        setError(err instanceof Error ? err.message : "Erreur inconnue.");
       } finally {
-        setLoading(false);
+        setLoadingInitial(false);
       }
     };
-
     fetchInitialData();
   }, []);
 
-  // ÉTAPE 2 : On crée une fonction de recherche factice qui ne fait rien
-  const handlePlaceholderSearch = (filters: any) => {
-    console.log("Recherche lancée avec les filtres (actuellement désactivée sur cette page) :", filters);
-    // Intentionnellement laissée vide pour ne pas affecter les listes affichées
-  };
+  // Effet pour la recherche "live"
+  useEffect(() => {
+    if (searchTerm.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    setIsSearching(true);
+    const debounce = setTimeout(() => {
+      fetch(`http://localhost:8000/search/?q=${searchTerm}`)
+        .then(res => res.json())
+        .then(data => setSearchResults(data))
+        .catch(console.error)
+        .finally(() => setIsSearching(false));
+    }, 300);
+    return () => clearTimeout(debounce);
+  }, [searchTerm]);
 
-  if (loading) return <div className="container py-24 text-center">Chargement de la marketplace...</div>;
+  if (loadingInitial) return <div className="container py-24 text-center">Chargement de la marketplace...</div>;
   if (error) return <div className="container py-24 text-center text-red-500">Erreur : {error}</div>;
 
   return (
     <>
-      {/* Hero Section */}
+      {/* Hero Section avec la recherche */}
       <section className="text-center py-20 bg-gray-50">
         <div className="container">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">La marketplace qui rapproche</h1>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">Découvrez et soutenez les commerçants près de chez vous.</p>
-          
-          {/* ÉTAPE 3 : On réintègre le composant SearchFilters ici */}
-          <div className="max-w-4xl mx-auto">
-            <SearchFilters onSearch={handlePlaceholderSearch} />
+          <div className="max-w-2xl mx-auto relative">
+            <SearchFilters 
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+              placeholder="Rechercher un produit ou une boutique..."
+            />
+            {searchTerm.trim().length >= 2 && (
+              <SearchResultsDropdown results={searchResults} isLoading={isSearching} />
+            )}
           </div>
         </div>
       </section>
 
-      {/* Section des Boutiques à la Une (inchangée) */}
+      {/* ===================================================================== */}
+      {/* PARTIE RÉINTÉGRÉE : Affichage des boutiques à la une                  */}
+      {/* ===================================================================== */}
       <section className="py-16">
         <div className="container">
           <h2 className="text-3xl font-bold text-center mb-10">Boutiques à la Une</h2>
@@ -130,7 +127,9 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Section des Nouveaux Produits (inchangée) */}
+      {/* ===================================================================== */}
+      {/* PARTIE RÉINTÉGRÉE : Affichage des derniers produits                  */}
+      {/* ===================================================================== */}
       <section className="py-16 bg-gray-50">
         <div className="container">
           <h2 className="text-3xl font-bold text-center mb-10">Nos derniers produits</h2>
