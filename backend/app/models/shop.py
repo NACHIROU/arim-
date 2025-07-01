@@ -4,6 +4,7 @@ def shop_helper(shop: dict) -> dict:
         "name": shop["name"],
         "description": shop.get("description"),
         "location": shop["location"],
+        "category": shop["category"],
         "images": shop.get("images", []),
         "owner_id": shop["owner_id"]
     }

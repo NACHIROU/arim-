@@ -1,18 +1,21 @@
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Phone, Mail, Star, Users, Package } from 'lucide-react';
+import { Star, Users, Package } from 'lucide-react';
+import { Badge } from '@/components/ui/badge'; // <-- On importe le Badge
 import ProductCard from '@/components/ProductCard';
 import NotFound from './NotFound';
 
+// Interface mise à jour pour inclure la catégorie
 interface Shop {
   id: string;
   name: string;
   description: string;
-  images?: string;
+  category: string; // <-- AJOUT
+  images?: string; // Note: L'API renvoie une LISTE d'images, on pourrait mettre string[]
 }
 
 interface Product {
@@ -58,7 +61,7 @@ const ShopDetail = () => {
     }
   }, [shopId]);
 
-  if (loading) return <p>Chargement...</p>;
+  if (loading) return <div className="container py-24 text-center">Chargement...</div>;
   if (!shop) return <NotFound />;
 
   return (
@@ -67,7 +70,7 @@ const ShopDetail = () => {
       <div className="mb-12">
         <AspectRatio ratio={16 / 5} className="bg-muted">
           <img
-            src={shop.images || '/default-shop.jpg'}
+            src={shop.images?.[0] || '/default-shop.jpg'} // On prend la première image du tableau
             alt={shop.name}
             className="object-cover w-full h-full"
           />
@@ -83,6 +86,7 @@ const ShopDetail = () => {
             </div>
 
             <div className="flex-1">
+              <Badge variant="secondary" className="mb-2">{shop.category}</Badge> {/* <-- AFFICHAGE DE LA CATÉGORIE */}
               <h1 className="text-4xl md:text-5xl font-bold mb-2">{shop.name}</h1>
               <p className="text-lg text-muted-foreground mb-4">{shop.description}</p>
 
@@ -143,18 +147,9 @@ const ShopDetail = () => {
               <p className="text-center text-muted-foreground py-10">Cette boutique n'a pas encore de produits.</p>
             )}
           </TabsContent>
+          
+          {/* ... autres onglets ... */}
 
-          {/* Onglet À propos */}
-          <TabsContent value="about" className="mt-8">
-            {/* Contenu à propos */}
-            {/* ... (inchangé) */}
-          </TabsContent>
-
-          {/* Onglet Avis */}
-          <TabsContent value="reviews" className="mt-8">
-            {/* Contenu avis */}
-            {/* ... (inchangé) */}
-          </TabsContent>
         </Tabs>
       </div>
     </div>

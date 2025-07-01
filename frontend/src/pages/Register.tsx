@@ -58,15 +58,16 @@ const Register = () => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
 
+    const roleForBackend = values.role === 'marchand' ? 'merchant' : 'client';
+
     const userPayload = {
       first_name: `${values.prenom} ${values.nom}`,
       email: values.email,
       phone: values.telephone,
       location: `${values.ville} - ${values.quartier}`,
-      role: values.role,
+      role: roleForBackend, 
       password: values.password,
     };
-
     try {
       const response = await fetch("http://localhost:8000/users/signup", {
         method: "POST",

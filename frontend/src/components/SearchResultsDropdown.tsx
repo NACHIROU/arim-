@@ -1,9 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2 } from 'lucide-react'; // Pour une icône de chargement
+import { Loader2 } from 'lucide-react';
 
 const SearchResultsDropdown = ({ results, isLoading }) => {
-  // Affiche un message de chargement
   if (isLoading) {
     return (
       <div className="search-results-dropdown">
@@ -14,9 +13,7 @@ const SearchResultsDropdown = ({ results, isLoading }) => {
       </div>
     );
   }
-
-  // Affiche un message si aucun résultat n'est trouvé
-  if (results.length === 0) {
+  if (!results || results.length === 0) {
     return (
       <div className="search-results-dropdown">
         <p className="p-4 text-center text-muted-foreground">Aucun résultat trouvé.</p>
@@ -24,11 +21,10 @@ const SearchResultsDropdown = ({ results, isLoading }) => {
     );
   }
 
-  // Affiche les résultats
   return (
     <div className="search-results-dropdown">
       {results.map(item => {
-        // Affichage conditionnel selon le type de résultat (shop ou product)
+        // Affichage conditionnel selon le type de résultat
         if (item.type === 'shop') {
           return (
             <Link to={`/shops/${item.data.id}`} key={`shop-${item.data.id}`} className="result-item">
@@ -46,7 +42,7 @@ const SearchResultsDropdown = ({ results, isLoading }) => {
               <img src={item.data.image_url || '/default-product.jpg'} alt={item.data.name} />
               <div className="result-info">
                 <h4>{item.data.name}</h4>
-                <p className="result-type-product">Dans la boutique {item.data.shop_name}</p>
+                <p className="result-type-product">Vendu par {item.data.shop_name}</p>
               </div>
             </Link>
           );

@@ -9,17 +9,18 @@ interface BoutiqueFormProps {
   onAddBoutique: (boutique: any) => void;
 }
 
-const secteurs = [
-  "Alimentaire", "Vêtements", "Électronique", "Maison & Jardin",
-  "Santé & Beauté", "Sport & Loisirs", "Automobile", "Services",
-  "Artisanat", "Autres"
+const categories = [
+  "Alimentaire & Boissons", "Vêtements & Mode", "Santé & Beauté",
+  "Électronique & Multimédia", "Maison & Jardin", "Quincaillerie", "Sport & Loisirs",
+  "Restauration & Hôtellerie", "Services à la personne", "Construction & Bâtiment",
+  "Automobile", "Éducation & Formation", "Artisanat", "Divers", "Autres"
 ];
 
 const BoutiqueForm: React.FC<BoutiqueFormProps> = ({ onAddBoutique }) => {
-  const [nom, setNom] = useState('');
+  const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [localisation, setLocalisation] = useState('');
-  const [secteur, setSecteur] = useState('');
+  const [location, setLocation] = useState('');
+  const [category, setCategory] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,48 +31,38 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({ onAddBoutique }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!imageFile) {
-      alert("Veuillez sélectionner une image !");
+    if (!imageFile || !category) {
+      alert("Veuillez remplir tous les champs, y compris le secteur et l'image !");
       return;
     }
 
     const formData = new FormData();
-    formData.append("name", nom);
+    formData.append("name", name);
     formData.append("description", description);
-    formData.append("location", localisation);
+    formData.append("location", location);
+    formData.append("category", category); // Envoi de la catégorie
     formData.append("images", imageFile);
 
     const token = localStorage.getItem("token");
-
     try {
       const response = await fetch("http://localhost:8000/shops/create-shop/", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error(errorData);
         alert(errorData.detail || "Erreur lors de la création de la boutique");
         return;
       }
 
       const data = await response.json();
-      console.log("Boutique créée :", data);
       alert("Boutique créée avec succès !");
       onAddBoutique(data);
 
-      setNom('');
-      setDescription('');
-      setLocalisation('');
-      setSecteur('');
-      setImageFile(null);
+      setName(''); setDescription(''); setLocation(''); setCategory(''); setImageFile(null);
     } catch (error) {
-      console.error("Erreur réseau ou serveur :", error);
       alert("Erreur réseau ou serveur.");
     }
   };
@@ -87,11 +78,11 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({ onAddBoutique }) => {
           <div className="form-row">
             <div className="form-group">
               <label>Nom de la boutique</label>
-              <Input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Ali et Fils" required />
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: La Belle Étoile" required />
             </div>
             <div className="form-group">
-              <label>Localisation</label>
-              <Input value={localisation} onChange={(e) => setLocalisation(e.target.value)} placeholder="Cotonou, Haie Vive" required />
+              <label>Adresse complète</label>
+              <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ex: 123 Rue de la Paix, Cotonou" required />
             </div>
           </div>
           <div className="form-group">
@@ -100,11 +91,16 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({ onAddBoutique }) => {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Secteur d'activité</label>
-              <Select value={secteur} onValueChange={setSecteur}>
+              <label className="flex items-center gap-2">
+                Secteur d'activité
+                <p className="text-xs italic text-orange-500 m-0">
+                  (Choisissez <span className="font-bold text-orange-500 text-xs">Divers</span> si vous intervenez dans plusieurs domaines)
+                </p>
+              </label>
+              <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger><SelectValue placeholder="Sélectionnez un secteur" /></SelectTrigger>
                 <SelectContent>
-                  {secteurs.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  {categories.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
