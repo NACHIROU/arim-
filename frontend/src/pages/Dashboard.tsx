@@ -9,11 +9,13 @@ import ProduitsList from '@/components/dashboard/ProduitsList';
 import './Dashboard.css';
 
 interface Boutique {
+  _id: string;
   id: string;
   name: string;
   description: string;
   location: string;
   image_url?: string;
+  category:string;
   is_published: boolean;
 }
 
@@ -38,8 +40,9 @@ const Dashboard: React.FC = () => {
 
   const fetchBoutiques = async () => {
     try {
-      const response = await fetch("http://localhost:8000/shops/retrieve-all-shops/", {
+      const response = await fetch("http://localhost:8000/shops/my-shops/", {
         headers: { Authorization: `Bearer ${token}` },
+        
       });
 
       if (response.ok) {
@@ -175,9 +178,13 @@ const Dashboard: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
             {boutiques.map((boutique) => (
               <div
-                key={boutique.id}
-                className={`border rounded-lg p-4 cursor-pointer transition hover:shadow-lg ${selectedShopId === boutique.id ? 'bg-primary text-white' : 'bg-white'}`}
-                onClick={() => setSelectedShopId(boutique.id)}
+                key={boutique._id}
+                className={`border rounded-lg p-4 cursor-pointer transition hover:shadow-lg ${selectedShopId === boutique._id ? 'bg-primary text-white' : 'bg-white'}`}
+                      onClick={() => {
+        console.log("CLIC SUR LA BOUTIQUE:", boutique);
+        console.log("VALEUR PASSÉE À setSelectedShopId:", boutique._id);
+        setSelectedShopId(boutique._id);
+      }}
               >
                 <h4 className="font-semibold text-lg">{boutique.name}</h4>
               </div>

@@ -5,7 +5,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge'; // On importe le composant Badge
 
 interface Boutique {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   location: string;
@@ -23,7 +23,7 @@ const BoutiquesList: React.FC<BoutiquesListProps> = ({ boutiques, onPublishToggl
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {boutiques.map((boutique) => (
-        <Card key={boutique.id} className="hover:shadow-lg transition flex flex-col">
+        <Card key={boutique._id} className="hover:shadow-lg transition flex flex-col">
           {boutique.images && boutique.images.length > 0 && (
             <CardHeader className="p-0">
               <AspectRatio ratio={16 / 9}>
@@ -39,7 +39,7 @@ const BoutiquesList: React.FC<BoutiquesListProps> = ({ boutiques, onPublishToggl
           </CardContent>
 
           <CardFooter className="p-4 flex justify-between">
-            <Button variant={boutique.is_published ? "destructive" : "default"} onClick={() => onPublishToggle(boutique.id, !boutique.is_published)}>
+            <Button variant={boutique.is_published ? "destructive" : "default"} onClick={() => onPublishToggle(boutique._id, !boutique.is_published)}>
               {boutique.is_published ? "Dépublier" : "Publier"}
             </Button>
           </CardFooter>
