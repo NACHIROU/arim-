@@ -6,16 +6,16 @@ class ShopBase(BaseModel):
     name: str = Field(..., example="Boutique Kpayou")
     description: Optional[str] = Field(None, example="Spécialiste en accessoires de téléphone")
     location: str = Field(..., example="Cotonou")
-    category: Optional[str] = Field(None, example="Électronique & Multimédia") # Rendu optionnel
+    category: Optional[str] = Field(None, example="Électronique & Multimédia")
     images: List[str] = Field(default=[], example=["url1.jpg", "url2.jpg"])
 
-class ShopCreate(ShopBase):
-    owner_id: str
-
 class ShopOut(ShopBase):
+    # On a un seul champ 'id' qui est un alias pour '_id'
     id: str = Field(..., alias="_id")
     owner_id: Optional[str] = None
+    is_published: bool = Field(default=False)
 
+    # Le validateur ne cible que les champs définis dans la classe : 'id' et 'owner_id'
     @field_validator("id", "owner_id", mode="before")
     @classmethod
     def convert_objectid_to_str(cls, v):
@@ -25,7 +25,7 @@ class ShopOut(ShopBase):
 
     model_config = ConfigDict(
         from_attributes=True,
-        populate_by_name=True,
+        populate_by_name=True, # Permet de peupler le champ 'id' en utilisant son alias '_id'
         arbitrary_types_allowed=True,
         json_encoders={ObjectId: str},
     )

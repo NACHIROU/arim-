@@ -2,154 +2,116 @@ import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Star, Users, Package } from 'lucide-react';
-import { Badge } from '@/components/ui/badge'; // <-- On importe le Badge
+import { Star, Users, Package, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import ProductCard from '@/components/ProductCard';
 import NotFound from './NotFound';
+import { Boutique, Produit } from '@/types';
 
-// Interface mise à jour pour inclure la catégorie
-interface Shop {
-  id: string;
-  name: string;
-  description: string;
-  category: string; // <-- AJOUT
-  images?: string; // Note: L'API renvoie une LISTE d'images, on pourrait mettre string[]
-}
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image_url: string;
-  shop_id: string;
-}
-
-const ShopDetail = () => {
+const ShopDetail: React.FC = () => {
   const { shopId } = useParams<{ shopId: string }>();
-  const [shop, setShop] = useState<Shop | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [shop, setShop] = useState<Boutique | null>(null);
+  const [products, setProducts] = useState<Produit[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!shopId) {
+      setLoading(false);
+      return;
+    }
+
     const fetchShopDetail = async () => {
       try {
-        const resShop = await fetch(`http://localhost:8000/shops/retrieve-shop/${shopId}`);
-        if (resShop.ok) {
-          const shopData = await resShop.json();
-          setShop(shopData);
-        } else {
-          setShop(null);
-        }
+        const [shopResponse, productsResponse] = await Promise.all([
+          fetch(`http://localhost:8000/shops/retrieve-shop/${shopId}`),
+          fetch(`http://localhost:8000/shops/${shopId}/products/`)
+        ]);
 
-        const resProducts = await fetch(`http://localhost:8000/shops/${shopId}/products/`);
-        if (resProducts.ok) {
-          const productsData = await resProducts.json();
-          setProducts(productsData);
-        }
+        if (!shopResponse.ok) throw new Error("Boutique non trouvée.");
+        
+        const shopData = await shopResponse.json();
+        const productsData = productsResponse.ok ? await productsResponse.json() : [];
+
+        // On s'assure que les données reçues sont bien des tableaux avant de les utiliser
+        setShop(shopData || null);
+        setProducts(Array.isArray(productsData) ? productsData : []);
+
       } catch (error) {
         console.error('Erreur chargement shop ou produits', error);
+        setShop(null);
       } finally {
         setLoading(false);
       }
     };
 
-    if (shopId) {
-      fetchShopDetail();
-    }
+    fetchShopDetail();
   }, [shopId]);
 
-  if (loading) return <div className="container py-24 text-center">Chargement...</div>;
+  if (loading) return <div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin" /></div>;
   if (!shop) return <NotFound />;
+
+  // --- Vérifications défensives avant l'affichage ---
+  const shopName = shop.name || "Boutique sans nom";
+  // On s'assure que 'images' est un tableau avant d'y accéder
+  const bannerImage = (Array.isArray(shop.images) && shop.images.length > 0) ? shop.images[0] : 'https://via.placeholder.com/1280x400?text=Bienvenue';
 
   return (
     <div>
-      {/* Bannière avec image de la boutique */}
       <div className="mb-12">
         <AspectRatio ratio={16 / 5} className="bg-muted">
-          <img
-            src={shop.images?.[0] || '/default-shop.jpg'} // On prend la première image du tableau
-            alt={shop.name}
-            className="object-cover w-full h-full"
-          />
+          <img src={bannerImage} alt={shopName} className="object-cover w-full h-full" />
         </AspectRatio>
       </div>
 
       <div className="container pb-16 md:pb-24">
-        {/* Header */}
         <div className="max-w-4xl mx-auto -mt-32 relative bg-background p-8 rounded-lg shadow-lg mb-12">
           <div className="flex flex-col md:flex-row gap-6 items-start">
             <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold shrink-0">
-              {shop.name.charAt(0)}
+              {shopName.charAt(0)}
             </div>
-
             <div className="flex-1">
-              <Badge variant="secondary" className="mb-2">{shop.category}</Badge> {/* <-- AFFICHAGE DE LA CATÉGORIE */}
-              <h1 className="text-4xl md:text-5xl font-bold mb-2">{shop.name}</h1>
-              <p className="text-lg text-muted-foreground mb-4">{shop.description}</p>
-
+              <Badge variant="secondary" className="mb-2">{shop.category || 'Sans catégorie'}</Badge>
+              <h1 className="text-4xl md:text-5xl font-bold mb-2">{shopName}</h1>
+              <p className="text-lg text-muted-foreground mb-4">{shop.description || ''}</p>
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                  <span>4.8/5 (234 avis)</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  <span>1,567 clients</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Package className="h-4 w-4" />
-                  <span>{products.length} produits</span>
-                </div>
+                <div className="flex items-center gap-1"><Star className="h-4 w-4 text-yellow-400 fill-current" /><span>4.8/5</span></div>
+                <div className="flex items-center gap-1"><Users className="h-4 w-4" /><span>-- clients</span></div>
+                <div className="flex items-center gap-1"><Package className="h-4 w-4" /><span>{products.length} produits</span></div>
               </div>
-
-              <div className="flex gap-3">
-                <Button>Suivre cette boutique</Button>
-                <Button variant="outline">Contacter</Button>
-              </div>
+              <div className="flex gap-3"><Button>Suivre</Button><Button variant="outline">Contacter</Button></div>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
         <Tabs defaultValue="products" className="max-w-6xl mx-auto">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="products">Produits</TabsTrigger>
             <TabsTrigger value="about">À propos</TabsTrigger>
-            <TabsTrigger value="reviews">Avis clients</TabsTrigger>
+            <TabsTrigger value="reviews">Avis</TabsTrigger>
           </TabsList>
-
-          {/* Onglet Produits */}
+          
           <TabsContent value="products" className="mt-8">
-            <h2 className="text-3xl font-bold mb-8">Produits de {shop.name}</h2>
+            <h2 className="text-3xl font-bold mb-8">Produits de {shopName}</h2>
             {products.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {products.map((product, index) => (
-                  <div
-                    key={product.id}
-                    className="animate-fade-in-up"
-                    style={{ animationDelay: `${0.1 + index * 0.1}s` }}
-                  >
+                {products.map((product) => (
+                  // On vérifie que 'product' est un objet valide avant de le rendre
+                  product && product._id && (
                     <ProductCard
-                      id={product.id}
-                      imageUrl={product.image_url}
-                      name={product.name}
-                      seller={shop.name}
-                      price={product.price}
-                      shopId={product.shop_id.toString()}
+                      key={product._id}
+                      id={product._id}
+                      imageUrl={product.image_url || ''}
+                      name={product.name || 'Produit sans nom'}
+                      shopName={shopName}
+                      price={product.price || 0}
+                      shopId={shop._id}
                     />
-                  </div>
+                  )
                 ))}
               </div>
-            ) : (
-              <p className="text-center text-muted-foreground py-10">Cette boutique n'a pas encore de produits.</p>
-            )}
+            ) : (<p className="text-center text-muted-foreground py-10">Cette boutique n'a pas encore de produits.</p>)}
           </TabsContent>
-          
-          {/* ... autres onglets ... */}
-
         </Tabs>
       </div>
     </div>

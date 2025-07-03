@@ -7,6 +7,7 @@ class ProductBase(BaseModel):
     description: Optional[str] = ""
     price: float
 
+
 class ProductCreate(ProductBase):
     shop_id: str
 
@@ -17,10 +18,12 @@ class ProductUpdate(BaseModel):
     image_url: Optional[str]
 
 class ProductOut(ProductBase):
+    # On a un seul champ 'id' qui est un alias pour '_id'
     id: str = Field(..., alias="_id")
     image_url: Optional[str] = ""
     shop_id: str
 
+    # Le validateur ne cible que les champs 'id' et 'shop_id'
     @field_validator("id", "shop_id", mode="before")
     @classmethod
     def convert_objectid_to_str(cls, v):
@@ -34,11 +37,11 @@ class ProductOut(ProductBase):
         arbitrary_types_allowed=True,
         json_encoders={ObjectId: str},
     )
-
 class ShopInfo(BaseModel):
-    id: str
+    _id: str
     name: str
 
 class ProductWithShopInfo(ProductOut):
     seller: Optional[str] = None
     shop: Optional[ShopInfo] = None
+

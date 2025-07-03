@@ -1,4 +1,3 @@
-# In your router file (e.g., app/routers/search.py)
 from fastapi import APIRouter, Query
 from typing import List, Optional
 import asyncio
@@ -10,130 +9,63 @@ router = APIRouter()
 
 @router.get("/")
 async def unified_search(
-    q: Optional[str] = Query(None),
+    q: Optional[str] = Query(None, min_length=1),
     category: Optional[str] = Query(None),
     lat: Optional[float] = Query(None),
     lon: Optional[float] = Query(None)
 ):
     """
-    Route de recherche unifiée qui gère le texte, la catégorie et la proximité.
+    Route de recherche unifiée (version finale) qui ne cherche que dans le contenu publié.
     """
-    # Si la recherche est vide (sauf si on a des coordonnées), on ne renvoie rien
     if not q and (not category or category == "Tous") and (lat is None or lon is None):
         return []
 
-    # Si les coordonnées sont fournies, nous utilisons une aggregation, c'est la meilleure méthode.
+    # --- Cas 1: Recherche par proximité ---
     if lat is not None and lon is not None:
-        
-        # --- Construction du filtre pour la recherche géospatiale ---
-        geo_query_filter = {}
-        if q:
-            geo_query_filter["name"] = {"$regex": q, "$options": "i"}
+        geo_query_filter = {"is_published": True} # Filtre de base pour le contenu publié
         if category and category != "Tous":
             geo_query_filter["category"] = {"$in": [category, "Divers"]}
-
-        # --- Définition du Pipeline d'Agrégation ---
+        
+        product_lookup_pipeline = [{"$limit": 5}]
+        if q:
+            product_lookup_pipeline.insert(0, {"$match": {"name": {"$regex": q, "$options": "i"}}})
+        
         pipeline = [
-            # 1. Cherche les boutiques proches ET les trie par distance (le plus proche en premier)
-            {
-                "$geoNear": {
-                    "near": {"type": "Point", "coordinates": [lon, lat]},
-                    "distanceField": "distance", # Crée un champ "distance" avec la distance calculée
-                    "maxDistance": 50000, # 50km
-                    "query": geo_query_filter, # Applique les filtres de base (nom, catégorie)
-                    "spherical": True
-                }
-            },
-            # 2. On limite le nombre de boutiques pour la performance
-            { "$limit": 10 },
-            
-            # 3. On "joint" les produits correspondants pour chaque boutique trouvée
-            {
-                "$lookup": {
-                    "from": "products", # La collection avec laquelle on joint
-                    "localField": "_id",
-                    "foreignField": "shop_id",
-                    # On peut aussi filtrer les produits joints (ex: par nom)
-                    "pipeline": [
-                        { "$match": { "name": {"$regex": q, "$options": "i"} } } if q else {},
-                        { "$limit": 5 } # Limite les produits par boutique
-                    ],
-                    "as": "found_products" # Le nom du tableau qui contiendra les produits
-                }
-            }
+            {"$geoNear": {"near": {"type": "Point", "coordinates": [lon, lat]}, "distanceField": "distance", "maxDistance": 50000, "query": geo_query_filter, "spherical": True}},
+            {"$lookup": {"from": "products", "localField": "_id", "foreignField": "shop_id", "pipeline": product_lookup_pipeline, "as": "found_products"}},
+            {"$match": {"$or": [{"name": {"$regex": q, "$options": "i"}} if q else {}, {"found_products": {"$ne": []}}]}},
+            {"$limit": 10}
         ]
-
-        # --- Exécution et formatage des résultats de l'agrégation ---
         aggregated_results = await shops.aggregate(pipeline).to_list(length=None)
         
         results = []
-        for shop_with_products in aggregated_results:
-            # Ajoute la boutique au résultat
-            results.append({
-                "type": "shop",
-                "data": { 
-                    "id": str(shop_with_products["_id"]), 
-                    "name": shop_with_products["name"], 
-                    "description": shop_with_products.get("description", ""), 
-                    "images": shop_with_products.get("images", []),
-                    "distance": shop_with_products.get("distance") # On peut renvoyer la distance !
-                }
-            })
-            # Ajoute les produits trouvés pour cette boutique
-            for product in shop_with_products.get("found_products", []):
-                results.append({
-                    "type": "product",
-                    "data": {
-                        "id": str(product["_id"]), 
-                        "name": product["name"], 
-                        "image_url": product.get("image_url", ""),
-                        "shop_id": str(product.get("shop_id")),
-                        "shop_name": shop_with_products["name"]
-                    }
-                })
+        for item in aggregated_results:
+            results.append({"type": "shop", "data": {"id": str(item["_id"]), "name": item["name"], "description": item.get("description", ""), "images": item.get("images", [])}})
+            for product in item.get("found_products", []):
+                results.append({"type": "product", "data": {"id": str(product["_id"]), "name": product["name"], "image_url": product.get("image_url", ""), "shop_id": str(product.get("shop_id")), "shop_name": item["name"]}})
         return results
 
-    # --- Logique de secours si PAS de coordonnées (votre ancienne logique) ---
-    # (Cette partie reste inchangée pour les recherches sans géolocalisation)
-    shop_filter = {}
-    product_filter = {}
-    if q:
-        shop_filter["name"] = {"$regex": q, "$options": "i"}
-        product_filter["name"] = {"$regex": q, "$options": "i"}
-    if category and category != "Tous":
-        shop_filter["category"] = {"$in": [category, "Divers"]}
-    
-    found_shops_task = shops.find(shop_filter).limit(5).to_list(length=5)
-    
-    # Pour les produits, on doit d'abord trouver les boutiques correspondantes
-    shop_ids = [s["_id"] for s in await shops.find(shop_filter, {"_id": 1}).to_list(length=None)]
-    if shop_ids:
-        product_filter["shop_id"] = {"$in": shop_ids}
-    elif q:
-        # Si aucun shop ne match le nom, on ne renvoie pas de produits non plus
-        shop_ids = []
-
-    # Ne chercher des produits que si des boutiques ont été trouvées ou si la recherche n'est pas par catégorie
-    found_products_task = products.find(product_filter).limit(5).to_list(length=5) if shop_ids or not category else asyncio.sleep(0, [])
-
-    found_shops, found_products = await asyncio.gather(found_shops_task, found_products_task)
-    # ... le formatage de votre ancienne logique reste ici ...
-    results = []
-    # (Le formatage reste le même que dans votre version précédente)
-    for shop in found_shops:
-        results.append({
-            "type": "shop",
-            "data": { "id": str(shop["_id"]), "name": shop["name"], "description": shop.get("description", ""), "images": shop.get("images", []) }
-        })
-
-    for product in found_products:
-        shop_info = await shops.find_one({"_id": product.get("shop_id")})
-        results.append({
-            "type": "product",
-            "data": {
-                "id": str(product["_id"]), "name": product["name"], "image_url": product.get("image_url", ""),
-                "shop_id": str(shop_info["_id"]) if shop_info else None,
-                "shop_name": shop_info["name"] if shop_info else "Inconnu"
-            }
-        })
-    return results
+    # --- Cas 2: Recherche standard ---
+    else:
+        shop_filter = {"is_published": True}
+        product_filter = {}
+        if category and category != "Tous": shop_filter["category"] = {"$in": [category, "Divers"]}
+        if q:
+            shop_filter["name"] = {"$regex": q, "$options": "i"}
+            product_filter["name"] = {"$regex": q, "$options": "i"}
+        
+        found_shops_task = shops.find(shop_filter).limit(5).to_list(length=None)
+        
+        shop_ids_for_products = [s["_id"] for s in await shops.find({k: v for k, v in shop_filter.items() if k != 'name'}, {"_id": 1}).to_list(length=None)]
+        if shop_ids_for_products: product_filter["shop_id"] = {"$in": shop_ids_for_products}
+        
+        found_products_task = products.find(product_filter).limit(5).to_list(length=None) if q else asyncio.sleep(0, [])
+            
+        found_shops, found_products = await asyncio.gather(found_shops_task, found_products_task)
+        
+        results = []
+        for shop in found_shops: results.append({"type": "shop", "data": {"id": str(shop["_id"]), "name": shop["name"], "description": shop.get("description", ""), "images": shop.get("images", [])}})
+        for product in found_products:
+            shop_info = await shops.find_one({"_id": product.get("shop_id")})
+            results.append({"type": "product", "data": {"id": str(product["_id"]), "name": product["name"], "image_url": product.get("image_url", ""), "shop_id": str(product.get("shop_id")), "shop_name": shop_info["name"] if shop_info else "Inconnu"}})
+        return results

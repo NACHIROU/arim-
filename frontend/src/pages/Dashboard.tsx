@@ -6,27 +6,10 @@ import BoutiqueForm from '@/components/dashboard/BoutiqueForm';
 import BoutiquesList from '@/components/dashboard/BoutiquesList';
 import ProduitForm from '@/components/dashboard/ProduitForm';
 import ProduitsList from '@/components/dashboard/ProduitsList';
+import { Boutique, Produit } from '@/types'; // <-- On importe les types depuis le fichier central
 import './Dashboard.css';
 
-interface Boutique {
-  _id: string;
-  id: string;
-  name: string;
-  description: string;
-  location: string;
-  image_url?: string;
-  category:string;
-  is_published: boolean;
-}
-
-interface Produit {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image_url: string;
-  shop_id: string;
-}
+// On ne définit plus les interfaces ici.
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -38,160 +21,132 @@ const Dashboard: React.FC = () => {
 
   const token = localStorage.getItem('token');
 
+  // Récupère les boutiques du marchand connecté
   const fetchBoutiques = async () => {
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     try {
       const response = await fetch("http://localhost:8000/shops/my-shops/", {
         headers: { Authorization: `Bearer ${token}` },
-        
       });
-
       if (response.ok) {
-        const data = await response.json();
-        setBoutiques(data);
-      } else {
-        console.error("Erreur lors du chargement des boutiques");
+        setBoutiques(await response.json());
+      } else if (response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
       }
     } catch (error) {
-      console.error("Erreur réseau :", error);
+      console.error("Erreur réseau (fetchBoutiques):", error);
     }
   };
 
   useEffect(() => {
     fetchBoutiques();
-  }, [token]);
+  }, []);
 
+  // --- Définition des Actions pour les Boutiques ---
+
+  const handlePublishToggle = async (id: string, publish: boolean) => {
+    const action = publish ? 'publier' : 'dépublier';
+    if (!window.confirm(`Êtes-vous sûr de vouloir ${action} cette boutique ?`)) return;
+    
+    const endpoint = publish ? `/shops/publish/${id}` : `/shops/unpublish/${id}`;
+    const response = await fetch(`http://localhost:8000${endpoint}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) fetchBoutiques();
+    else alert("Erreur lors de l'opération.");
+  };
+
+  const handleDeleteShop = async (id: string) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette boutique ?")) return;
+    
+    const response = await fetch(`http://localhost:8000/shops/delete-shop/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) fetchBoutiques();
+    else alert("Erreur lors de la suppression.");
+  };
+
+  const handleEditShop = (id: string) => {
+    navigate(`/dashboard/edit-shop/${id}`);
+  };
+
+  // --- Fonctions de gestion pour les produits ---
+  
   const fetchProduitsByShop = async (shopId: string) => {
-    try {
-      const response = await fetch(`http://localhost:8000/shops/${shopId}/products/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setProduits(data);
-      } else {
-        console.error("Erreur lors du chargement des produits");
-      }
-    } catch (error) {
-      console.error("Erreur réseau :", error);
+    if (!shopId || !token) {
+      setProduits([]);
+      return;
     }
+    const response = await fetch(`http://localhost:8000/shops/${shopId}/products/`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if(response.ok) setProduits(await response.json());
   };
 
   useEffect(() => {
-    if (selectedShopId) {
-      fetchProduitsByShop(selectedShopId);
-    } else {
-      setProduits([]);
-    }
-  }, [selectedShopId, token]);
-
-  const handleAddBoutique = (nouvelleBoutique: Boutique) => {
-    setBoutiques((prev) => [...prev, nouvelleBoutique]);
-  };
-
-  const handlePublishToggle = async (id: string, publish: boolean) => {
-    const endpoint = publish
-      ? `http://localhost:8000/shops/publish/${id}`
-      : `http://localhost:8000/shops/unpublish/${id}`;
-
-    try {
-      const response = await fetch(endpoint, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        fetchBoutiques();
-      } else {
-        console.error("Erreur lors de la mise à jour de la boutique");
-      }
-    } catch (error) {
-      console.error("Erreur réseau :", error);
-    }
-  };
+    fetchProduitsByShop(selectedShopId);
+  }, [selectedShopId]);
 
   const handleSubmitProduitSuccess = () => {
-    if (selectedShopId) {
-      fetchProduitsByShop(selectedShopId);
-    }
+    if (selectedShopId) fetchProduitsByShop(selectedShopId);
   };
 
   const handleEditProduit = (produit: Produit) => {
-    setEditingProductId(produit.id);
-    const formCard = document.querySelector('.produit-form-card');
-    formCard?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setEditingProductId(produit._id);
   };
 
-  const handleCancelEdit = () => {
-    setEditingProductId(null);
-  };
+  const handleCancelEdit = () => setEditingProductId(null);
 
   const handleDeleteProduit = async (id: string) => {
-    const confirmDelete = window.confirm("Voulez-vous vraiment supprimer ce produit ?");
-    if (!confirmDelete) return;
-
-    try {
-      const response = await fetch(`http://localhost:8000/products/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        fetchProduitsByShop(selectedShopId);
-      } else {
-        console.error("Erreur lors de la suppression du produit");
-      }
-    } catch (error) {
-      console.error("Erreur réseau :", error);
-    }
+    if (!window.confirm("Voulez-vous vraiment supprimer ce produit ?")) return;
+    // La route de suppression doit être sécurisée côté backend !
+    const response = await fetch(`http://localhost:8000/products/products/${id}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
+    });
+    if(response.ok) handleSubmitProduitSuccess();
   };
-
+  
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
   };
 
-  const editingProduct = produits.find(p => p.id === editingProductId) || null;
+  const editingProduct = produits.find(p => p._id === editingProductId) || null;
 
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <div className="dashboard-header-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1>Dashboard Marchand</h1>
-        </div>
-        <p>Gérez vos boutiques et produits</p>
-        <Button variant="outline" onClick={() => navigate('/shops')}>Voir toutes les boutiques</Button>
+        <h1>Dashboard Marchand</h1>
+        <p>Gérez vos boutiques et produits.</p>
       </div>
 
       <DashboardTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {activeTab === 'boutiques' && (
         <div className="tab-content">
-          <BoutiqueForm onAddBoutique={handleAddBoutique} />
-          <BoutiquesList boutiques={boutiques} onPublishToggle={handlePublishToggle} />
+          <BoutiqueForm onAddBoutique={fetchBoutiques} />
+          <div className="mt-8">
+            <h2 className="text-2xl font-semibold mb-4">Mes Boutiques</h2>
+            <BoutiquesList
+              boutiques={boutiques}
+              onPublishToggle={handlePublishToggle}
+              onEdit={handleEditShop}
+              onDelete={handleDeleteShop}
+            />
+          </div>
         </div>
       )}
 
       {activeTab === 'produits' && (
         <div className="tab-content">
-          <h3>Choisissez une boutique :</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-            {boutiques.map((boutique) => (
-              <div
-                key={boutique._id}
-                className={`border rounded-lg p-4 cursor-pointer transition hover:shadow-lg ${selectedShopId === boutique._id ? 'bg-primary text-white' : 'bg-white'}`}
-                      onClick={() => {
-        console.log("CLIC SUR LA BOUTIQUE:", boutique);
-        console.log("VALEUR PASSÉE À setSelectedShopId:", boutique._id);
-        setSelectedShopId(boutique._id);
-      }}
-              >
-                <h4 className="font-semibold text-lg">{boutique.name}</h4>
-              </div>
-            ))}
-          </div>
-
-          <ProduitForm
+          <h2 className="text-2xl font-semibold mb-4">Mes Produits</h2>
+           <ProduitForm
             boutiques={boutiques}
             selectedShopId={selectedShopId}
             setSelectedShopId={setSelectedShopId}
@@ -199,14 +154,11 @@ const Dashboard: React.FC = () => {
             editingProduct={editingProduct}
             onCancelEdit={handleCancelEdit}
           />
-
-          {selectedShopId && (
-            <ProduitsList
-              produits={produits}
-              onEdit={handleEditProduit}
-              onDelete={handleDeleteProduit}
-            />
-          )}
+          <ProduitsList
+            produits={produits}
+            onEdit={handleEditProduit}
+            onDelete={handleDeleteProduit}
+          />
         </div>
       )}
     </div>

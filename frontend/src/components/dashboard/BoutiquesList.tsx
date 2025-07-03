@@ -1,49 +1,34 @@
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Badge } from '@/components/ui/badge'; // On importe le composant Badge
-
-interface Boutique {
-  _id: string;
-  name: string;
-  description: string;
-  location: string;
-  category: string; // <-- AJOUT
-  is_published: boolean;
-  images?: string[];
-}
+import { Boutique } from '@/types';
+import DashboardShopCard from './DashboardShopCard';
 
 interface BoutiquesListProps {
   boutiques: Boutique[];
   onPublishToggle: (id: string, publish: boolean) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-const BoutiquesList: React.FC<BoutiquesListProps> = ({ boutiques, onPublishToggle }) => {
+const BoutiquesList: React.FC<BoutiquesListProps> = ({ boutiques, onPublishToggle, onEdit, onDelete }) => {
+  if (boutiques.length === 0) {
+    return (
+      <div className="text-center text-muted-foreground py-10 border-2 border-dashed rounded-lg mt-6">
+        <p>Vous n'avez encore aucune boutique.</p>
+        <p>Utilisez le formulaire ci-dessus pour commencer !</p>
+      </div>
+    );
+  }
+  
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {boutiques.map((boutique) => (
-        <Card key={boutique._id} className="hover:shadow-lg transition flex flex-col">
-          {boutique.images && boutique.images.length > 0 && (
-            <CardHeader className="p-0">
-              <AspectRatio ratio={16 / 9}>
-                <img src={boutique.images[0]} alt={boutique.name} className="object-cover w-full h-full rounded-t-lg" />
-              </AspectRatio>
-            </CardHeader>
-          )}
-
-          <CardContent className="p-4 flex-grow">
-            <Badge variant="secondary" className="mb-2">{boutique.category}</Badge> {/* <-- AJOUT */}
-            <h3 className="font-semibold text-xl mb-2">{boutique.name}</h3>
-            <p className="text-sm text-muted-foreground line-clamp-3">{boutique.description}</p>
-          </CardContent>
-
-          <CardFooter className="p-4 flex justify-between">
-            <Button variant={boutique.is_published ? "destructive" : "default"} onClick={() => onPublishToggle(boutique._id, !boutique.is_published)}>
-              {boutique.is_published ? "Dépublier" : "Publier"}
-            </Button>
-          </CardFooter>
-        </Card>
+        <DashboardShopCard
+          key={boutique._id}
+          boutique={boutique}
+          onPublishToggle={onPublishToggle}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       ))}
     </div>
   );

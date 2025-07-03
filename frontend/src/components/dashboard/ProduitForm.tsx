@@ -77,7 +77,6 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
     const token = localStorage.getItem('token');
     const endpoint = editingProduct
       ? `http://localhost:8000/products/update-products/${editingProduct._id}`
-      // Note: Assurez-vous que l'ID du produit est bien `editingProduct.id` ou `editingProduct._id`
       : 'http://localhost:8000/products/create-products/';
     const method = editingProduct ? 'PUT' : 'POST';
 
@@ -124,9 +123,8 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
               required
               className="w-full p-2 border rounded-md"
             >
-              <option value="" disabled>-- Choisissez une boutique --</option>
+              <option value="" disabled>Choisissez une boutique</option>
               {boutiques.map((boutique) => (
-                // --- CORRECTION 2 : Utiliser ._id pour la key et la value ---
                 <option key={boutique._id} value={boutique._id}>
                   {boutique.name}
                 </option>

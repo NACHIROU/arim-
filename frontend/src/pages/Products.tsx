@@ -1,30 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from "@/components/ProductCard";
+import { Loader2 } from 'lucide-react';
+import { Produit } from '@/types'; // --- CORRECTION : On importe le type central qui utilise _id
 
-// L'interface reste la même, mais on doit gérer le fait que 'shop' peut être null
-interface ProductFromAPI {
-  id: string;
-  name: string;
-  price: number;
-  image_url: string;
-  seller: string;
-  shop: { // 'shop' peut potentiellement être null dans la réponse de l'API
-    id: string;
-    name: string;
-  } | null; // On ajoute la possibilité que ce soit null
-}
-
-const Products = () => {
-    const [products, setProducts] = useState<ProductFromAPI[]>([]);
+const Products: React.FC = () => {
+    // L'interface locale est supprimée au profit de l'import central
+    const [products, setProducts] = useState<Produit[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchAllProducts = async () => {
             try {
-                const response = await fetch("http://localhost:8000/products/get-all-products/");
-                if (!response.ok) throw new Error("Erreur réseau.");
-                
+                const response = await fetch("http://localhost:8000/products/public-products/");
+                if (!response.ok) {
+                    throw new Error("Erreur lors de la récupération des produits.");
+                }
                 const data = await response.json();
                 setProducts(data);
             } catch (err) {
@@ -37,32 +28,35 @@ const Products = () => {
         fetchAllProducts();
     }, []);
 
-    if (loading) return <div className="container py-24 text-center">Chargement des produits...</div>;
-    if (error) return <div className="container py-24 text-center text-red-500">Erreur : {error}</div>;
+    if (loading) {
+        return <div className="container flex justify-center py-24"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    }
+    if (error) {
+        return <div className="container py-24 text-center text-red-500">Erreur : {error}</div>;
+    }
 
     return (
         <div className="container py-16 md:py-24">
             <h1 className="text-3xl md:text-4xl font-bold text-center mb-10">Tous nos produits</h1>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                
-                {products
-                  .filter(product => product.shop) 
-                  .map((product, index) => (
-                    <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${0.2 + index * 0.1}s` }}>
+            {products.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    {products.map((product) => (
+                        // --- CORRECTION : On utilise ._id partout ---
                         <ProductCard 
-                            id={product.id}
+                            key={product._id}
+                            id={product._id}
                             name={product.name}
-                            seller={product.seller}
+                            shopName={product.shop?.name || 'Boutique inconnue'}
                             price={product.price}
                             imageUrl={product.image_url}
-                            // À ce stade, on est SÛR que product.shop n'est pas null
-                            shopId={product.shop!.id} 
-                            showShopLink 
+                            shopId={product.shop?._id}
+                            showShopLink
                         />
-                    </div>
-                ))}
-                
-            </div>
+                    ))}
+                </div>
+            ) : (
+                <p className="text-center text-muted-foreground mt-10">Aucun produit à afficher pour le moment.</p>
+            )}
         </div>
     );
 };
