@@ -1,115 +1,128 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Boutique } from '@/types';
+import { Loader2 } from 'lucide-react';
 
 interface BoutiqueFormProps {
-  onAddBoutique: (boutique: any) => void;
+  onSuccess: () => void;
+  isEditing?: boolean;
+  initialData?: Boutique | null;
+  onCancelEdit?: () => void;
 }
 
-const categories = [
-  "Alimentaire & Boissons", "Vêtements & Mode", "Santé & Beauté",
-  "Électronique & Multimédia", "Maison & Jardin", "Quincaillerie", "Sport & Loisirs",
-  "Restauration & Hôtellerie", "Services à la personne", "Construction & Bâtiment",
-  "Automobile", "Éducation & Formation", "Artisanat", "Divers", "Autres"
-];
-
-const BoutiqueForm: React.FC<BoutiqueFormProps> = ({ onAddBoutique }) => {
+const BoutiqueForm: React.FC<BoutiqueFormProps> = ({ 
+  onSuccess, 
+  isEditing = false, 
+  initialData = null,
+  onCancelEdit 
+}) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
   const [category, setCategory] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [images, setImages] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const token = localStorage.getItem('token');
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+  useEffect(() => {
+    if (isEditing && initialData) {
+      setName(initialData.name || '');
+      setDescription(initialData.description || '');
+      setLocation(initialData.location || '');
+      setCategory(initialData.category || '');
+    } else {
+      setName(''); setDescription(''); setLocation(''); setCategory('');
     }
-  };
+    setImages([]); // On réinitialise toujours la sélection de fichiers
+  }, [isEditing, initialData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!imageFile || !category) {
-      alert("Veuillez remplir tous les champs, y compris le secteur et l'image !");
+    setIsSubmitting(true);
+
+    const formData = new FormData();
+    // On ajoute les champs seulement s'ils ont une valeur (pour la mise à jour)
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('location', location);
+    formData.append('category', category);
+    
+    // On n'ajoute les images que si de nouveaux fichiers ont été sélectionnés
+    if (images.length > 0) {
+      images.forEach(image => formData.append('images', image));
+    }
+
+    // En mode création, les images sont obligatoires
+    if (!isEditing && images.length === 0) {
+      alert("Veuillez sélectionner au moins une image.");
+      setIsSubmitting(false);
       return;
     }
 
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("description", description);
-    formData.append("location", location);
-    formData.append("category", category); // Envoi de la catégorie
-    formData.append("images", imageFile);
+    const endpoint = isEditing 
+      ? `http://localhost:8000/shops/update-shop/${initialData?._id}`
+      : "http://localhost:8000/shops/create-shop/";
+    const method = isEditing ? 'PUT' : 'POST';
 
-    const token = localStorage.getItem("token");
     try {
-      const response = await fetch("http://localhost:8000/shops/create-shop/", {
-        method: "POST",
+      const response = await fetch(endpoint, {
+        method: method,
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        alert(errorData.detail || "Erreur lors de la création de la boutique");
-        return;
+        throw new Error(`Erreur: ${await response.text()}`);
       }
+      
+      alert(`Boutique ${isEditing ? 'mise à jour' : 'créée'} avec succès !`);
+      onSuccess();
 
-      const data = await response.json();
-      alert("Boutique créée avec succès !");
-      onAddBoutique(data);
-
-      setName(''); setDescription(''); setLocation(''); setCategory(''); setImageFile(null);
     } catch (error) {
-      alert("Erreur réseau ou serveur.");
+      console.error("Erreur formulaire boutique:", error);
+      alert("Une erreur est survenue.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Card className="form-card">
+    <Card>
       <CardHeader>
-        <CardTitle>Ajouter une boutique</CardTitle>
-        <CardDescription>Créez une nouvelle boutique pour vos produits</CardDescription>
+        <CardTitle>{isEditing ? 'Modifier la boutique' : 'Créer une nouvelle boutique'}</CardTitle>
+        <CardDescription>{isEditing ? `Vous modifiez : "${initialData?.name}"` : 'Remplissez les informations.'}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="boutique-form">
-          <div className="form-row">
-            <div className="form-group">
-              <label>Nom de la boutique</label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: La Belle Étoile" required />
-            </div>
-            <div className="form-group">
-              <label>Adresse complète</label>
-              <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ex: 123 Rue de la Paix, Cotonou" required />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input placeholder="Nom de la boutique" value={name} onChange={e => setName(e.target.value)} required />
+          <Textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} />
+          <Input placeholder="Localisation" value={location} onChange={e => setLocation(e.target.value)} required />
+          <Select value={category} onValueChange={setCategory} required>
+            <SelectTrigger><SelectValue placeholder="Choisissez une catégorie" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Alimentaire & Boissons">Alimentaire & Boissons</SelectItem>
+              <SelectItem value="Vêtements & Mode">Vêtements & Mode</SelectItem>
+              <SelectItem value="Construction & Bâtiment">Construction & Bâtiment</SelectItem>
+              <SelectItem value="Services à la personne">Services à la personne</SelectItem>
+              <SelectItem value="Autre">Autre</SelectItem>
+            </SelectContent>
+          </Select>
+          <div>
+            <label htmlFor="images" className="text-sm font-medium">Images</label>
+            <Input id="images" type="file" multiple onChange={e => setImages(Array.from(e.target.files || []))} />
+            <p className="text-xs text-muted-foreground mt-1">{isEditing ? "Laissez vide pour ne pas changer les images existantes." : "Sélectionnez une ou plusieurs images."}</p>
           </div>
-          <div className="form-group">
-            <label>Description</label>
-            <textarea className="description-textarea" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Décrivez votre boutique..." required />
+          <div className="flex gap-2 justify-end">
+            {isEditing && (<Button type="button" variant="ghost" onClick={onCancelEdit}>Annuler</Button>)}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isEditing ? 'Mettre à jour' : 'Créer la boutique'}
+            </Button>
           </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label className="flex items-center gap-2">
-                Secteur d'activité
-                <p className="text-xs italic text-orange-500 m-0">
-                  (Choisissez <span className="font-bold text-orange-500 text-xs">Divers</span> si vous intervenez dans plusieurs domaines)
-                </p>
-              </label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger><SelectValue placeholder="Sélectionnez un secteur" /></SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="form-group">
-              <label>Image de la boutique</label>
-              <Input type="file" accept="image/*" onChange={handleImageUpload} required />
-            </div>
-          </div>
-          <Button type="submit" className="submit-button"><Plus className="button-icon" /> Ajouter la boutique</Button>
         </form>
       </CardContent>
     </Card>

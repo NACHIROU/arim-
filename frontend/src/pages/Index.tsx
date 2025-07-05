@@ -7,6 +7,7 @@ import SearchFilters, { FiltersState } from '@/components/SearchFilters';
 import SearchResultsDropdown from '@/components/SearchResultsDropdown';
 import { Loader2 } from 'lucide-react';
 import { Boutique, Produit } from '@/types';
+import heroImage from '@/assets/images/hero-header.jpg';
 
 const Index: React.FC = () => {
   const [shops, setShops] = useState<Boutique[]>([]);
@@ -46,9 +47,17 @@ const Index: React.FC = () => {
       return;
     }
     const performSearch = (coords?: GeolocationCoordinates) => {
+        if (!filters) return;
         const params = new URLSearchParams();
         if (filters.searchTerm) params.append('q', filters.searchTerm);
         if (filters.category !== 'Tous') params.append('category', filters.category);
+        if (filters.priceRange !== 'Tous les prix') {
+          params.append('priceRange', filters.priceRange);
+        }
+        if (filters.location !== 'Toutes les villes') {
+          params.append('location', filters.location);
+        }
+
         if (coords) {
           params.append('lat', coords.latitude.toString());
           params.append('lon', coords.longitude.toString());
@@ -61,8 +70,11 @@ const Index: React.FC = () => {
 
     setIsSearching(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => performSearch(position.coords),
-      () => { console.warn("Géolocalisation refusée."); performSearch(); }
+      (position) => performSearch(position.coords), // Succès : on cherche avec les coordonnées
+      () => { 
+        console.warn("Géolocalisation refusée. Recherche sans proximité.");
+        performSearch(); // Échec : on cherche quand même, mais sans les coordonnées
+      }
     );
   }, [filters]);
 
@@ -71,11 +83,18 @@ const Index: React.FC = () => {
 
   return (
     <>
-      <section className="text-center py-20 bg-gray-50">
-        <div className="container">
+      <section 
+        className="relative text-center py-24 text-white bg-cover bg-center"
+        style={{ backgroundImage: `url(${heroImage})` }} // <-- 2. On applique l'image en fond
+      >
+        {/* On ajoute une surcouche sombre pour la lisibilité */}
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+
+        {/* Le contenu est maintenant positionné par-dessus la surcouche */}
+        <div className="relative z-10 container">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">La marketplace qui rapproche</h1>
-          <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">Découvrez et soutenez les commerçants près de chez vous.</p>
-          <div className="max-w-4xl mx-auto relative">
+          <p className="max-w-2xl mx-auto text-lg text-slate-200 mb-8">Découvrez et soutenez les commerçants près de chez vous.</p>
+          <div className="max-w-4xl mx-auto">
             <SearchFilters onFiltersChange={setFilters} />
             {(isSearching || searchResults.length > 0) && (
               <SearchResultsDropdown results={searchResults} isLoading={isSearching} />

@@ -16,11 +16,14 @@ const DashboardShopCard: React.FC<DashboardShopCardProps> = ({ boutique, onPubli
   const { _id, name, description, images, is_published, category } = boutique;
 
   return (
+    // On s'assure que la carte utilise tout l'espace vertical disponible
     <Card className="overflow-hidden flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
-      <div>
+      
+      {/* Cette div contient la partie supérieure (image + contenu) et grandit pour pousser le footer en bas */}
+      <div className="flex-grow">
         <div className="relative">
           <img 
-            src={images?.[0] || 'https://via.placeholder.com/400x225?text=Aucune+Image'} 
+            src={images?.[0] || 'https://via.placeholder.com/400x225?text=Image'} 
             alt={name} 
             className="w-full h-40 object-cover" 
           />
@@ -36,7 +39,9 @@ const DashboardShopCard: React.FC<DashboardShopCardProps> = ({ boutique, onPubli
           <p className="text-sm text-muted-foreground line-clamp-2 h-10">{description}</p>
         </CardContent>
       </div>
-      <CardFooter className="p-4 flex justify-between items-center bg-slate-50">
+
+      {/* Le footer reste en bas grâce au flex-grow de la div parente */}
+      <CardFooter className="p-2 flex justify-between items-center bg-slate-50 border-t">
         {is_published ? (
           <Button size="sm" variant="outline" onClick={() => onPublishToggle(_id, false)}>
             <Download className="h-4 w-4 mr-1" /> Dépublier

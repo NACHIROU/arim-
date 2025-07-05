@@ -1,8 +1,26 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Package, Store } from 'lucide-react';
 
-const SearchResultsDropdown = ({ results, isLoading }) => {
+// Interfaces pour la clarté et la sécurité des types
+interface ResultData {
+  id: string;
+  name: string;
+  images?: string[];
+  image_url?: string;
+  shop_name?: string;
+  distance?: number;
+}
+interface ResultItem {
+  type: 'product' | 'shop';
+  data: ResultData;
+}
+interface SearchResultsDropdownProps {
+  results: ResultItem[];
+  isLoading: boolean;
+}
+
+const SearchResultsDropdown: React.FC<SearchResultsDropdownProps> = ({ results, isLoading }) => {
   if (isLoading) {
     return (
       <div className="search-results-dropdown">
@@ -24,25 +42,34 @@ const SearchResultsDropdown = ({ results, isLoading }) => {
   return (
     <div className="search-results-dropdown">
       {results.map(item => {
-        // Affichage conditionnel selon le type de résultat
+        const distanceInKm = item.data.distance ? (item.data.distance / 1000).toFixed(1) : null;
+
         if (item.type === 'shop') {
           return (
             <Link to={`/shops/${item.data.id}`} key={`shop-${item.data.id}`} className="result-item">
-              <img src={item.data.images?.[0] || '/default-shop.jpg'} alt={item.data.name} />
+              <img src={item.data.images?.[0] || 'https://via.placeholder.com/40?text=S'} alt={item.data.name} />
               <div className="result-info">
-                <h4>{item.data.name}</h4>
-                <p className="result-type-shop">[Boutique]</p>
+                <h4 className='text-black-900'>{item.data.name}</h4>
+                <p className="result-type-shop flex items-center gap-1">
+                  <Store className="h-3 w-3" /> Boutique
+                  {/* AFFICHAGE DE LA DISTANCE */}
+                  {distanceInKm && <span className="text-gray-400 font-normal ml-2"> (à {distanceInKm} km)</span>}
+                </p>
               </div>
             </Link>
           );
         }
-        if (item.type === 'product' && item.data.shop_id) {
+        if (item.type === 'product') {
           return (
             <Link to={`/products/${item.data.id}`} key={`product-${item.data.id}`} className="result-item">
-              <img src={item.data.image_url || '/default-product.jpg'} alt={item.data.name} />
+              <img src={item.data.image_url || 'https://via.placeholder.com/40?text=P'} alt={item.data.name} />
               <div className="result-info">
-                <h4>{item.data.name}</h4>
-                <p className="result-type-product">Vendu par {item.data.shop_name}</p>
+                <h4 className='text-black-900'>{item.data.name}</h4>
+                <p className="result-type-product flex items-center gap-1">
+                  <Package className="h-3 w-3 text-orange" /> {item.data.shop_name}
+                  {/* AFFICHAGE DE LA DISTANCE */}
+                  {distanceInKm && <span className="text-gray-400 font-normal ml-2">(à {distanceInKm} km)</span>}
+                </p>
               </div>
             </Link>
           );

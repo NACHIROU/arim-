@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Filter } from "lucide-react";
-import './SearchFilters.css'; // Assurez-vous que le CSS est importé
+import './SearchFilters.css';
 
 export interface FiltersState {
   searchTerm: string;
@@ -27,28 +27,27 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onFiltersChange }) => {
   const [location, setLocation] = useState('Toutes les villes');
   const [showFilters, setShowFilters] = useState(false);
 
-  // useEffect pour informer le parent à chaque changement de filtre, avec un délai
   useEffect(() => {
     const handler = setTimeout(() => {
       onFiltersChange({ searchTerm, category, priceRange, location });
-    }, 400); // Délai de 400ms avant de déclencher la recherche
+    }, 400);
 
     return () => clearTimeout(handler);
   }, [searchTerm, category, priceRange, location, onFiltersChange]);
 
   return (
-    <div className="search-filters-container">
-      <div className="main-search">
+    <div className="search-filters-container p-4 sm:p-6 bg-white rounded-lg shadow-md">
+      <div className="main-search flex gap-2 sm:gap-4">
         <Input
           type="search"
           placeholder="Rechercher un produit, une boutique..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
+          className="search-input flex-grow"
         />
         <Button onClick={() => setShowFilters(!showFilters)} className="filter-toggle" variant="outline">
-          <Filter className="filter-icon" />
-          Filtres
+          <Filter className="filter-icon h-4 w-4" />
+          <span className="hidden sm:inline">Filtres</span>
         </Button>
       </div>
 
@@ -56,21 +55,21 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onFiltersChange }) => {
         <div className="filters-panel">
           <div className="filters-grid">
             <div className="filter-group">
-              <label>Catégorie</label>
+              <label className="text-sm font-medium">Catégorie</label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{categories.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="filter-group">
-              <label>Gamme de prix (FCFA)</label>
+              <label className="text-sm font-medium">Gamme de prix (FCFA)</label>
               <Select value={priceRange} onValueChange={setPriceRange}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{priceRanges.map((range) => <SelectItem key={range} value={range}>{range}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="filter-group">
-              <label>Localisation</label>
+              <label className="text-sm font-medium">Localisation</label>
               <Select value={location} onValueChange={setLocation}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{locations.map((loc) => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}</SelectContent>

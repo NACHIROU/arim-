@@ -8,6 +8,7 @@ export interface Boutique {
   category: string;
   is_published: boolean;
   images?: string[];
+  contact_phone?: string;
 }
 
 export interface Produit {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import DashboardTabs from '@/components/dashboard/DashboardTabs';
@@ -18,10 +18,12 @@ const Dashboard: React.FC = () => {
   const [produits, setProduits] = useState<Produit[]>([]);
   const [selectedShopId, setSelectedShopId] = useState<string>('');
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [editingShop, setEditingShop] = useState<Boutique | null>(null);
 
   const token = localStorage.getItem('token');
-
   // Récupère les boutiques du marchand connecté
+
+  const boutiqueFormRef = useRef<HTMLDivElement>(null);
   const fetchBoutiques = async () => {
     if (!token) {
       navigate('/login');
@@ -72,12 +74,25 @@ const Dashboard: React.FC = () => {
     else alert("Erreur lors de la suppression.");
   };
 
+
+
   const handleEditShop = (id: string) => {
-    navigate(`/dashboard/edit-shop/${id}`);
+    const shopToEdit = boutiques.find(b => b._id === id);
+    if (shopToEdit) {
+      setEditingShop(shopToEdit); // On mémorise la boutique
+      boutiqueFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); // On scrolle
+    }
   };
 
+  const handleFormSuccess = () => {
+    setEditingShop(null); // On quitte le mode édition
+    fetchBoutiques();     // On rafraîchit la liste
+  };
+
+
+
   // --- Fonctions de gestion pour les produits ---
-  
+
   const fetchProduitsByShop = async (shopId: string) => {
     if (!shopId || !token) {
       setProduits([]);
@@ -106,7 +121,7 @@ const Dashboard: React.FC = () => {
   const handleDeleteProduit = async (id: string) => {
     if (!window.confirm("Voulez-vous vraiment supprimer ce produit ?")) return;
     // La route de suppression doit être sécurisée côté backend !
-    const response = await fetch(`http://localhost:8000/products/products/${id}`, {
+  const response = await fetch(`http://localhost:8000/products/products/${id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
     });
     if(response.ok) handleSubmitProduitSuccess();
@@ -129,8 +144,15 @@ const Dashboard: React.FC = () => {
       <DashboardTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {activeTab === 'boutiques' && (
-        <div className="tab-content">
-          <BoutiqueForm onAddBoutique={fetchBoutiques} />
+        <div className="mt-6">
+          <div ref={boutiqueFormRef}>
+            <BoutiqueForm 
+              isEditing={!!editingShop}
+              initialData={editingShop}
+              onSuccess={handleFormSuccess}
+              onCancelEdit={handleCancelEdit}
+            />
+          </div>
           <div className="mt-8">
             <h2 className="text-2xl font-semibold mb-4">Mes Boutiques</h2>
             <BoutiquesList
@@ -142,7 +164,6 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
-
       {activeTab === 'produits' && (
         <div className="tab-content">
           <h2 className="text-2xl font-semibold mb-4">Mes Produits</h2>

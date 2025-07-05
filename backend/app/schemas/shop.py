@@ -25,7 +25,11 @@ class ShopOut(ShopBase):
 
     model_config = ConfigDict(
         from_attributes=True,
-        populate_by_name=True, # Permet de peupler le champ 'id' en utilisant son alias '_id'
+        populate_by_name=True,
         arbitrary_types_allowed=True,
         json_encoders={ObjectId: str},
     )
+
+# Nouveau schéma qui hérite de ShopOut et ajoute le contact
+class ShopWithContact(ShopOut):
+    contact_phone: Optional[str] = None
