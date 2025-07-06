@@ -1,20 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Package, Pencil, Trash2 } from "lucide-react";
-// Il est possible que SearchBar n'existe plus, à vérifier.
-// import SearchBar from './SearchBar'; 
-import { Input } from '@/components/ui/input'; // On peut utiliser l'Input de shadcn
-import { Produit } from '@/types'; // <-- 1. ON IMPORTE LE BON TYPE
-
-// 2. ON SUPPRIME L'ANCIENNE INTERFACE LOCALE
-/*
-interface Produit {
-  id: string;
-  name: string;
-  // ...
-}
-*/
+import { Produit } from '@/types';
 
 interface ProduitsListProps {
   produits: Produit[];
@@ -32,10 +21,6 @@ const ProduitsList: React.FC<ProduitsListProps> = ({ produits = [], onEdit, onDe
     );
   }, [produits, searchTerm]);
 
-  if (!Array.isArray(produits)) {
-    return <div>Erreur de chargement des produits.</div>;
-  }
-
   return (
     <div className="produits-list mt-8">
       <div className="flex justify-between items-center mb-4">
@@ -44,32 +29,30 @@ const ProduitsList: React.FC<ProduitsListProps> = ({ produits = [], onEdit, onDe
           placeholder="Rechercher un produit..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
+          className="max-w-xs"
         />
       </div>
 
       {filteredProduits.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {filteredProduits.map((produit) => (
-            // --- 3. ON UTILISE _id PARTOUT ---
-            <Card key={produit._id} className="produit-card flex flex-col justify-between">
-              <div className="produit-image">
-                {produit.image_url ? (
-                  <img src={produit.image_url} alt={produit.name} className="aspect-video object-cover" />
-                ) : (
-                  <div className="placeholder-image h-32 bg-secondary flex items-center justify-center">
-                    <Package className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                )}
+            <Card key={produit._id} className="flex flex-col justify-between">
+              <div>
+                <div className="aspect-video bg-secondary flex items-center justify-center rounded-t-lg">
+                  {/* --- CORRECTION : On utilise le tableau 'images' --- */}
+                  {produit.images && produit.images.length > 0 ? (
+                    <img src={produit.images[0]} alt={produit.name} className="aspect-video object-cover w-full h-full rounded-t-lg" />
+                  ) : (
+                    <Package className="h-10 w-10 text-muted-foreground" />
+                  )}
+                </div>
+                <CardContent className="p-3">
+                  <h4 className="font-semibold truncate">{produit.name}</h4>
+                  <p className="text-primary font-bold text-lg">{produit.price.toLocaleString('fr-FR')} FCFA</p>
+                </CardContent>
               </div>
-
-              <CardContent className="produit-info p-3">
-                <h4 className="font-semibold truncate">{produit.name}</h4>
-                <p className="produit-prix text-lg font-bold">{produit.price.toLocaleString('fr-FR')} FCFA</p>
-              </CardContent>
-
-              <CardFooter className="produit-actions p-2 flex justify-end gap-2">
-                <Button type="button" variant="outline" size="icon" onClick={() => onEdit(produit)}>
+              <CardFooter className="p-2 flex justify-end gap-2 bg-slate-50 border-t">
+                <Button type="button" variant="ghost" size="icon" onClick={() => onEdit(produit)}>
                   <Pencil className="h-4 w-4" />
                 </Button>
                 <Button type="button" variant="destructive" size="icon" onClick={() => onDelete(produit._id)}>
@@ -81,7 +64,7 @@ const ProduitsList: React.FC<ProduitsListProps> = ({ produits = [], onEdit, onDe
         </div>
       ) : (
         <div className="text-center text-muted-foreground py-10 border-2 border-dashed rounded-lg">
-          <p>Aucun produit trouvé.</p>
+          <p>Aucun produit trouvé pour cette boutique ou ce filtre.</p>
         </div>
       )}
     </div>

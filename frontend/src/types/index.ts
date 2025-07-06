@@ -17,7 +17,7 @@ export interface Produit {
   name: string;
   description: string;
   price: number;
-  image_url: string;
+  images?: string[];
   shop_id: string;
   shopName?: string; // <-- Rendre optionnel
   shop?: {

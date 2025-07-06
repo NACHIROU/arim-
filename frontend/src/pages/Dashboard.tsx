@@ -6,29 +6,29 @@ import BoutiqueForm from '@/components/dashboard/BoutiqueForm';
 import BoutiquesList from '@/components/dashboard/BoutiquesList';
 import ProduitForm from '@/components/dashboard/ProduitForm';
 import ProduitsList from '@/components/dashboard/ProduitsList';
-import { Boutique, Produit } from '@/types'; // <-- On importe les types depuis le fichier central
+import { Boutique, Produit } from '@/types';
 import './Dashboard.css';
-
-// On ne définit plus les interfaces ici.
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'boutiques' | 'produits'>('boutiques');
+  
+  // --- États pour les boutiques ---
   const [boutiques, setBoutiques] = useState<Boutique[]>([]);
+  const [editingShop, setEditingShop] = useState<Boutique | null>(null);
+  const boutiqueFormRef = useRef<HTMLDivElement>(null);
+  
+  // --- États pour les produits ---
   const [produits, setProduits] = useState<Produit[]>([]);
   const [selectedShopId, setSelectedShopId] = useState<string>('');
-  const [editingProductId, setEditingProductId] = useState<string | null>(null);
-  const [editingShop, setEditingShop] = useState<Boutique | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Produit | null>(null);
+  const produitFormRef = useRef<HTMLDivElement>(null);
 
   const token = localStorage.getItem('token');
-  // Récupère les boutiques du marchand connecté
 
-  const boutiqueFormRef = useRef<HTMLDivElement>(null);
+  // --- LOGIQUE COMMUNE ---
   const fetchBoutiques = async () => {
-    if (!token) {
-      navigate('/login');
-      return;
-    }
+    if (!token) { navigate('/login'); return; }
     try {
       const response = await fetch("http://localhost:8000/shops/my-shops/", {
         headers: { Authorization: `Bearer ${token}` },
@@ -39,106 +39,88 @@ const Dashboard: React.FC = () => {
         localStorage.removeItem('token');
         navigate('/login');
       }
-    } catch (error) {
-      console.error("Erreur réseau (fetchBoutiques):", error);
-    }
+    } catch (error) { console.error("Erreur réseau (fetchBoutiques):", error); }
   };
 
   useEffect(() => {
     fetchBoutiques();
   }, []);
 
-  // --- Définition des Actions pour les Boutiques ---
-
-  const handlePublishToggle = async (id: string, publish: boolean) => {
-    const action = publish ? 'publier' : 'dépublier';
-    if (!window.confirm(`Êtes-vous sûr de vouloir ${action} cette boutique ?`)) return;
-    
-    const endpoint = publish ? `/shops/publish/${id}` : `/shops/unpublish/${id}`;
-    const response = await fetch(`http://localhost:8000${endpoint}`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (response.ok) fetchBoutiques();
-    else alert("Erreur lors de l'opération.");
-  };
-
-  const handleDeleteShop = async (id: string) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette boutique ?")) return;
-    
-    const response = await fetch(`http://localhost:8000/shops/delete-shop/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (response.ok) fetchBoutiques();
-    else alert("Erreur lors de la suppression.");
-  };
-
-
-
-  const handleEditShop = (id: string) => {
-    const shopToEdit = boutiques.find(b => b._id === id);
-    if (shopToEdit) {
-      setEditingShop(shopToEdit); // On mémorise la boutique
-      boutiqueFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); // On scrolle
-    }
-  };
-
-  const handleFormSuccess = () => {
-    setEditingShop(null); // On quitte le mode édition
-    fetchBoutiques();     // On rafraîchit la liste
-  };
-
-
-
-  // --- Fonctions de gestion pour les produits ---
-
-  const fetchProduitsByShop = async (shopId: string) => {
-    if (!shopId || !token) {
-      setProduits([]);
-      return;
-    }
-    const response = await fetch(`http://localhost:8000/shops/${shopId}/products/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if(response.ok) setProduits(await response.json());
-  };
-
-  useEffect(() => {
-    fetchProduitsByShop(selectedShopId);
-  }, [selectedShopId]);
-
-  const handleSubmitProduitSuccess = () => {
-    if (selectedShopId) fetchProduitsByShop(selectedShopId);
-  };
-
-  const handleEditProduit = (produit: Produit) => {
-    setEditingProductId(produit._id);
-  };
-
-  const handleCancelEdit = () => setEditingProductId(null);
-
-  const handleDeleteProduit = async (id: string) => {
-    if (!window.confirm("Voulez-vous vraiment supprimer ce produit ?")) return;
-    // La route de suppression doit être sécurisée côté backend !
-  const response = await fetch(`http://localhost:8000/products/products/${id}`, {
-        method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
-    });
-    if(response.ok) handleSubmitProduitSuccess();
-  };
-  
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
   };
 
-  const editingProduct = produits.find(p => p._id === editingProductId) || null;
+  // --- ACTIONS POUR LES BOUTIQUES ---
+  const handlePublishToggle = async (id: string, publish: boolean) => { /* ... */ };
+  const handleDeleteShop = async (id: string) => { /* ... */ };
+
+  const handleEditShop = (id: string) => {
+    const shopToEdit = boutiques.find(b => b._id === id);
+    if (shopToEdit) {
+      setEditingShop(shopToEdit);
+      boutiqueFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleBoutiqueFormSuccess = () => {
+    setEditingShop(null);
+    fetchBoutiques();
+  };
+
+  const handleCancelBoutiqueEdit = () => {
+    setEditingShop(null);
+  };
+
+  // --- ACTIONS POUR LES PRODUITS ---
+  const fetchProduitsByShop = async (shopId: string) => {
+    if (!shopId || !token) { setProduits([]); return; }
+    try {
+      const response = await fetch(`http://localhost:8000/shops/${shopId}/products/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProduits(response.ok ? await response.json() : []);
+    } catch (error) { console.error("Erreur chargement produits:", error); }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'produits' && boutiques.length > 0 && !selectedShopId) {
+        setSelectedShopId(boutiques[0]._id);
+    }
+    if (selectedShopId) fetchProduitsByShop(selectedShopId);
+  }, [selectedShopId, activeTab, boutiques]);
+
+  const handleProduitFormSuccess = () => {
+    setEditingProduct(null);
+    if (selectedShopId) fetchProduitsByShop(selectedShopId);
+  };
+
+  const handleEditProduit = (produit: Produit) => {
+    setEditingProduct(produit);
+    produitFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleCancelProduitEdit = () => {
+    setEditingProduct(null);
+  };
+
+  const handleDeleteProduit = async (id: string) => {
+    if (!window.confirm("Voulez-vous vraiment supprimer ce produit ?")) return;
+    const response = await fetch(`http://localhost:8000/products/${id}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
+    });
+    if (response.ok) {
+      alert("Produit supprimé.");
+      fetchProduitsByShop(selectedShopId);
+    } else {
+      alert("Erreur lors de la suppression du produit.");
+    }
+  };
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <h1>Dashboard Marchand</h1>
-        <p>Gérez vos boutiques et produits.</p>
+    <div className="container py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Dashboard Marchand</h1>
       </div>
 
       <DashboardTabs activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -149,8 +131,8 @@ const Dashboard: React.FC = () => {
             <BoutiqueForm 
               isEditing={!!editingShop}
               initialData={editingShop}
-              onSuccess={handleFormSuccess}
-              onCancelEdit={handleCancelEdit}
+              onSuccess={handleBoutiqueFormSuccess}
+              onCancelEdit={handleCancelBoutiqueEdit}
             />
           </div>
           <div className="mt-8">
@@ -164,22 +146,40 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
+
       {activeTab === 'produits' && (
-        <div className="tab-content">
-          <h2 className="text-2xl font-semibold mb-4">Mes Produits</h2>
-           <ProduitForm
-            boutiques={boutiques}
-            selectedShopId={selectedShopId}
-            setSelectedShopId={setSelectedShopId}
-            onSuccess={handleSubmitProduitSuccess}
-            editingProduct={editingProduct}
-            onCancelEdit={handleCancelEdit}
-          />
-          <ProduitsList
-            produits={produits}
-            onEdit={handleEditProduit}
-            onDelete={handleDeleteProduit}
-          />
+        <div className="mt-6">
+          <h2 className="text-2xl font-semibold mb-4">Gestion des Produits</h2>
+          <div>
+            <h3 className="text-lg font-medium mb-2">1. Choisissez une boutique</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-6">
+              {boutiques.map((boutique) => (
+                <Button key={boutique._id} variant={selectedShopId === boutique._id ? 'default' : 'outline'} onClick={() => setSelectedShopId(boutique._id)}>
+                  {boutique.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+          
+          {selectedShopId ? (
+            <div ref={produitFormRef}>
+              <h3 className="text-lg font-medium mb-2">{editingProduct ? '2. Modifier le produit' : '2. Ajouter un produit'}</h3>
+              <ProduitForm
+                selectedShopId={selectedShopId}
+                onSuccess={handleProduitFormSuccess}
+                editingProduct={editingProduct}
+                onCancelEdit={handleCancelProduitEdit}
+                boutiques={boutiques}
+              />
+              <ProduitsList
+                produits={produits}
+                onEdit={handleEditProduit}
+                onDelete={handleDeleteProduit}
+              />
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground mt-10">Veuillez sélectionner une boutique pour voir et gérer ses produits.</p>
+          )}
         </div>
       )}
     </div>

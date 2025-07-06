@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from "@/components/ProductCard";
 import { Loader2 } from 'lucide-react';
-import { Produit } from '@/types'; // --- CORRECTION : On importe le type central qui utilise _id
+import { Produit } from '@/types';
 
 const Products: React.FC = () => {
-    // L'interface locale est supprimée au profit de l'import central
     const [products, setProducts] = useState<Produit[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -12,6 +11,7 @@ const Products: React.FC = () => {
     useEffect(() => {
         const fetchAllProducts = async () => {
             try {
+                setLoading(true);
                 const response = await fetch("http://localhost:8000/products/public-products/");
                 if (!response.ok) {
                     throw new Error("Erreur lors de la récupération des produits.");
@@ -41,14 +41,15 @@ const Products: React.FC = () => {
             {products.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                     {products.map((product) => (
-                        // --- CORRECTION : On utilise ._id partout ---
                         <ProductCard 
                             key={product._id}
                             id={product._id}
                             name={product.name}
                             shopName={product.shop?.name || 'Boutique inconnue'}
                             price={product.price}
-                            imageUrl={product.image_url}
+                            // --- CORRECTION ICI ---
+                            // On prend la première image du tableau 'images'
+                            imageUrl={(product.images && product.images.length > 0) ? product.images[0] : ''}
                             shopId={product.shop?._id}
                             showShopLink
                         />

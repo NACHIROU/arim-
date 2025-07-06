@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 from bson import ObjectId
 
@@ -20,7 +20,7 @@ class ProductUpdate(BaseModel):
 class ProductOut(ProductBase):
     # On a un seul champ 'id' qui est un alias pour '_id'
     id: str = Field(..., alias="_id")
-    image_url: Optional[str] = ""
+    images: List[str] = Field(default=[])
     shop_id: str
 
     # Le validateur ne cible que les champs 'id' et 'shop_id'

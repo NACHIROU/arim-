@@ -20,7 +20,7 @@ async def create_product(
     description: str = Form(...),
     price: float = Form(...),
     shop_id: str = Form(...),
-    image: UploadFile = File(...),
+    images: List[UploadFile] = File(...),
     current_user: UserOut = Depends(get_current_merchant)
 ):
     # Vérification que le marchand est propriétaire de la boutique
@@ -33,7 +33,7 @@ async def create_product(
         raise HTTPException(status_code=400, detail="ID de la boutique invalide")
 
     # 1. On récupère la VRAIE URL de l'image depuis Cloudinary
-    image_urls = await upload_images_to_cloudinary([image])
+    image_urls = await upload_images_to_cloudinary(images)
     if not image_urls:
         raise HTTPException(status_code=500, detail="Échec du téléversement de l'image")
     
@@ -46,7 +46,7 @@ async def create_product(
         "description": description,
         "price": price,
         "shop_id": shop_object_id,
-        "image_url": final_image_url, # <-- On assigne ici la VRAIE URL
+        "images": image_urls, # <-- On assigne ici la VRAIE URL
     }
 
     # 3. On insère en base de données
@@ -63,7 +63,7 @@ async def update_product(
     name: str = Form(None),
     description: str = Form(None),
     price: float = Form(None),
-    image: UploadFile = File(None),
+    images: List[UploadFile] = File(...),
     current_user: UserOut = Depends(get_current_merchant),
 ):
     # La logique de cette fonction était déjà correcte et sécurisée.
@@ -84,9 +84,12 @@ async def update_product(
     if name is not None: update_data["name"] = name
     if description is not None: update_data["description"] = description
     if price is not None: update_data["price"] = price
-    if image:
-        image_urls = await upload_images_to_cloudinary([image])
-        if image_urls: update_data["image_url"] = image_urls[0]
+    if images:
+        image_urls = await upload_images_to_cloudinary(images)
+        if image_urls:
+            update_data["images"] = image_urls
+        else:
+            raise HTTPException(status_code=500, detail="Échec du téléversement de l'image")
 
     if not update_data:
         raise HTTPException(status_code=400, detail="Aucune donnée à mettre à jour")
@@ -123,10 +126,6 @@ async def delete_product(product_id: str, current_user: UserOut = Depends(get_cu
 
 @router.get("/public-products/", response_model=List[ProductWithShopInfo])
 async def get_public_products():
-    """
-    Récupère tous les produits appartenant à des boutiques publiées,
-    en y ajoutant les informations sur la boutique ET le vendeur.
-    """
     pipeline = [
         {"$lookup": {"from": "shops", "localField": "shop_id", "foreignField": "_id", "as": "shop_details"}},
         {"$unwind": "$shop_details"},
@@ -135,14 +134,15 @@ async def get_public_products():
         {"$unwind": {"path": "$owner_details", "preserveNullAndEmptyArrays": True}},
         {
             "$project": {
-                "_id": 1, "name": 1, "description": 1, "price": 1, "image_url": 1, "shop_id": 1,
+                "_id": 1, "name": 1, "description": 1, "price": 1,
+                "images": 1, # <-- On s'assure d'inclure le tableau d'images
+                "shop_id": 1,
                 "seller": {"$ifNull": ["$owner_details.first_name", "Vendeur inconnu"]},
-                "shop": {"_id": "$shop_details._id", "name": "$shop_details.name"}
+                "shop": {"_id": "$shop_details._id", "name": "$shop_details.name", "contact_phone": "$shop_details.contact_phone"}
             }
         },
         {"$limit": 50}
     ]
-    
     product_list = [ProductWithShopInfo.model_validate(p) async for p in products.aggregate(pipeline)]
     return product_list
 
@@ -159,37 +159,27 @@ async def get_public_product_by_id(product_id: str):
     except Exception:
         raise HTTPException(status_code=400, detail="ID du produit invalide")
 
-    # On utilise une agrégation pour récupérer toutes les infos d'un coup
     pipeline = [
-        {"$match": {"_id": object_id}},
+        {"$match": {"_id": ObjectId(product_id)}},
         {"$lookup": {"from": "shops", "localField": "shop_id", "foreignField": "_id", "as": "shop_details"}},
         {"$unwind": "$shop_details"},
         {"$match": {"shop_details.is_published": True}},
         {"$lookup": {"from": "users", "localField": "shop_details.owner_id", "foreignField": "_id", "as": "owner_details"}},
-        {"$unwind": {"path": "$owner_details", "preserveNullAndEmptyArrays": True}}
+        {"$unwind": {"path": "$owner_details", "preserveNullAndEmptyArrays": True}},
+        {
+            "$project": {
+                "_id": 1, "name": 1, "description": 1, "price": 1,
+                "images": 1, # <-- On s'assure d'inclure le tableau d'images
+                "shop_id": 1,
+                "seller": {"$ifNull": ["$owner_details.first_name", "Vendeur inconnu"]},
+                "shop": {"_id": "$shop_details._id", "name": "$shop_details.name", "contact_phone": "$shop_details.contact_phone"}
+            }
+        }
     ]
     
     result_list = await products.aggregate(pipeline).to_list(length=1)
     if not result_list:
         raise HTTPException(status_code=404, detail="Produit non trouvé ou non publié")
-    
-    # On met en forme le résultat pour qu'il corresponde au schéma
-    p = result_list[0]
-    shop_data = p.get("shop_details", {})
-    owner_data = p.get("owner_details", {})
-    
-    product_info = {
-        "id": p.get("_id"),
-        "name": p.get("name"),
-        "description": p.get("description"),
-        "price": p.get("price"),
-        "image_url": p.get("image_url"),
-        "shop_id": p.get("shop_id"),
-        "seller": owner_data.get("first_name", "Vendeur inconnu"), 
-        "shop": {
-            "id": shop_data.get("_id"),
-            "name": shop_data.get("name"),
-            "contact_phone": shop_data.get("contact_phone") # <-- On ajoute le numéro de contact de la boutique
-        }
-    }
-    return ProductWithShopInfo.model_validate(product_info)
+        
+    return result_list[0]
+

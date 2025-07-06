@@ -72,6 +72,7 @@ const Index: React.FC = () => {
 
   // useEffect qui déclenche la recherche lorsque les filtres changent
   useEffect(() => {
+    // 1. On vérifie d'abord si une recherche doit être lancée
     const shouldSearch = filters && (
       filters.searchTerm.trim().length >= 2 ||
       filters.category !== 'Tous' ||
@@ -84,18 +85,49 @@ const Index: React.FC = () => {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => performSearch(filters, position.coords),
-      () => {
-        console.warn("Géolocalisation refusée. Recherche sans proximité.");
-        performSearch(filters);
+    // 2. On définit une fonction asynchrone pour gérer tout le processus
+    const executeSearch = async () => {
+      setIsSearching(true); // On active le chargement
+
+      const params = new URLSearchParams();
+      if (filters.searchTerm) params.append('q', filters.searchTerm);
+      if (filters.category !== 'Tous') params.append('category', filters.category);
+      if (filters.priceRange !== 'Tous les prix') params.append('priceRange', filters.priceRange);
+      if (filters.location !== 'Toutes les villes') params.append('location', filters.location);
+      
+      // On essaie d'obtenir la position GPS
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+        });
+        params.append('lat', String(position.coords.latitude));
+        params.append('lon', String(position.coords.longitude));
+      } catch (geoError) {
+        console.warn("Géolocalisation refusée ou impossible. Recherche sans proximité.");
       }
-    );
-  }, [filters, performSearch]);
+
+      // On lance la recherche (avec ou sans coordonnées)
+      try {
+        const response = await fetch(`http://localhost:8000/search/?${params.toString()}`);
+        if (!response.ok) throw new Error("Erreur de l'API");
+        const data = await response.json();
+        setSearchResults(data);
+      } catch (searchError) {
+        console.error("Erreur de recherche:", searchError);
+      } finally {
+        setIsSearching(false); // On arrête le chargement à la fin
+      }
+    };
+
+    executeSearch();
+
+  }, [filters]); // Le déclencheur est toujours le changement des filtres
 
   if (loadingInitial) return <div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin" /></div>;
   if (error) return <div className="container py-24 text-center text-red-500">Erreur : {error}</div>;
-
+  if (shops.length === 0 && products.length === 0) {
+    return <div className="container py-24 text-center">Aucune boutique ou produit disponible pour le moment.</div>;
+  }
   return (
     <>
       <section 
@@ -141,7 +173,7 @@ const Index: React.FC = () => {
               <ProductCard
                 key={product._id}
                 id={product._id}
-                imageUrl={product.image_url}
+                imageUrl={product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/300?text=Image+Produit'}
                 name={product.name}
                 price={product.price}
                 shopId={product.shop_id}

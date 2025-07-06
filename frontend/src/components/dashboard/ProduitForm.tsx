@@ -2,27 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Pencil } from "lucide-react";
-
-// --- CORRECTION 1 : L'interface doit correspondre à la donnée réelle ---
-interface Boutique {
-  _id: string; // On utilise _id
-  name: string;
-}
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Pencil, Loader2 } from "lucide-react";
+import { Boutique, Produit } from '@/types';
 
 interface ProduitFormProps {
   boutiques: Boutique[];
   selectedShopId: string;
-  setSelectedShopId: (id: string) => void;
   onSuccess: () => void;
-  editingProduct: any | null;
+  editingProduct: Produit | null;
   onCancelEdit: () => void;
 }
 
 const ProduitForm: React.FC<ProduitFormProps> = ({
   boutiques,
   selectedShopId,
-  setSelectedShopId,
   onSuccess,
   editingProduct,
   onCancelEdit,
@@ -30,135 +25,133 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const token = localStorage.getItem('token');
+  const isEditing = !!editingProduct;
 
   useEffect(() => {
-    if (editingProduct) {
-      setName(editingProduct.name);
+    if (isEditing && editingProduct) {
+      setName(editingProduct.name || '');
       setDescription(editingProduct.description || '');
-      setPrice(String(editingProduct.price));
-      setSelectedShopId(editingProduct.shop_id);
+      setPrice(String(editingProduct.price || 0));
     } else {
       setName('');
       setDescription('');
       setPrice('');
-      setImageFile(null);
     }
-  }, [editingProduct, setSelectedShopId]);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
-    }
-  };
+    setImageFiles([]); // Toujours réinitialiser les fichiers sélectionnés
+  }, [isEditing, editingProduct]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!selectedShopId) {
+    if (!selectedShopId && !isEditing) {
       alert('Veuillez d\'abord sélectionner une boutique.');
       return;
     }
-
-    if (!imageFile && !editingProduct) {
-      alert('Veuillez sélectionner une image pour le nouveau produit.');
+    if (!isEditing && imageFiles.length === 0) {
+      alert('Veuillez sélectionner au moins une image pour le nouveau produit.');
       return;
     }
 
+    setIsSubmitting(true);
     const formData = new FormData();
+    
     formData.append('name', name);
     formData.append('description', description);
     formData.append('price', price);
-    formData.append('shop_id', selectedShopId);
-    if (imageFile) {
-        formData.append('image', imageFile);
+    
+    if (!isEditing) {
+      formData.append('shop_id', selectedShopId);
+    }
+    if (imageFiles.length > 0) {
+      imageFiles.forEach(file => formData.append('images', file)); // Note: le backend attend 'images'
     }
 
-    const token = localStorage.getItem('token');
-    const endpoint = editingProduct
-      ? `http://localhost:8000/products/update-products/${editingProduct._id}`
+    const endpoint = isEditing
+      ? `http://localhost:8000/products/update-products/${editingProduct?._id}`
       : 'http://localhost:8000/products/create-products/';
-    const method = editingProduct ? 'PUT' : 'POST';
+    const method = isEditing ? 'PUT' : 'POST';
 
     try {
       const response = await fetch(endpoint, {
         method: method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error(errorData);
-        alert(errorData.detail || 'Erreur lors de la soumission du produit');
-        return;
+        throw new Error(`Erreur: ${await response.text()}`);
       }
       
-      alert(editingProduct ? 'Produit modifié avec succès' : 'Produit créé avec succès');
+      alert(`Produit ${isEditing ? 'modifié' : 'créé'} avec succès !`);
       onSuccess();
-      onCancelEdit();
     } catch (error) {
-      console.error('Erreur réseau ou serveur', error);
-      alert('Erreur réseau ou serveur');
+      console.error('Erreur formulaire produit:', error);
+      alert("Une erreur est survenue.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Card className="form-card produit-form-card">
+    <Card className="produit-form-card">
       <CardHeader>
-        <CardTitle>{editingProduct ? 'Modifier le produit' : 'Ajouter un produit'}</CardTitle>
-        <CardDescription>
-          {editingProduct ? 'Mettez à jour les informations du produit.' : 'Ajoutez un nouveau produit à votre boutique'}
-        </CardDescription>
+        <CardTitle>{isEditing ? 'Modifier le produit' : 'Ajouter un nouveau produit'}</CardTitle>
+        <CardDescription>{isEditing ? `Vous modifiez : "${editingProduct?.name}"` : 'Remplissez les informations ci-dessous.'}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="produit-form">
-          <div className="form-group">
-            <label>Boutique sélectionnée</label>
-            <select 
-              value={selectedShopId} 
-              onChange={(e) => setSelectedShopId(e.target.value)} 
-              required
-              className="w-full p-2 border rounded-md"
-            >
-              <option value="" disabled>Choisissez une boutique</option>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Le sélecteur de boutique est désactivé en mode édition car un produit ne change pas de boutique */}
+          <Select value={selectedShopId} required disabled={isEditing}>
+            <SelectTrigger><SelectValue placeholder="Boutique sélectionnée" /></SelectTrigger>
+            <SelectContent>
               {boutiques.map((boutique) => (
-                <option key={boutique._id} value={boutique._id}>
-                  {boutique.name}
-                </option>
+                <SelectItem key={boutique._id} value={boutique._id}>{boutique.name}</SelectItem>
               ))}
-            </select>
+            </SelectContent>
+          </Select>
+
+          <Input placeholder="Nom du produit" value={name} onChange={e => setName(e.target.value)} required />
+          <Textarea placeholder="Description du produit" value={description} onChange={e => setDescription(e.target.value)} />
+          <Input type="number" placeholder="Prix (FCFA)" value={price} onChange={e => setPrice(e.target.value)} required />
+          
+          <div>
+            <label htmlFor="product-images" className="text-sm font-medium">Images du produit</label>
+            <Input id="product-images" type="file" multiple onChange={e => setImageFiles(Array.from(e.target.files || []))} />
+            <p className="text-xs text-muted-foreground mt-1">{isEditing ? "Laissez vide pour ne pas changer les images." : "Sélectionnez une ou plusieurs images."}</p>
           </div>
 
-          <div className="form-group">
-            <label>Nom du produit</label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label>Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full p-2 border rounded-md" />
-          </div>
-          <div className="form-group">
-            <label>Prix (FCFA)</label>
-            <Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required />
-          </div>
-
-          <div className="form-group">
-            <label>Image du produit</label>
-            <Input type="file" accept="image/*" onChange={handleImageUpload} required={!editingProduct} />
-             {editingProduct?.image_url && <img src={editingProduct.image_url} alt="Aperçu" className="w-20 h-20 object-cover mt-2 rounded-md" />}
-          </div>
-
-          <div className="form-actions">
-            <Button type="submit">
-              {editingProduct ? <Pencil className="button-icon" /> : <Plus className="button-icon" />}
-              {editingProduct ? 'Enregistrer les modifications' : 'Ajouter le produit'}
-            </Button>
-            {editingProduct && (
-              <Button type="button" variant="ghost" onClick={onCancelEdit}>Annuler</Button>
+          {/* Section d'aperçu des images */}
+          <div>
+            {isEditing && editingProduct?.images && editingProduct.images.length > 0 && (
+              <div className="mt-2">
+                <p className="text-sm font-medium mb-2">Images actuelles :</p>
+                <div className="flex flex-wrap gap-2">
+                  {editingProduct.images.map((url, index) => (
+                    <img key={index} src={url} alt={`Image actuelle ${index + 1}`} className="h-20 w-20 object-cover rounded-md border" />
+                  ))}
+                </div>
+              </div>
             )}
+            {imageFiles.length > 0 && (
+              <div className="mt-2">
+                <p className="text-sm font-medium mb-2">Nouvelles images :</p>
+                <div className="flex flex-wrap gap-2">
+                  {imageFiles.map((file, index) => (
+                    <img key={index} src={URL.createObjectURL(file)} alt={`Aperçu ${index + 1}`} className="h-20 w-20 object-cover rounded-md border" />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            {isEditing && (<Button type="button" variant="ghost" onClick={onCancelEdit}>Annuler</Button>)}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isEditing ? 'Mettre à jour' : 'Ajouter le produit'}
+            </Button>
           </div>
         </form>
       </CardContent>

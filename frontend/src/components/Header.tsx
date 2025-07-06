@@ -75,10 +75,7 @@ const Header = () => {
 
         {/* Boutons de droite */}
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
-            <ShoppingCart className="h-5 w-5" />
-            <span className="sr-only">Panier</span>
-          </Button>
+
 
           {/* Si non connecté */}
           {!isLoggedIn && (
