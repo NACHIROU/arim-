@@ -152,7 +152,7 @@ async def get_public_products():
 async def get_public_product_by_id(product_id: str):
     """
     Récupère un seul produit par son ID, uniquement si sa boutique est publiée.
-    Enrichit la réponse avec les informations du vendeur et de la boutique.
+    Enrichit la réponse avec les informations complètes du vendeur et de la boutique.
     """
     try:
         object_id = ObjectId(product_id)
@@ -161,17 +161,10 @@ async def get_public_product_by_id(product_id: str):
 
     # On utilise une agrégation pour récupérer toutes les infos d'un coup
     pipeline = [
-        # Étape 1 : Trouver le produit par son ID
         {"$match": {"_id": object_id}},
-        
-        # Étape 2 : Joindre les informations de la boutique
         {"$lookup": {"from": "shops", "localField": "shop_id", "foreignField": "_id", "as": "shop_details"}},
         {"$unwind": "$shop_details"},
-        
-        # Étape 3 : S'assurer que la boutique est bien publiée
         {"$match": {"shop_details.is_published": True}},
-        
-        # Étape 4 : Joindre les informations du vendeur
         {"$lookup": {"from": "users", "localField": "shop_details.owner_id", "foreignField": "_id", "as": "owner_details"}},
         {"$unwind": {"path": "$owner_details", "preserveNullAndEmptyArrays": True}}
     ]
@@ -186,16 +179,17 @@ async def get_public_product_by_id(product_id: str):
     owner_data = p.get("owner_details", {})
     
     product_info = {
-        "id": str(p.get("_id")),
+        "id": p.get("_id"),
         "name": p.get("name"),
         "description": p.get("description"),
         "price": p.get("price"),
         "image_url": p.get("image_url"),
-        "shop_id": str(p.get("shop_id")),
+        "shop_id": p.get("shop_id"),
         "seller": owner_data.get("first_name", "Vendeur inconnu"), 
         "shop": {
-            "_id": str(shop_data.get("_id")),
-            "name": shop_data.get("name")
+            "id": shop_data.get("_id"),
+            "name": shop_data.get("name"),
+            "contact_phone": shop_data.get("contact_phone") # <-- On ajoute le numéro de contact de la boutique
         }
     }
     return ProductWithShopInfo.model_validate(product_info)

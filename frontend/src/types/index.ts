@@ -12,6 +12,7 @@ export interface Boutique {
 }
 
 export interface Produit {
+  [x: string]: any;
   _id: string;
   name: string;
   description: string;
@@ -19,7 +20,8 @@ export interface Produit {
   image_url: string;
   shop_id: string;
   shopName?: string; // <-- Rendre optionnel
-  shop?: {         // <-- Rendre optionnel
+  shop?: {
+    contact_phone: any;         // <-- Rendre optionnel
     _id: string;
     name: string;
   };

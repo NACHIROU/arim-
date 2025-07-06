@@ -97,45 +97,63 @@ async def unified_search(
         else:
             return []
     # --- Cas 2: Recherche standard ---
+
     else:
-        shop_filter = {"is_published": True}
-        product_filter = {}
-        
-        if category and category != "Tous": shop_filter["category"] = category
-        if location and location != "Toutes les villes":
-            shop_filter["location"] = {"$regex": location, "$options": "i"}
+        # 1. Filtre principal pour les boutiques
+        shop_match_filter = {"is_published": True}
+        if category and category != "Tous": shop_match_filter["category"] = category
+        if location and location != "Toutes les villes": shop_match_filter["location"] = {"$regex": location, "$options": "i"}
+        if q: shop_match_filter["name"] = {"$regex": q, "$options": "i"}
 
-        if q:
-            shop_filter["name"] = {"$regex": q, "$options": "i"}
-            product_filter["name"] = {"$regex": q, "$options": "i"}
+        # 2. Filtre pour les produits à l'intérieur du $lookup
+        product_match_stage = {}
+        if q: product_match_stage["name"] = {"$regex": q, "$options": "i"}
+        if price_filter: product_match_stage.update(price_filter)
         
-        if price_filter:
-            product_filter.update(price_filter)
-        
-        found_shops_task = shops.find(shop_filter).limit(5).to_list(length=None)
-        
-        shop_ids_for_products_query = {"is_published": True}
-        if category and category != "Tous":
-            shop_ids_for_products_query["category"] = category
-        if location and location != "Toutes les villes":
-            shop_ids_for_products_query["location"] = {"$regex": location, "$options": "i"}
+        product_lookup_pipeline = [{"$limit": 10}]
+        if product_match_stage:
+            product_lookup_pipeline.insert(0, {"$match": product_match_stage})
 
-        shop_ids = [s["_id"] for s in await shops.find(shop_ids_for_products_query, {"_id": 1}).to_list(length=None)]
+        # 3. Pipeline d'agrégation
+        pipeline = [
+            {"$match": shop_match_filter},
+            {"$limit": 10},
+            {"$lookup": {
+                "from": "products", "localField": "_id", "foreignField": "shop_id",
+                "pipeline": product_lookup_pipeline, "as": "found_products"
+            }},
+            # On garde la boutique si son nom a matché OU si elle contient des produits qui ont matché
+            {"$match": {
+                "$or": [
+                    {"name": {"$regex": q, "$options": "i"}} if q else {},
+                    {"found_products": {"$ne": []}}
+                ]
+            }}
+        ]
         
-        if shop_ids:
-            product_filter["shop_id"] = {"$in": shop_ids}
-        else:
-            # If no shops match the location/category, no products will match either.
-            return []
+        aggregated_results = await shops.aggregate(pipeline).to_list(length=None)
+        
+        # 4. Formatage des résultats (logique de priorité aux produits)
+        product_results = []
+        shop_results = []
+        added_product_ids = set()
 
-        found_products_task = products.find(product_filter).limit(5).to_list(length=None) if q or price_filter else asyncio.sleep(0, [])
-            
-        found_shops, found_products = await asyncio.gather(found_shops_task, found_products_task)
-        
-        results = []
-        for shop in found_shops: results.append({"type": "shop", "data": {"id": str(shop["_id"]), "name": shop["name"], "description": shop.get("description", ""), "images": shop.get("images", [])}})
-        for product in found_products:
-            shop_info = await shops.find_one({"_id": product.get("shop_id")})
-            results.append({"type": "product", "data": {"id": str(product["_id"]), "name": product["name"], "image_url": product.get("image_url", ""), "shop_id": str(product.get("shop_id")), "shop_name": shop_info["name"] if shop_info else "Inconnu"}})
-        
-        return results
+        for shop_item in aggregated_results:
+            if q and q.lower() in shop_item["name"].lower():
+                shop_results.append({"type": "shop", "data": {"id": str(shop_item["_id"]), "name": shop_item["name"]}})
+
+            for product in shop_item.get("found_products", []):
+                prod_id = str(product["_id"])
+                if prod_id not in added_product_ids:
+                    product_results.append({
+                        "type": "product",
+                        "data": {
+                            "id": prod_id, "name": product["name"],
+                            "image_url": product.get("image_url", ""),
+                            "shop_id": str(shop_item["_id"]),
+                            "shop_name": shop_item["name"]
+                        }
+                    })
+                    added_product_ids.add(prod_id)
+
+        return product_results if product_results else shop_results

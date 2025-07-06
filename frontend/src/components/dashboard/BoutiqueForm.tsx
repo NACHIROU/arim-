@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Boutique } from '@/types';
-import { Loader2 } from 'lucide-react';
+import { Loader2, LocateFixed } from 'lucide-react'; // On ajoute l'icône de localisation
 
 interface BoutiqueFormProps {
   onSuccess: () => void;
@@ -15,10 +15,7 @@ interface BoutiqueFormProps {
 }
 
 const BoutiqueForm: React.FC<BoutiqueFormProps> = ({ 
-  onSuccess, 
-  isEditing = false, 
-  initialData = null,
-  onCancelEdit 
+  onSuccess, isEditing = false, initialData = null, onCancelEdit 
 }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -26,6 +23,7 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
   const [category, setCategory] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeocoding, setIsGeocoding] = useState(false); // État pour le chargement de la géoloc
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -39,6 +37,33 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
     }
     setImages([]); // On réinitialise toujours la sélection de fichiers
   }, [isEditing, initialData]);
+
+
+
+    const handleGeolocate = () => {
+    setIsGeocoding(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const response = await fetch(`http://localhost:8000/shops/reverse-geocode/?lat=${latitude}&lon=${longitude}`);
+          if (!response.ok) throw new Error("Impossible de trouver l'adresse.");
+          const data = await response.json();
+          setLocation(data.address); // On met à jour le champ de localisation
+        } catch (error) {
+          alert("Erreur lors de la récupération de l'adresse.");
+        } finally {
+          setIsGeocoding(false);
+        }
+      },
+      () => {
+        alert("Impossible d'accéder à votre position. Veuillez vérifier les autorisations de votre navigateur.");
+        setIsGeocoding(false);
+      }
+    );
+  };
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,6 +126,17 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
           <Input placeholder="Nom de la boutique" value={name} onChange={e => setName(e.target.value)} required />
           <Textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} />
           <Input placeholder="Localisation" value={location} onChange={e => setLocation(e.target.value)} required />
+
+          <div>
+          <label htmlFor="location" className="text-sm font-medium">Localisation</label>
+            <div className="flex items-center gap-2">
+              <Input id="location" placeholder="Entrez une adresse ou utilisez le GPS" value={location} onChange={e => setLocation(e.target.value)} required />
+              <Button type="button" variant="outline" size="icon" onClick={handleGeolocate} disabled={isGeocoding}>
+                {isGeocoding ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+          
           <Select value={category} onValueChange={setCategory} required>
             <SelectTrigger><SelectValue placeholder="Choisissez une catégorie" /></SelectTrigger>
             <SelectContent>

@@ -40,6 +40,7 @@ class ProductOut(ProductBase):
 class ShopInfo(BaseModel):
     _id: str
     name: str
+    contact_phone: Optional[str] = None 
 
 class ProductWithShopInfo(ProductOut):
     seller: Optional[str] = None

@@ -59,6 +59,8 @@ async def create_shop(
         raise HTTPException(status_code=500, detail="Erreur : création de la boutique échouée.")
         
     return ShopOut(**created_shop_from_db)
+
+
 @router.get("/my-shops/", response_model=List[ShopOut])
 async def get_my_shops(current_user: UserOut = Depends(get_current_merchant)):
     cursor = shops.find({"owner_id": ObjectId(current_user.id)})
@@ -150,6 +152,33 @@ async def unpublish_shop(shop_id: str, current_user: UserOut = Depends(get_curre
         raise HTTPException(status_code=403, detail="Accès refusé ou boutique non trouvée")
     await shops.update_one({"_id": ObjectId(shop_id)}, {"$set": {"is_published": False}})
     return {"message": "Boutique dépubliée avec succès"}
+
+
+
+@router.get("/reverse-geocode/")
+async def reverse_geocode_location(lat: float, lon: float):
+    """
+    Prend des coordonnées GPS et renvoie une adresse textuelle.
+    """
+    address = "Adresse non trouvée"
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/reverse",
+                params={"lat": lat, "lon": lon, "format": "json"},
+                headers={"User-Agent": "AriminApp/1.0"}
+            )
+            response.raise_for_status()
+            data = response.json()
+            # On utilise le champ 'display_name' qui est l'adresse complète
+            if "display_name" in data:
+                address = data["display_name"]
+        except Exception as e:
+            print(f"Erreur de géocodage inversé: {e}")
+            raise HTTPException(status_code=500, detail="Le service de géolocalisation a échoué.")
+    
+    return {"address": address}
+
 
 # ===============================================================
 # == Routes Publiques (pour les visiteurs du site)
