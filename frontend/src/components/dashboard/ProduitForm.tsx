@@ -102,15 +102,6 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Le sélecteur de boutique est désactivé en mode édition car un produit ne change pas de boutique */}
-          <Select value={selectedShopId} required disabled={isEditing}>
-            <SelectTrigger><SelectValue placeholder="Boutique sélectionnée" /></SelectTrigger>
-            <SelectContent>
-              {boutiques.map((boutique) => (
-                <SelectItem key={boutique._id} value={boutique._id}>{boutique.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
 
           <Input placeholder="Nom du produit" value={name} onChange={e => setName(e.target.value)} required />
           <Textarea placeholder="Description du produit" value={description} onChange={e => setDescription(e.target.value)} />
@@ -145,6 +136,15 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
               </div>
             )}
           </div>
+
+          <Select value={selectedShopId} required disabled={isEditing}>
+            <SelectTrigger><SelectValue placeholder="Boutique sélectionnée" /></SelectTrigger>
+            <SelectContent>
+              {boutiques.map((boutique) => (
+                <SelectItem key={boutique._id} value={boutique._id}>{boutique.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <div className="flex gap-2 justify-end">
             {isEditing && (<Button type="button" variant="ghost" onClick={onCancelEdit}>Annuler</Button>)}
