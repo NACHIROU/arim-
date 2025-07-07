@@ -26,3 +26,15 @@ export interface Produit {
     name: string;
   };
 }
+
+export interface User {
+  id: string; // ou _id selon ce que votre API renvoie pour /users/me
+  _id: string;
+  first_name: string;
+  email: string;
+  phone?: string;
+  location?: string;
+  role: 'client' | 'merchant';
+}
+
+
