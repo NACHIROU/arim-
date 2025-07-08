@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PublicBoutiqueCard from '@/components/PublicBoutiqueCard';
 import ProductCard from "@/components/ProductCard";
@@ -19,10 +19,11 @@ const Index: React.FC = () => {
   const [filters, setFilters] = useState<FiltersState | null>(null);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
   // Logique pour fermer le dropdown
   const closeDropdown = () => {
-    setSearchResults([]);
+    setIsDropdownVisible(false);
   };
   const searchContainerRef = useClickOutside(closeDropdown);
 
@@ -49,30 +50,8 @@ const Index: React.FC = () => {
     fetchInitialData();
   }, []);
 
-  // Fonction de recherche mise en cache avec useCallback
-  const performSearch = useCallback((currentFilters: FiltersState, coords?: GeolocationCoordinates) => {
-    setIsSearching(true);
-    const params = new URLSearchParams();
-
-    if (currentFilters.searchTerm) params.append('q', currentFilters.searchTerm);
-    if (currentFilters.category !== 'Tous') params.append('category', currentFilters.category);
-    if (currentFilters.priceRange !== 'Tous les prix') params.append('priceRange', currentFilters.priceRange);
-    if (currentFilters.location !== 'Toutes les villes') params.append('location', currentFilters.location);
-    if (coords) {
-      params.append('lat', String(coords.latitude));
-      params.append('lon', String(coords.longitude));
-    }
-
-    fetch(`http://localhost:8000/search/?${params.toString()}`)
-      .then(res => res.json())
-      .then(data => setSearchResults(data))
-      .catch(err => console.error("Erreur de recherche:", err))
-      .finally(() => setIsSearching(false));
-  }, []);
-
   // useEffect qui déclenche la recherche lorsque les filtres changent
   useEffect(() => {
-    // 1. On vérifie d'abord si une recherche doit être lancée
     const shouldSearch = filters && (
       filters.searchTerm.trim().length >= 2 ||
       filters.category !== 'Tous' ||
@@ -81,13 +60,13 @@ const Index: React.FC = () => {
     );
 
     if (!shouldSearch) {
-      setSearchResults([]);
+      setIsDropdownVisible(false);
       return;
     }
 
-    // 2. On définit une fonction asynchrone pour gérer tout le processus
     const executeSearch = async () => {
-      setIsSearching(true); // On active le chargement
+      setIsDropdownVisible(true);
+      setIsSearching(true);
 
       const params = new URLSearchParams();
       if (filters.searchTerm) params.append('q', filters.searchTerm);
@@ -95,7 +74,6 @@ const Index: React.FC = () => {
       if (filters.priceRange !== 'Tous les prix') params.append('priceRange', filters.priceRange);
       if (filters.location !== 'Toutes les villes') params.append('location', filters.location);
       
-      // On essaie d'obtenir la position GPS
       try {
         const position = await new Promise<GeolocationPosition>((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
@@ -106,28 +84,26 @@ const Index: React.FC = () => {
         console.warn("Géolocalisation refusée ou impossible. Recherche sans proximité.");
       }
 
-      // On lance la recherche (avec ou sans coordonnées)
       try {
         const response = await fetch(`http://localhost:8000/search/?${params.toString()}`);
-        if (!response.ok) throw new Error("Erreur de l'API");
+        if (!response.ok) throw new Error("Erreur de l'API de recherche");
         const data = await response.json();
         setSearchResults(data);
       } catch (searchError) {
         console.error("Erreur de recherche:", searchError);
+        setSearchResults([]);
       } finally {
-        setIsSearching(false); // On arrête le chargement à la fin
+        setIsSearching(false);
       }
     };
 
     executeSearch();
 
-  }, [filters]); // Le déclencheur est toujours le changement des filtres
+  }, [filters]);
 
   if (loadingInitial) return <div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin" /></div>;
   if (error) return <div className="container py-24 text-center text-red-500">Erreur : {error}</div>;
-  if (shops.length === 0 && products.length === 0) {
-    return <div className="container py-24 text-center">Aucune boutique ou produit disponible pour le moment.</div>;
-  }
+  
   return (
     <>
       <section 
@@ -140,7 +116,7 @@ const Index: React.FC = () => {
           <p className="max-w-2xl mx-auto text-lg text-slate-200 mb-8">Découvrez et soutenez les commerçants près de chez vous.</p>
           <div className="max-w-4xl mx-auto relative" ref={searchContainerRef}>
             <SearchFilters onFiltersChange={setFilters} />
-            {(isSearching || searchResults.length > 0) && (
+            {isDropdownVisible && (
               <SearchResultsDropdown
                 results={searchResults}
                 isLoading={isSearching}
@@ -173,7 +149,7 @@ const Index: React.FC = () => {
               <ProductCard
                 key={product._id}
                 id={product._id}
-                imageUrl={product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/300?text=Image+Produit'}
+                imageUrl={(product.images && product.images.length > 0) ? product.images[0] : ''}
                 name={product.name}
                 price={product.price}
                 shopId={product.shop_id}

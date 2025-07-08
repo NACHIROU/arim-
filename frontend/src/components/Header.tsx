@@ -66,7 +66,7 @@ const Header: React.FC = () => {
               <div className="absolute -inset-1 bg-primary/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
             <span className="font-bold text-xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Arimin
+              Ahimin
             </span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm">
@@ -189,7 +189,7 @@ const Header: React.FC = () => {
                   <div className="flex items-center gap-3 pb-4 border-b">
                     <Store className="h-6 w-6 text-primary" />
                     <span className="font-bold text-lg bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                      Arimin
+                      Ahimin
                     </span>
                   </div>
                   

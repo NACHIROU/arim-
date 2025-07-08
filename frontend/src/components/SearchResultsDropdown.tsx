@@ -34,9 +34,12 @@ const SearchResultsDropdown: React.FC<SearchResultsDropdownProps> = ({ results, 
   }
 
   if (!results || results.length === 0) {
-    return null;
+    return (
+      <div className="search-results-dropdown">
+        <p className="p-4 text-center text-muted-foreground">Aucun résultat trouvé.</p>
+      </div>
+    );
   }
-
   return (
     <div className="search-results-dropdown">
       {results.map(item => {

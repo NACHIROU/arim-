@@ -120,7 +120,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="container py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Dashboard Marchand</h1>
+        <h1 className="text-3xl font-bold">Gérez vos boutiques et vos produits</h1>
       </div>
 
       <DashboardTabs activeTab={activeTab} setActiveTab={setActiveTab} />

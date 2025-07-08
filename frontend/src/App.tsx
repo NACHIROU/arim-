@@ -19,11 +19,10 @@ import ProfilePage from "./pages/ProfilePage";
 // Import des composants de structure
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import ProtectedRoute from "./components/ProtectedRoute"; // <-- On importe le gardien
+import ProtectedRoute from "./components/ProtectedRoute"; // On importe le gardien
 
 const queryClient = new QueryClient();
 
-// Le Layout reste le même
 const Layout = () => {
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -43,30 +42,26 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* --- Routes Publiques (accessibles par tous) --- */}
+          {/* --- ROUTES PUBLIQUES (Seulement l'accueil et l'authentification) --- */}
           <Route element={<Layout />}>
             <Route path="/" element={<Index />} />
-            <Route path="/shops" element={<Shops />} />
-            <Route path="/shops/:shopId" element={<ShopDetail />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/products/:productId" element={<ProductDetail />} />
           </Route>
-
-          {/* --- Routes d'Authentification (sans le layout standard) --- */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="*" element={<NotFound />} />
 
-          {/* --- Routes Protégées (uniquement pour les utilisateurs connectés) --- */}
+          {/* --- ROUTES PROTÉGÉES (Toutes les autres pages) --- */}
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
+              <Route path="/shops" element={<Shops />} />
+              <Route path="/shops/:shopId" element={<ShopDetail />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/products/:productId" element={<ProductDetail />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/profil" element={<ProfilePage />} />
-              {/* Ajoutez ici d'autres futures pages protégées */}
             </Route>
           </Route>
 
-          {/* --- Route pour les pages non trouvées --- */}
-          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

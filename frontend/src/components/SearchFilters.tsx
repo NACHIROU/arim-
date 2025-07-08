@@ -56,21 +56,21 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onFiltersChange }) => {
         <div className="filters-panel">
           <div className="filters-grid">
             <div className="filter-group">
-              <label className="text-sm font-medium">Catégorie</label>
+              <label className="text-black font-medium">Catégorie</label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{categories.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="filter-group">
-              <label className="text-sm font-medium">Gamme de prix (FCFA)</label>
-              <Select value={priceRange} onValueChange={setPriceRange}>
+              <label className="text-black font-medium">Gamme de prix (FCFA)</label>
+              <Select  value={priceRange} onValueChange={setPriceRange}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{priceRanges.map((range) => <SelectItem key={range} value={range}>{range}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="filter-group">
-              <label className="text-sm font-medium">Localisation</label>
+              <label className="text-black font-medium">Villes</label>
               <Select value={location} onValueChange={setLocation}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{locations.map((loc) => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}</SelectContent>
