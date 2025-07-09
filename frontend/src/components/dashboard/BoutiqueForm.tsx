@@ -123,21 +123,21 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input className="border-0 bg-gray-100" placeholder="Nom de la boutique" value={name} onChange={e => setName(e.target.value)} required />
-          <Textarea className="border-0 bg-gray-100" placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} />
-          <Input className="border-0 bg-gray-100" placeholder="Localisation" value={location} onChange={e => setLocation(e.target.value)} required />
+          <Input className="border-0 bg-gray-200" placeholder="Nom de la boutique" value={name} onChange={e => setName(e.target.value)} required />
+          <Textarea className="border-0 bg-gray-200" placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} />
+          <Input className="border-0 bg-gray-200" placeholder="Localisation" value={location} onChange={e => setLocation(e.target.value)} required />
 
           <div>
           <label htmlFor="location" className="text-sm font-medium">Localisation</label>
             <div className="flex items-center gap-2">
-              <Input className="border-0 bg-gray-100" id="location" placeholder="Entrez une adresse ou utilisez le GPS" value={location} onChange={e => setLocation(e.target.value)} required />
-              <Button type="button" variant="outline" size="icon" onClick={handleGeolocate} disabled={isGeocoding} className='border-0 bg-gray-100'>
-                {isGeocoding ? <Loader2 className="h-4 w-4 animate-spin bg-gray-100" /> : <LocateFixed className="h-4 w-4 bg-gray-100" />}
+              <Input className="border-0 bg-gray-200" id="location" placeholder="Entrez une adresse ou utilisez le GPS" value={location} onChange={e => setLocation(e.target.value)} required />
+              <Button type="button" variant="outline" size="icon" onClick={handleGeolocate} disabled={isGeocoding} className='border-0 bg-gray-200'>
+                {isGeocoding ? <Loader2 className="h-4 w-4 animate-spin bg-gray-200" /> : <LocateFixed className="h-4 w-4 bg-gray-200" />}
               </Button>
             </div>
           </div>
           <Select value={category} onValueChange={setCategory} required>
-            <SelectTrigger className='border-0 bg-gray-100'><SelectValue placeholder="Choisissez une catégorie" /></SelectTrigger>
+            <SelectTrigger className='border-0 bg-gray-200'><SelectValue placeholder="Choisissez une catégorie" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="Alimentaire & Boissons">Alimentaire & Boissons</SelectItem>
               <SelectItem value="Vêtements & Mode">Vêtements & Mode</SelectItem>
@@ -148,7 +148,7 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
           </Select>
           <div>
             <label htmlFor="images" className="text-sm font-medium">Images</label>
-            <Input id="images" type="file" multiple onChange={e => setImages(Array.from(e.target.files || []))} className='border-0 bg-gray-100'/>
+            <Input id="images" type="file" multiple onChange={e => setImages(Array.from(e.target.files || []))} className='border-0 bg-gray-200'/>
             <p className="text-xs text-muted-foreground mt-1">{isEditing ? "Laissez vide pour ne pas changer les images existantes." : "Sélectionnez une ou plusieurs images."}</p>
           </div>
           <div className="flex gap-2 justify-end">

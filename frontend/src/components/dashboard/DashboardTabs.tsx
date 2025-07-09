@@ -12,14 +12,14 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({ activeTab, setActiveTab }
       <Button
         variant={activeTab === 'boutiques' ? 'default' : 'outline'}
         onClick={() => setActiveTab('boutiques')}
-        className='border-2 border-orange-500'
+        className='border-0 '
       >
         Boutiques
       </Button>
       <Button
         variant={activeTab === 'produits' ? 'default' : 'outline'}
         onClick={() => setActiveTab('produits')}
-        className='border-2 border-orange-500'
+        className='border-0 '
       >
         Produits
       </Button>

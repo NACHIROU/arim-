@@ -97,7 +97,7 @@ const Header: React.FC = () => {
               <Button 
                 variant="outline" 
                 asChild 
-                className="transition-all duration-300 hover:scale-105 hover:shadow-md border-4 border border-orange-500 hover:bg-gray-50 hover:text-black"
+                className="transition-all duration-300 hover:scale-105 hover:shadow-md border-4 border-0 bg-white hover:bg-gray-50 hover:text-black"
               >
                 <Link to="/login">Se connecter</Link>
               </Button>

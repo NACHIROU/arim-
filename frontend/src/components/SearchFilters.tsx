@@ -43,12 +43,12 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onFiltersChange }) => {
           placeholder="Rechercher un produit, une boutique..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input flex-grow text-black"
+          className="search-input flex-grow text-black bg-gray-200 border-0 focus:ring-0"
           aria-label="Rechercher un produit ou une boutique"
         />
-        <Button onClick={() => setShowFilters(!showFilters)} className="filter-toggle" variant="outline">
-          <Filter className="filter-icon h-4 w-4" />
-          <span className="hidden sm:inline">Filtres</span>
+        <Button onClick={() => setShowFilters(!showFilters)} className="filter-toggle bg-orange-500" variant="outline">
+          <Filter className="filter-icon h-4 w-6" />
+          {/* <span className="hidden sm:inline text-white">Filtres</span> */}
         </Button>
       </div>
 
