@@ -43,11 +43,12 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onFiltersChange }) => {
           placeholder="Rechercher un produit, une boutique..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input flex-grow"
+          className="search-input flex-grow text-black bg-gray-200 border-0 focus:ring-0"
+          aria-label="Rechercher un produit ou une boutique"
         />
-        <Button onClick={() => setShowFilters(!showFilters)} className="filter-toggle" variant="outline">
-          <Filter className="filter-icon h-4 w-4" />
-          <span className="hidden sm:inline">Filtres</span>
+        <Button onClick={() => setShowFilters(!showFilters)} className="filter-toggle bg-orange-500" variant="outline">
+          <Filter className="filter-icon h-4 w-6" />
+          {/* <span className="hidden sm:inline text-white">Filtres</span> */}
         </Button>
       </div>
 
@@ -55,21 +56,21 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onFiltersChange }) => {
         <div className="filters-panel">
           <div className="filters-grid">
             <div className="filter-group">
-              <label className="text-sm font-medium">Catégorie</label>
+              <label className="text-black font-medium">Catégorie</label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{categories.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="filter-group">
-              <label className="text-sm font-medium">Gamme de prix (FCFA)</label>
-              <Select value={priceRange} onValueChange={setPriceRange}>
+              <label className="text-black font-medium">Gamme de prix (FCFA)</label>
+              <Select  value={priceRange} onValueChange={setPriceRange}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{priceRanges.map((range) => <SelectItem key={range} value={range}>{range}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="filter-group">
-              <label className="text-sm font-medium">Localisation</label>
+              <label className="text-black font-medium">Villes</label>
               <Select value={location} onValueChange={setLocation}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{locations.map((loc) => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}</SelectContent>

@@ -11,7 +11,7 @@ async def get_current_merchant(current_user: UserOut = Depends(get_current_user)
     return current_user
 
 async def get_current_client(current_user: UserOut = Depends(get_current_user)) -> UserOut:
-    if current_user.role != "user":  # ou "client" si tu utilises ce terme
+    if current_user.role != "client":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Action réservée aux clients"

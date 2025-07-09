@@ -103,13 +103,13 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          <Input placeholder="Nom du produit" value={name} onChange={e => setName(e.target.value)} required />
-          <Textarea placeholder="Description du produit" value={description} onChange={e => setDescription(e.target.value)} />
-          <Input type="number" placeholder="Prix (FCFA)" value={price} onChange={e => setPrice(e.target.value)} required />
+          <Input className="border-0 bg-gray-200" placeholder="Nom du produit" value={name} onChange={e => setName(e.target.value)} required />
+          <Textarea className="border-0 bg-gray-200" placeholder="Description du produit" value={description} onChange={e => setDescription(e.target.value)} />
+          <Input className="border-0 bg-gray-200" type="number" placeholder="Prix (FCFA)" value={price} onChange={e => setPrice(e.target.value)} required />
           
           <div>
             <label htmlFor="product-images" className="text-sm font-medium">Images du produit</label>
-            <Input id="product-images" type="file" multiple onChange={e => setImageFiles(Array.from(e.target.files || []))} />
+            <Input id="product-images" type="file" multiple onChange={e => setImageFiles(Array.from(e.target.files || []))} className="border-0 bg-gray-200" />
             <p className="text-xs text-muted-foreground mt-1">{isEditing ? "Laissez vide pour ne pas changer les images." : "Sélectionnez une ou plusieurs images."}</p>
           </div>
 
@@ -138,7 +138,7 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
           </div>
 
           <Select value={selectedShopId} required disabled={isEditing}>
-            <SelectTrigger><SelectValue placeholder="Boutique sélectionnée" /></SelectTrigger>
+            <SelectTrigger className='border-0 bg-gray-200'> <SelectValue placeholder="Boutique sélectionnée" /></SelectTrigger>
             <SelectContent>
               {boutiques.map((boutique) => (
                 <SelectItem key={boutique._id} value={boutique._id}>{boutique.name}</SelectItem>
