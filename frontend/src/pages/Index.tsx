@@ -112,8 +112,8 @@ const Index: React.FC = () => {
       >
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         <div className="relative z-10 container">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">La marketplace qui rapproche</h1>
-          <p className="max-w-2xl mx-auto text-lg text-slate-200 mb-8">Découvrez et soutenez les commerçants près de chez vous.</p>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Pourquoi chercher loin ce qui est tout près ?</h1>
+          <p className="max-w-2xl mx-auto text-lg text-slate-200 mb-8">Trouvez facilement des produits et services, juste à côté vous.</p>
           <div className="max-w-4xl mx-auto relative" ref={searchContainerRef}>
             <SearchFilters onFiltersChange={setFilters} />
             {isDropdownVisible && (

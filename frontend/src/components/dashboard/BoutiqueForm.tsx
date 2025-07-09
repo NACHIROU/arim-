@@ -123,14 +123,14 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input placeholder="Nom de la boutique" value={name} onChange={e => setName(e.target.value)} required />
+          <Input className="border-0" placeholder="Nom de la boutique" value={name} onChange={e => setName(e.target.value)} required />
           <Textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} />
-          <Input placeholder="Localisation" value={location} onChange={e => setLocation(e.target.value)} required />
+          <Input className="border-0" placeholder="Localisation" value={location} onChange={e => setLocation(e.target.value)} required />
 
           <div>
           <label htmlFor="location" className="text-sm font-medium">Localisation</label>
             <div className="flex items-center gap-2">
-              <Input id="location" placeholder="Entrez une adresse ou utilisez le GPS" value={location} onChange={e => setLocation(e.target.value)} required />
+              <Input className="border-0" id="location" placeholder="Entrez une adresse ou utilisez le GPS" value={location} onChange={e => setLocation(e.target.value)} required />
               <Button type="button" variant="outline" size="icon" onClick={handleGeolocate} disabled={isGeocoding}>
                 {isGeocoding ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
               </Button>

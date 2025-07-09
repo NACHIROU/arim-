@@ -89,16 +89,7 @@ const Header: React.FC = () => {
 
         {/* Boutons de droite */}
         <div className="flex items-center gap-3">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="relative hover:bg-accent/80 transition-all duration-300 hover:scale-110"
-          >
-            <ShoppingCart className="h-5 w-5" />
-            <div className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-bold opacity-0 hover:opacity-100 transition-opacity duration-300">
-              0
-            </div>
-          </Button>
+  
 
           {/* Si non connecté => Affiche les boutons Login/Register */}
           {!isLoggedIn && (
@@ -106,7 +97,7 @@ const Header: React.FC = () => {
               <Button 
                 variant="outline" 
                 asChild 
-                className="transition-all duration-300 hover:scale-105 hover:shadow-md border-2 border border-orange-500 hover:bg-gray-50 hover:text-black"
+                className="transition-all duration-300 hover:scale-105 hover:shadow-md border-4 border border-orange-500 hover:bg-gray-50 hover:text-black"
               >
                 <Link to="/login">Se connecter</Link>
               </Button>
@@ -225,7 +216,7 @@ const Header: React.FC = () => {
                       <div className="grid gap-3">
                         <Button 
                           variant="outline" 
-                          className="w-full transition-all duration-300 hover:scale-105 border-2" 
+                          className="w-full transition-all duration-300 hover:scale-105 border-4" 
                           asChild
                         >
                           <SheetClose asChild>

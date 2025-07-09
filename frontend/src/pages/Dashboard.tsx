@@ -52,8 +52,33 @@ const Dashboard: React.FC = () => {
   };
 
   // --- ACTIONS POUR LES BOUTIQUES ---
-  const handlePublishToggle = async (id: string, publish: boolean) => { /* ... */ };
-  const handleDeleteShop = async (id: string) => { /* ... */ };
+  const handlePublishToggle = async (id: string, publish: boolean) => {
+    const action = publish ? 'publier' : 'dépublier';
+    if (!window.confirm(`Êtes-vous sûr de vouloir ${action} cette boutique ?`)) return;
+    
+    const endpoint = publish ? `/shops/publish/${id}` : `/shops/unpublish/${id}`;
+    try {
+      const response = await fetch(`http://localhost:8000${endpoint}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) fetchBoutiques();
+      else alert("Erreur lors de l'opération.");
+    } catch (error) { console.error(error); }
+  };
+
+  const handleDeleteShop = async (id: string) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette boutique ? Ses produits seront aussi supprimés.")) return;
+    
+    try {
+      const response = await fetch(`http://localhost:8000/shops/delete-shop/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) fetchBoutiques();
+      else alert("Erreur lors de la suppression.");
+    } catch(error) { console.error(error); }
+  };
 
   const handleEditShop = (id: string) => {
     const shopToEdit = boutiques.find(b => b._id === id);
