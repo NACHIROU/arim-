@@ -70,6 +70,11 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
       alert("Veuillez d'abord entrer le nom de la boutique.");
       return;
     }
+    if (description.length > 0) {
+    if (!window.confirm("L'IA va remplacer votre description actuelle. Voulez-vous continuer ?")) {
+      return; // L'utilisateur annule, on ne fait rien
+    }
+  }
     setIsGenerating(true);
     try {
       const response = await fetch("http://localhost:8000/ai/generate-description", {
