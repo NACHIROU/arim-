@@ -176,7 +176,7 @@ const Dashboard: React.FC = () => {
         <div className="mt-6">
           <h2 className="text-2xl font-semibold mb-4">Gestion des Produits</h2>
           <div>
-            <h3 className="text-lg font-medium mb-2">1. Choisissez une boutique</h3>
+            <h3 className="text-lg font-medium mb-2 border-b">1. Choisissez une boutique</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-6">
               {boutiques.map((boutique) => (
                 <Button key={boutique._id} variant={selectedShopId === boutique._id ? 'default' : 'outline'} onClick={() => setSelectedShopId(boutique._id)}>
