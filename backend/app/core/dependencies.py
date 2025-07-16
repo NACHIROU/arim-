@@ -17,3 +17,14 @@ async def get_current_client(current_user: UserOut = Depends(get_current_user)) 
             detail="Action réservée aux clients"
         )
     return current_user
+
+async def get_current_admin(current_user: UserOut = Depends(get_current_user)):
+    """
+    Dépendance qui vérifie que l'utilisateur connecté est bien un administrateur.
+    """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Accès refusé. Droits d'administrateur requis."
+        )
+    return current_user

@@ -59,20 +59,50 @@ async def unified_search(
                 "maxDistance": 50000,
                 "query": geo_query_filter,
                 "spherical": True
-            }}
+            }},               
+            # --- AJOUT : On vérifie que le propriétaire est actif ---
+            {"$lookup": {"from": "users", "localField": "owner_id", "foreignField": "_id", "as": "owner_details"}},
+            {"$unwind": "$owner_details"},
+            {"$match": {"owner_details.is_active": True}},
+
         )
     # --- Cas 2: Recherche standard ---
     else:
+        # Filtre initial pour les boutiques (catégorie, ville...)
         shop_match_filter = {"is_published": True}
-        if category and category != "Tous": shop_match_filter["category"] = category
-        if location and location != "Toutes les villes": shop_match_filter["location"] = {"$regex": location, "$options": "i"}
+        if category and category != "Tous":
+            shop_match_filter["category"] = category
+        if location and location != "Toutes les villes":
+            shop_match_filter["location"] = {"$regex": location, "$options": "i"}
+        
+        # Le pipeline commence par trouver les boutiques qui correspondent à ces filtres
         pipeline.append({"$match": shop_match_filter})
 
     # --- Étapes communes du pipeline ---
     pipeline.extend([
+        {"$lookup": {
+            "from": "users",
+            "localField": "owner_id",
+            "foreignField": "_id",
+            "as": "owner_details"
+        }},
+        {"$unwind": "$owner_details"},
+        {"$match": {"owner_details.is_active": True}},
+
         {"$limit": 10},
-        {"$lookup": {"from": "products", "localField": "_id", "foreignField": "shop_id", "pipeline": product_lookup_pipeline, "as": "found_products"}},
-        {"$match": {"$or": [{"name": {"$regex": q, "$options": "i"}} if q else {}, {"found_products": {"$ne": []}}]}}
+        {"$lookup": {
+            "from": "products", 
+            "localField": "_id", 
+            "foreignField": "shop_id", 
+            "pipeline": product_lookup_pipeline, 
+            "as": "found_products"
+        }},
+        {"$match": {
+            "$or": [
+                {"name": {"$regex": q, "$options": "i"}} if q else {},
+                {"found_products": {"$ne": []}}
+            ]
+        }}
     ])
     
     aggregated_results = await shops.aggregate(pipeline).to_list(length=None)

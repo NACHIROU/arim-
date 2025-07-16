@@ -65,32 +65,34 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
     );
   };
 
-  const handleGenerateDescription = async () => {
-    if (!name) {
-      alert("Veuillez d'abord entrer le nom de la boutique.");
-      return;
-    }
-    if (description.length > 0) {
-    if (!window.confirm("L'IA va remplacer votre description actuelle. Voulez-vous continuer ?")) {
-      return; // L'utilisateur annule, on ne fait rien
-    }
+const handleGenerateDescription = async () => {
+  if (!name) {
+    alert("Veuillez d'abord entrer le nom de la boutique.");
+    return;
   }
-    setIsGenerating(true);
-    try {
-      const response = await fetch("http://localhost:8000/ai/generate-description", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name: name, target_type: 'boutique', category: category, location: location })
-      });
-      if (!response.ok) throw new Error("La génération a échoué.");
-      const data = await response.json();
-      setDescription(data.description);
-    } catch (error) {
-      alert("Erreur lors de la génération de la description.");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  setIsGenerating(true);
+  try {
+    const response = await fetch("http://localhost:8000/ai/generate-description", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      // On ajoute la description actuelle au corps de la requête
+      body: JSON.stringify({ 
+        name: name, 
+        target_type: 'boutique',
+        category: category,
+        location: location,
+        description: description // <-- On envoie le texte existant
+      })
+    });
+    if (!response.ok) throw new Error("La génération a échoué.");
+    const data = await response.json();
+    setDescription(data.description);
+  } catch (error) {
+    alert("Erreur lors de la génération de la description.");
+  } finally {
+    setIsGenerating(false);
+  }
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

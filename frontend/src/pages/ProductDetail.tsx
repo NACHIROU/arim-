@@ -85,7 +85,7 @@ const ProductDetail: React.FC = () => {
           <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-8 bg-white/70 backdrop-blur-sm rounded-full px-4 py-2 w-fit shadow-sm border">
             <Link to="/" className="hover:text-primary transition-colors font-medium">Accueil</Link>
             <ChevronRight className="h-4 w-4" />
-            <Link to={`/shops/${product.shop._id}`} className="hover:text-primary transition-colors font-medium">{product.shop.name}</Link>
+            <Link to={`/shops/${product.shop_id}`} className="hover:text-primary transition-colors font-medium">{product.shop.name}</Link>
             <ChevronRight className="h-4 w-4" />
             <span className="text-primary font-medium truncate max-w-32">{product.name}</span>
           </nav>
@@ -220,7 +220,7 @@ const ProductDetail: React.FC = () => {
                     <AccordionContent className="px-6 pb-6">
                       {product.shop ? (
                         <Link 
-                          to={`/shops/${product.shop_id}`} 
+                          to={`/shops/${product.shop_id}`}
                           className="flex items-center gap-3 text-primary font-semibold hover:underline text-lg group transition-colors"
                         >
                           <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">

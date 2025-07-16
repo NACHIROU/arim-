@@ -34,7 +34,11 @@ export interface User {
   email: string;
   phone?: string;
   location?: string;
-  role: 'client' | 'merchant';
+  role: 'client' | 'merchant' | 'admin'; // <-- Rendre optionnel
+  shops?: Boutique[]; // <-- Rendre optionnel
+  products?: Produit[]; // <-- Rendre optionnel
+  whatsapp_call_link?: string; // <-- Rendre optionnel
+  is_active?: boolean; // <-- Rendre optionnel
 }
 
 

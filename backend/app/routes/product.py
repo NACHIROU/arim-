@@ -124,35 +124,44 @@ async def delete_product(product_id: str, current_user: UserOut = Depends(get_cu
 # == Routes Publiques (pour les visiteurs du site)
 # ===============================================================
 
+# Dans app/routers/products.py
+
 @router.get("/public-products/", response_model=List[ProductWithShopInfo])
 async def get_public_products():
+    """
+    Récupère tous les produits publics, en vérifiant que la boutique
+    est publiée ET que le marchand est actif.
+    """
     pipeline = [
         {"$lookup": {"from": "shops", "localField": "shop_id", "foreignField": "_id", "as": "shop_details"}},
         {"$unwind": "$shop_details"},
         {"$match": {"shop_details.is_published": True}},
+        
+        # --- On ajoute la vérification du statut du marchand ---
         {"$lookup": {"from": "users", "localField": "shop_details.owner_id", "foreignField": "_id", "as": "owner_details"}},
-        {"$unwind": {"path": "$owner_details", "preserveNullAndEmptyArrays": True}},
+        {"$unwind": "$owner_details"},
+        {"$match": {"owner_details.is_active": True}},
+        
         {
             "$project": {
                 "_id": 1, "name": 1, "description": 1, "price": 1,
-                "images": 1, # <-- On s'assure d'inclure le tableau d'images
-                "shop_id": 1,
-                "seller": {"$ifNull": ["$owner_details.first_name", "Vendeur inconnu"]},
+                "images": 1, "shop_id": 1,
+                "seller": "$owner_details.first_name",
                 "shop": {"_id": "$shop_details._id", "name": "$shop_details.name", "contact_phone": "$shop_details.contact_phone"}
             }
         },
         {"$limit": 50}
     ]
-    product_list = [ProductWithShopInfo.model_validate(p) async for p in products.aggregate(pipeline)]
-    return product_list
-
+    
+    product_list = await products.aggregate(pipeline).to_list(length=None)
+    return [ProductWithShopInfo.model_validate(p) for p in product_list]
 
 
 @router.get("/{product_id}", response_model=ProductWithShopInfo)
 async def get_public_product_by_id(product_id: str):
     """
-    Récupère un seul produit par son ID, uniquement si sa boutique est publiée.
-    Enrichit la réponse avec les informations complètes du vendeur et de la boutique.
+    Récupère un seul produit, en vérifiant que sa boutique
+    est publiée ET que son marchand est actif.
     """
     try:
         object_id = ObjectId(product_id)
@@ -160,18 +169,21 @@ async def get_public_product_by_id(product_id: str):
         raise HTTPException(status_code=400, detail="ID du produit invalide")
 
     pipeline = [
-        {"$match": {"_id": ObjectId(product_id)}},
+        {"$match": {"_id": object_id}},
         {"$lookup": {"from": "shops", "localField": "shop_id", "foreignField": "_id", "as": "shop_details"}},
         {"$unwind": "$shop_details"},
         {"$match": {"shop_details.is_published": True}},
+        
+        # --- On ajoute la vérification du statut du marchand ---
         {"$lookup": {"from": "users", "localField": "shop_details.owner_id", "foreignField": "_id", "as": "owner_details"}},
-        {"$unwind": {"path": "$owner_details", "preserveNullAndEmptyArrays": True}},
-        {
-            "$project": {
+        {"$unwind": "$owner_details"},
+        {"$match": {"owner_details.is_active": True}},
+        
+        # Le $project reste le même
+        {"$project": {
                 "_id": 1, "name": 1, "description": 1, "price": 1,
-                "images": 1, # <-- On s'assure d'inclure le tableau d'images
-                "shop_id": 1,
-                "seller": {"$ifNull": ["$owner_details.first_name", "Vendeur inconnu"]},
+                "images": 1, "shop_id": 1,
+                "seller": "$owner_details.first_name",
                 "shop": {"_id": "$shop_details._id", "name": "$shop_details.name", "contact_phone": "$shop_details.contact_phone"}
             }
         }
@@ -179,7 +191,6 @@ async def get_public_product_by_id(product_id: str):
     
     result_list = await products.aggregate(pipeline).to_list(length=1)
     if not result_list:
-        raise HTTPException(status_code=404, detail="Produit non trouvé ou non publié")
+        raise HTTPException(status_code=404, detail="Produit non trouvé, non publié, ou son vendeur est inactif")
         
     return result_list[0]
-

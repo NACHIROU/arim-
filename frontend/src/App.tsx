@@ -15,11 +15,14 @@ import Dashboard from "./pages/Dashboard";
 import ShopDetail from "./pages/ShopDetail";
 import ProductDetail from "./pages/ProductDetail";
 import ProfilePage from "./pages/ProfilePage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
+
 
 // Import des composants de structure
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute"; // On importe le gardien
+import AdminUserDetailPage from "./pages/admin/AdminUserDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +62,8 @@ const App = () => (
               <Route path="/products/:productId" element={<ProductDetail />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/profil" element={<ProfilePage />} />
+              <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+              <Route path="/admin/users/:userId" element={<AdminUserDetailPage />} />
             </Route>
           </Route>
 

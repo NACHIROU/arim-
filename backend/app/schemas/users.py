@@ -8,7 +8,8 @@ class UserBase(BaseModel):
     email: EmailStr = Field(..., example="jean@example.com")
     phone: Optional[str] = Field(None, example="+22912345678")
     location: Optional[str] = Field(None, example="Cotonou")
-    whatsapp_call_link: Optional[str] = Field(None, example="https://wa.me/22912345678")
+    whatsapp_call_link: Optional[str] = Field(None, example="https://wa.me/2290197345678")
+    is_active: bool = Field(default=True)
 
 # --- Schéma pour la création d'un nouvel utilisateur ---
 class UserCreate(UserBase):
@@ -42,6 +43,7 @@ class Token(BaseModel):
 class UserOut(UserBase):
     id: str = Field(..., alias="_id")
     role: str
+    is_active: bool
 
     @field_validator("id", mode="before")
     @classmethod

@@ -131,9 +131,10 @@ const Header: React.FC = () => {
                   {/* --- CORRECTION : On utilise la couleur de fond du projet --- */}
                   <DropdownMenuLabel className="text-center py-3 bg-white">
                     <div className="font-semibold">Mon Compte</div>
-                    <div className="text-xs text-muted-foreground capitalize">{userRole === 'merchant' ? 'Marchand' : 'Client'}</div>
+                      <div className="text-xs text-muted-foreground capitalize">
+                        {userRole === 'admin' ? 'Administrateur' : (userRole === 'merchant' ? 'Marchand' : 'Client')}
+                      </div>
                   </DropdownMenuLabel>
-
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild className="cursor-pointer bg-white transition-colors duration-200">
                     <Link to="/profil" className="flex items-center gap-2">
@@ -149,6 +150,10 @@ const Header: React.FC = () => {
                       </Link>
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuSeparator />
+                  {userRole === 'admin' && (
+                    <DropdownMenuItem asChild><Link to="/admin/dashboard">Dashboard Admin</Link></DropdownMenuItem>
+                )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={() => handleLogout()} 

@@ -186,22 +186,79 @@ async def reverse_geocode_location(lat: float, lon: float):
 
 @router.get("/public-shops/", response_model=List[ShopOut])
 async def get_public_shops():
-    cursor = shops.find({"is_published": True})
-    return [ShopOut(**shop) async for shop in cursor]
+    """
+    Liste toutes les boutiques dont le statut est "publié" ET dont le propriétaire est "actif".
+    """
+    pipeline = [
+        # 1. On ne prend que les boutiques publiées
+        {"$match": {"is_published": True}},
+        # 2. On joint les informations du propriétaire
+        {"$lookup": {
+            "from": "users",
+            "localField": "owner_id",
+            "foreignField": "_id",
+            "as": "owner_details"
+        }},
+        {"$unwind": "$owner_details"},
+        # 3. On ne garde que celles dont le propriétaire est actif
+        {"$match": {"owner_details.is_active": True}}
+    ]
+    
+    shops_cursor = shops.aggregate(pipeline)
+    return [ShopOut(**shop) async for shop in shops_cursor]
 
 @router.get("/retrieve-shop/{shop_id}", response_model=ShopWithContact)
 async def retrieve_public_shop(shop_id: str):
-    if not ObjectId.is_valid(shop_id): raise HTTPException(status_code=400, detail="ID invalide")
-    shop = await shops.find_one({"_id": ObjectId(shop_id), "is_published": True})
-    if not shop:
-        raise HTTPException(status_code=404, detail="Boutique non trouvée ou non publiée")
-    return ShopWithContact(**shop)
+    """
+    Récupère une seule boutique, en vérifiant qu'elle est publiée ET que son propriétaire est actif.
+    """
+    if not ObjectId.is_valid(shop_id):
+        raise HTTPException(status_code=400, detail="ID invalide")
+
+    pipeline = [
+        # 1. On trouve la boutique par son ID et on s'assure qu'elle est publiée
+        {"$match": {"_id": ObjectId(shop_id), "is_published": True}},
+        # 2. On joint les informations du propriétaire
+        {"$lookup": {
+            "from": "users",
+            "localField": "owner_id",
+            "foreignField": "_id",
+            "as": "owner_details"
+        }},
+        {"$unwind": "$owner_details"},
+        # 3. On ne garde le résultat que si le propriétaire est actif
+        {"$match": {"owner_details.is_active": True}}
+    ]
+    
+    result = await shops.aggregate(pipeline).to_list(length=1)
+    if not result:
+        raise HTTPException(status_code=404, detail="Boutique non trouvée, non publiée, ou propriétaire inactif.")
+
+    return ShopWithContact(**result[0])
 
 @router.get("/{shop_id}/products/", response_model=List[ProductOut])
 async def get_public_products_by_shop(shop_id: str):
-    if not ObjectId.is_valid(shop_id): raise HTTPException(status_code=400, detail="ID invalide")
-    shop = await shops.find_one({"_id": ObjectId(shop_id)})
-    if not shop:
-        raise HTTPException(status_code=404, detail="Boutique non trouvée ou non publiée")
+    """
+    Récupère les produits d'une boutique, mais seulement si la boutique 
+    est accessible au public (publiée ET propriétaire actif).
+    """
+    if not ObjectId.is_valid(shop_id):
+        raise HTTPException(status_code=400, detail="ID de boutique invalide")
+
+    # Pipeline pour valider si la boutique est visible par le public
+    validation_pipeline = [
+        {"$match": {"_id": ObjectId(shop_id), "is_published": True}},
+        {"$lookup": {"from": "users", "localField": "owner_id", "foreignField": "_id", "as": "owner_details"}},
+        {"$unwind": "$owner_details"},
+        {"$match": {"owner_details.is_active": True}}
+    ]
+    
+    # --- CORRECTION ICI : On utilise .aggregate() et on vérifie si le résultat n'est pas vide ---
+    valid_shop_result = await shops.aggregate(validation_pipeline).to_list(length=1)
+
+    if not valid_shop_result:
+        raise HTTPException(status_code=404, detail="Boutique non trouvée, non publiée, ou propriétaire inactif.")
+    
+    # Si la boutique est valide, on peut renvoyer ses produits
     cursor = products.find({"shop_id": ObjectId(shop_id)})
     return [ProductOut(**product) async for product in cursor]
