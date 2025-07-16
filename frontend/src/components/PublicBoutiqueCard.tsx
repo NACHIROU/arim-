@@ -1,34 +1,64 @@
-import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge';
-import { Link } from 'react-router-dom';
+import { Store, MapPin, Star } from 'lucide-react';
 import { Boutique } from '@/types';
-// L'interface peut être importée depuis votre page Shops.tsx si vous la partagez
 
 interface PublicBoutiqueCardProps {
   boutique: Boutique;
 }
 
-const PublicBoutiqueCard: React.FC<PublicBoutiqueCardProps> = ({ boutique }) => {
+const PublicBoutiqueCard = ({ boutique }: PublicBoutiqueCardProps) => {
   return (
-    <Link to={`/shops/${boutique._id}`} className="block h-full">
-      <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
-        <CardHeader className="p-0">
+    <Link to={`/shops/${boutique._id}`} className="block h-full group">
+      <Card className="overflow-hidden h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border-0 bg-white/90 backdrop-blur-sm">
+        <CardHeader className="p-0 relative overflow-hidden">
           <AspectRatio ratio={16 / 9}>
-            {boutique.images && boutique.images.length > 0 ? (
-              <img src={boutique.images[0]} alt={boutique.name} className="object-cover w-full h-full rounded-t-lg" />
-            ) : (
-              <div className="bg-secondary flex items-center justify-center h-full rounded-t-lg">
-                <span className="text-sm text-muted-foreground">Aucune image</span>
+            <img 
+              src={boutique.images[0] || 'https://via.placeholder.com/400x225?text=Boutique'} 
+              alt={boutique.name} 
+              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+            
+            {/* Badge catégorie en overlay */}
+            <div className="absolute top-4 left-4">
+              <Badge variant="secondary" className="bg-white/90 text-foreground shadow-lg">
+                <Store className="h-3 w-3 mr-1" />
+                {boutique.category}
+              </Badge>
+            </div>
+            
+            {/* Rating en overlay */}
+            <div className="absolute top-4 right-4">
+              <div className="flex items-center gap-1 bg-white/90 px-2 py-1 rounded-full shadow-lg">
+                <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                <span className="text-xs font-semibold">4.8</span>
               </div>
-            )}
+            </div>
           </AspectRatio>
         </CardHeader>
-        <CardContent className="p-4 flex-grow">
-          <Badge variant="outline" className="mb-2">{boutique.category}</Badge>
-          <h3 className="font-semibold text-lg mb-2">{boutique.name}</h3>
-          <p className="text-sm text-muted-foreground line-clamp-2">{boutique.description}</p>
+        
+        <CardContent className="p-6 space-y-4">
+          <div className="space-y-2">
+            <h3 className="font-semibold text-xl text-foreground group-hover:text-primary transition-colors duration-200">
+              {boutique.name}
+            </h3>
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+              {boutique.description}
+            </p>
+          </div>
+          
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center">
+              <MapPin className="h-3 w-3 mr-1 text-primary" />
+              <span>Voir l'emplacement</span>
+            </div>
+            <div className="text-primary font-semibold">
+              Découvrir →
+            </div>
+          </div>
         </CardContent>
       </Card>
     </Link>

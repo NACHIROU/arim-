@@ -5,7 +5,7 @@ import ProductCard from "@/components/ProductCard";
 import { Button } from '@/components/ui/button';
 import SearchFilters, { FiltersState } from '@/components/SearchFilters';
 import SearchResultsDropdown from '@/components/SearchResultsDropdown';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles, TrendingUp, Star } from 'lucide-react';
 import { Boutique, Produit } from '@/types';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import heroImage from '@/assets/images/hero-header.jpg';
@@ -101,68 +101,132 @@ const Index: React.FC = () => {
 
   }, [filters]);
 
-  if (loadingInitial) return <div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin" /></div>;
-  if (error) return <div className="container py-24 text-center text-red-500">Erreur : {error}</div>;
+  if (loadingInitial) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground">Chargement ...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-6xl">⚠️</div>
+          <h2 className="text-2xl font-bold text-destructive">Erreur de chargement</h2>
+          <p className="text-muted-foreground">{error}</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30">
       <section 
-        className="relative text-center py-24 text-white bg-cover bg-center"
+        className="relative text-center py-32 text-white bg-cover bg-center"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
-        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-        <div className="relative z-10 container">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Pourquoi chercher loin ce qui est tout près ?</h1>
-          <p className="max-w-2xl mx-auto text-lg text-slate-200 mb-8">Trouvez facilement des produits et services, juste à côté vous.</p>
-          <div className="max-w-4xl mx-auto relative" ref={searchContainerRef}>
-            <SearchFilters onFiltersChange={setFilters} />
-            {isDropdownVisible && (
-              <SearchResultsDropdown
-                results={searchResults}
-                isLoading={isSearching}
-                onResultClick={closeDropdown} 
-              />
-            )}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/40"></div>
+        <div className="relative z-10 container px-4">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="space-y-4">
+              <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+                Pourquoi chercher loin ce qui est tout près ?
+              </h1>
+              <p className="max-w-2xl mx-auto text-xl text-slate-200 leading-relaxed">
+                Trouvez facilement des produits et services, juste à côté de vous.
+              </p>
+            </div>
+            
+            <div className="relative" ref={searchContainerRef}>
+              <SearchFilters onFiltersChange={setFilters} />
+              {isDropdownVisible && (
+                <SearchResultsDropdown
+                  results={searchResults}
+                  isLoading={isSearching}
+                  onResultClick={closeDropdown} 
+                />
+              )}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="py-16">
-        <div className="container">
-          <h2 className="text-3xl font-bold text-center mb-10">Boutiques à la Une</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="py-20 bg-white/80 backdrop-blur-sm">
+        <div className="container px-4">
+          <div className="text-center mb-16">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Star className="h-8 w-8 text-primary" />
+              <h2 className="text-4xl font-bold text-foreground">Boutiques à la Une</h2>
+              <Star className="h-8 w-8 text-primary" />
+            </div>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Découvrez les boutiques les plus populaires de votre région
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {shops.slice(0, 4).map((shop) => (
-              <PublicBoutiqueCard key={shop._id} boutique={shop} />
+              <div key={shop._id} className="group">
+                <PublicBoutiqueCard boutique={shop} />
+              </div>
             ))}
           </div>
-          <div className="text-center mt-12">
-            <Link to="/shops"><Button size="lg">Voir toutes les boutiques</Button></Link>
+          
+          <div className="text-center mt-16">
+            <Link to="/shops">
+              <Button size="lg" className="px-8 py-6 text-lg font-semibold bg-orange-500 hover:bg-orange-400 shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                <Sparkles className="h-5 w-5 mr-2" />
+                Voir toutes les boutiques
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
-      <section className="py-16 bg-gray-50">
-        <div className="container">
-          <h2 className="text-3xl font-bold text-center mb-10">Nos derniers produits</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="py-20 bg-gradient-to-br from-secondary/20 to-accent/10">
+        <div className="container px-4">
+          <div className="text-center mb-16">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <TrendingUp className="h-8 w-8 text-primary" />
+              <h2 className="text-4xl font-bold text-foreground">Nos derniers produits</h2>
+              <TrendingUp className="h-8 w-8 text-primary" />
+            </div>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Les nouveautés et tendances du moment
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {products.slice(0, 8).map((product) => (
-              <ProductCard
-                key={product._id}
-                id={product._id}
-                imageUrl={(product.images && product.images.length > 0) ? product.images[0] : ''}
-                name={product.name}
-                price={product.price}
-                shopId={product.shop_id}
-                shopName={product.shop?.name || 'Boutique Inconnue'}
-              />
+              <div key={product._id} className="group">
+                <ProductCard
+                  id={product._id}
+                  imageUrl={(product.images && product.images.length > 0) ? product.images[0] : ''}
+                  name={product.name}
+                  price={product.price}
+                  shopId={product.shop_id}
+                  shopName={product.shop?.name || 'Boutique Inconnue'}
+                />
+              </div>
             ))}
           </div>
-          <div className="text-center mt-12">
-            <Link to="/products"><Button size="lg">Voir tous les produits</Button></Link>
+          
+          <div className="text-center mt-16">
+            <Link to="/products">
+              <Button size="lg" className="px-8 py-6 text-lg font-semibold bg-orange-500 hover:bg-orange-400 shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                <Sparkles className="h-5 w-5 mr-2" />
+                Voir tous les produits
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 };
 
