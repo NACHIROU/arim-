@@ -2,7 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Store } from 'lucide-react'; // Ajout d'une icône pour la boutique
+import { Store, Heart, Eye } from 'lucide-react';
 
 // --- CORRECTION : On change les props ---
 interface ProductCardProps {
@@ -17,37 +17,51 @@ interface ProductCardProps {
 
 const ProductCard = ({ id, imageUrl, name, shopName, price, shopId, showShopLink = false }: ProductCardProps) => {
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 group">
-      <CardHeader className="p-0 relative">
+    <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 group border-0 bg-white/90 backdrop-blur-sm">
+      <CardHeader className="p-0 relative overflow-hidden">
         <Link to={`/products/${id}`}>
           <AspectRatio ratio={4 / 3}>
-            <img src={imageUrl} alt={name} className="object-cover w-full h-full" />
+            <img 
+              src={imageUrl} 
+              alt={name} 
+              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </AspectRatio>
         </Link>
+        
+
         {showShopLink && shopId && (
-          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
             <Link to={`/shops/${shopId}`}>
-                <Button variant="secondary" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    Voir la boutique
-                </Button>
+              <Button variant="secondary" className="bg-white/90 hover:bg-white shadow-lg transform scale-95 hover:scale-100 transition-all">
+                <Store className="h-4 w-4 mr-2" />
+                Voir la boutique
+              </Button>
             </Link>
           </div>
         )}
       </CardHeader>
-      <CardContent className="p-4">
+      
+      <CardContent className="p-6 space-y-3">
         <Link to={`/products/${id}`} className="block">
-          <h3 className="font-semibold text-lg hover:text-primary transition-colors truncate">{name}</h3>
+          <h3 className="font-semibold text-lg hover:text-primary transition-colors duration-200 truncate group-hover:text-primary">
+            {name}
+          </h3>
         </Link>
-        {/* --- CORRECTION : On affiche le nom de la boutique --- */}
+        
         <Link to={`/shops/${shopId}`} className="block">
-            <p className="text-sm text-muted-foreground hover:underline flex items-center gap-1">
-                <Store className="h-4 w-4" /> 
-                {shopName}
-            </p>
+          <p className="text-sm text-muted-foreground hover:text-primary transition-colors duration-200 flex items-center gap-2">
+            <Store className="h-4 w-4 text-primary" /> 
+            <span className="hover:underline">{shopName}</span>
+          </p>
         </Link>
       </CardContent>
-      <CardFooter className="p-4 pt-2 flex justify-end">
-        <p className="font-bold text-lg">{price.toLocaleString('fr-FR')} FCFA</p>
+      
+      <CardFooter className="p-6 pt-0 flex justify-between items-center">
+        <div className="bg-orange-500 text-white px-4 py-2 rounded-full">
+          <p className="font-bold text-lg">{price.toLocaleString('fr-FR')} FCFA</p>
+        </div>
       </CardFooter>
     </Card>
   );

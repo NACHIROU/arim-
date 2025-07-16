@@ -17,10 +17,14 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = await users.find_one({"email": form_data.username})
     
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email ou mot de passe incorrect")
+    
+    # Vérification du mot de passe
+    if not user.get("is_active", True):
+        raise HTTPException(status_code=403, detail="Ce compte a été suspendu.")
 
     if not verify_password(form_data.password, user["password"]):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email ou mot de passe incorrect")
 
     access_token = create_access_token(
         data={"sub": user["email"], "role": user["role"]}
