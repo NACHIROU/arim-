@@ -41,4 +41,21 @@ export interface User {
   is_active?: boolean; // <-- Rendre optionnel
 }
 
+export interface Suggestion {
+  _id: string;
+  name: string;
+  email: string;
+  message: string;
+  status: 'nouveau' | 'lu' | 'répondu';
+  created_at: string; // Ceci sera une date au format string (ISO)
+  admin_reply?: string;
+}
 
+export interface SuggestionReply {
+  _id: string;
+  suggestion_id: string;
+  user_id: string;
+  user: User;
+  content: string;
+  created_at: Date;
+}

@@ -2,8 +2,8 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Pencil, Upload, Download, Trash2 } from 'lucide-react';
 import { Boutique } from '@/types';
+import { Pencil, Trash2, Eye, EyeOff, MapPin, Store } from 'lucide-react';
 
 interface DashboardShopCardProps {
   boutique: Boutique;
@@ -12,52 +12,101 @@ interface DashboardShopCardProps {
   onDelete: (id: string) => void;
 }
 
-const DashboardShopCard: React.FC<DashboardShopCardProps> = ({ boutique, onPublishToggle, onEdit, onDelete }) => {
-  const { _id, name, description, images, is_published, category } = boutique;
+const DashboardShopCard: React.FC<DashboardShopCardProps> = ({
+  boutique,
+  onPublishToggle,
+  onEdit,
+  onDelete,
+}) => {
+  const isPublished = boutique.is_published;
 
   return (
-    // On s'assure que la carte utilise tout l'espace vertical disponible
-    <Card className="overflow-hidden flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
+    <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/90 backdrop-blur-sm">
+      <CardHeader className="p-0 relative overflow-hidden">
+        <div className="aspect-video bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center relative">
+          {boutique.images ? (
+            <img 
+              src={boutique.images[0]} 
+              alt={boutique.name} 
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+            />
+          ) : (
+            <Store className="h-16 w-16 text-primary opacity-50" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          
+          {/* Status Badge */}
+          <div className="absolute top-3 right-3">
+            <Badge 
+              variant={isPublished ? "default" : "secondary"}
+              className={isPublished 
+                ? "bg-green-500 text-white shadow-lg"
+                : "bg-gray-500 text-white shadow-lg"
+              }
+            >
+              {isPublished ? "Publié" : "Privé"}
+            </Badge>
+          </div>
+        </div>
+      </CardHeader>
       
-      {/* Cette div contient la partie supérieure (image + contenu) et grandit pour pousser le footer en bas */}
-      <div className="flex-grow">
-        <div className="relative">
-          <img 
-            src={images?.[0] || 'https://via.placeholder.com/400x225?text=Image'} 
-            alt={name} 
-            className="w-full h-40 object-cover" 
-          />
-          <Badge className="absolute top-2 right-2" variant={is_published ? 'default' : 'secondary'}>
-            {is_published ? 'Publiée' : 'Brouillon'}
+      <CardContent className="p-4 space-y-3">
+        <div className="space-y-2">
+          <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors duration-300 truncate">
+            {boutique.name}
+          </h3>
+          <Badge variant="outline" className="text-xs border-orange-200 text-primary">
+            {boutique.category}
           </Badge>
         </div>
-        <CardHeader className='pb-2 pt-4'>
-          <h3 className="font-semibold text-lg truncate" title={name}>{name}</h3>
-          <Badge variant="outline">{category}</Badge>
-        </CardHeader>
-        <CardContent className='py-0'>
-          <p className="text-sm text-muted-foreground line-clamp-2 h-10">{description}</p>
-        </CardContent>
-      </div>
-
-      {/* Le footer reste en bas grâce au flex-grow de la div parente */}
-      <CardFooter className="p-2 flex justify-between items-center bg-slate-50 border-t">
-        {is_published ? (
-          <Button size="sm" variant="outline" onClick={() => onPublishToggle(_id, false)}>
-            <Download className="h-4 w-4 mr-1" /> Dépublier
-          </Button>
-        ) : (
-          <Button size="sm" onClick={() => onPublishToggle(_id, true)}>
-            <Upload className="h-4 w-4 mr-1" /> Publier
-          </Button>
+        
+        {boutique.location && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <MapPin className="h-4 w-4 text-primary" />
+            <span className="truncate">{boutique.location}</span>
+          </div>
         )}
-        <div className="flex items-center gap-1">
-          <Button size="icon" variant="ghost" onClick={() => onEdit(_id)}>
-            <Pencil className="h-4 w-4" />
+        
+        {boutique.description && (
+          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+            {boutique.description}
+          </p>
+        )}
+      </CardContent>
+      
+      <CardFooter className="p-3 bg-gradient-to-r from-orange-50 to-yellow-50 border-t border-orange-100">
+        <div className="flex justify-between items-center w-full gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onPublishToggle(boutique._id, !isPublished)}
+            className={isPublished 
+              ? "text-orange-600 hover:bg-orange-100 transition-all duration-300"
+              : "text-green-600 hover:bg-green-100 transition-all duration-300"
+            }
+          >
+            {isPublished ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
+            {isPublished ? "Dépublier" : "Publier"}
           </Button>
-          <Button size="icon" variant="destructive" onClick={() => onDelete(_id)}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          
+          <div className="flex gap-1">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => onEdit(boutique._id)}
+              className="hover:bg-orange-100 text-primary hover:text-primary transition-all duration-300"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => onDelete(boutique._id)}
+              className="hover:bg-red-100 text-red-600 hover:text-red-700 transition-all duration-300"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardFooter>
     </Card>

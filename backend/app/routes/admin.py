@@ -2,12 +2,12 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 
-from app.db.database import users, shops
+from app.db.database import users, shops, suggestions
 from app.schemas.users import UserOut
 from app.core.dependencies import get_current_admin
 from app.models import shop, product
 from app.schemas.shop import ShopOut
-
+from app.schemas.suggestions import SuggestionCreate, SuggestionOut, SuggestionReply
 router = APIRouter()
 
 
@@ -115,3 +115,85 @@ async def get_shops_by_owner(user_id: str, admin_user: UserOut = Depends(get_cur
     
     shops_cursor = shops.find({"owner_id": ObjectId(user_id)})
     return [ShopOut(**shop) async for shop in shops_cursor]
+
+
+
+# --- NOUVELLE ROUTE : Obtenir les suggestions ---
+
+
+
+@router.get("/suggestions", response_model=List[SuggestionOut])
+async def get_all_suggestions(admin_user: UserOut = Depends(get_current_admin)):
+    """
+    Route admin pour lister toutes les suggestions reçues.
+    URL finale : /admin/suggestions
+    """
+    all_suggestions = await suggestions.find().sort("created_at", -1).to_list(length=None)
+    return [SuggestionOut(**s) for s in all_suggestions]
+
+
+
+@router.get("/suggestions/stats", response_model=dict)
+async def get_suggestion_stats(admin_user: UserOut = Depends(get_current_admin)):
+    """
+    Renvoie les statistiques sur les suggestions.
+    URL finale : /admin/suggestions/stats
+    """
+    total_count = await suggestions.count_documents({})
+    new_count = await suggestions.count_documents({"status": "nouveau"})
+    return {"total": total_count, "new": new_count}
+
+
+
+# Assurez-vous d'avoir ces imports en haut de votre fichier admin.py
+from app.core.email import send_email
+from app.db.database import suggestions
+from app.schemas.suggestions import SuggestionOut, SuggestionReply
+# ... et les autres imports nécessaires
+
+@router.post("/suggestions/{suggestion_id}/reply", response_model=SuggestionOut)
+async def reply_to_suggestion(
+    suggestion_id: str,
+    reply_data: SuggestionReply,
+    admin_user: UserOut = Depends(get_current_admin)
+):
+    """
+    Route admin pour répondre à une suggestion et notifier l'utilisateur par email.
+    """
+    if not ObjectId.is_valid(suggestion_id):
+        raise HTTPException(status_code=400, detail="ID de suggestion invalide")
+
+    # 1. On récupère la suggestion originale pour avoir l'email de l'utilisateur
+    original_suggestion = await suggestions.find_one({"_id": ObjectId(suggestion_id)})
+    if not original_suggestion:
+        raise HTTPException(status_code=404, detail="Suggestion non trouvée")
+
+    # --- 2. On prépare et on envoie l'email de réponse ---
+    subject = f"Réponse à votre message sur Arimin"
+    html_content = f"""
+    <p>Bonjour {original_suggestion.get('name', 'Utilisateur')},</p>
+    <p>Suite à votre récent message, voici la réponse de notre équipe :</p>
+    <p style="border-left: 2px solid #ccc; padding-left: 1em; font-style: italic;">
+        {reply_data.reply_message}
+    </p>
+    <p>Cordialement,<br>L'équipe Arimin</p>
+    """
+    await send_email(
+        to_email=original_suggestion['email'], 
+        subject=subject, 
+        html_content=html_content
+    )
+    # --------------------------------------------------
+    
+    # 3. On met à jour le statut de la suggestion dans la base de données
+    updated_suggestion = await suggestions.find_one_and_update(
+        {"_id": ObjectId(suggestion_id)},
+        {"$set": {"status": "répondu", "admin_reply": reply_data.reply_message}},
+        return_document=True  # Important pour récupérer le document mis à jour
+    )
+
+    if not updated_suggestion:
+        # Cette erreur ne devrait normalement pas se produire si la première recherche a fonctionné
+        raise HTTPException(status_code=404, detail="Suggestion non trouvée après la mise à jour.")
+
+    return SuggestionOut(**updated_suggestion)

@@ -25,7 +25,7 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [imageFiles, setImageFiles] = useState<File[]>([]); // Gère plusieurs fichiers
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const token = localStorage.getItem('token');
@@ -41,7 +41,7 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
       setDescription('');
       setPrice('');
     }
-    setImageFiles([]); // Toujours réinitialiser la sélection de fichiers
+    setImageFiles([]);
   }, [isEditing, editingProduct]);
 
   const handleGenerateDescription = async () => {
@@ -118,14 +118,18 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
   };
 
   return (
-    <Card className="produit-form-card">
-      <CardHeader>
-        <CardTitle>{isEditing ? 'Modifier le produit' : 'Ajouter un nouveau produit'}</CardTitle>
+    <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm mb-8">
+      <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-t-lg">
+        <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          {isEditing ? 'Modifier le produit' : 'Ajouter un nouveau produit'}
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <CardContent className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <Select value={selectedShopId} required disabled={isEditing}>
-            <SelectTrigger className='bg-gray-200 border-0 focus:ring-0'><SelectValue placeholder="Boutique à laquelle ajouter le produit" /></SelectTrigger>
+            <SelectTrigger className="border-0 bg-muted/50 focus:ring-2 focus:ring-primary/20 rounded-xl h-12">
+              <SelectValue placeholder="Boutique à laquelle ajouter le produit" />
+            </SelectTrigger>
             <SelectContent>
               {boutiques.map((boutique) => (
                 <SelectItem key={boutique._id} value={boutique._id}>{boutique.name}</SelectItem>
@@ -133,38 +137,109 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
             </SelectContent>
           </Select>
 
-          <Input className='text-black bg-gray-200 border-0 focus:ring-0' placeholder="Nom du produit" value={name} onChange={e => setName(e.target.value)} required />
+          <Input 
+            className="border-0 bg-muted/50 focus:ring-2 focus:ring-primary/20 rounded-xl h-12 text-foreground placeholder:text-muted-foreground" 
+            placeholder="Nom du produit" 
+            value={name} 
+            onChange={e => setName(e.target.value)} 
+            required 
+          />
 
-          <div>
-            <label htmlFor="product-description" className="text-sm font-medium">Description</label>
+          <div className="space-y-2">
+            <label htmlFor="product-description" className="text-sm font-semibold text-foreground">Description</label>
             <div className="relative">
-              <Textarea className='text-black bg-gray-200 border-0 focus:ring-0' id="product-description" placeholder="Décrivez votre produit ou utilisez l'IA" value={description} onChange={e => setDescription(e.target.value)} />
-              <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleGenerateDescription} disabled={isGenerating}>
+              <Textarea 
+                className="border-0 bg-muted/50 focus:ring-2 focus:ring-primary/20 rounded-xl text-foreground placeholder:text-muted-foreground pr-12" 
+                id="product-description" 
+                placeholder="Décrivez votre produit ou utilisez l'IA" 
+                value={description} 
+                onChange={e => setDescription(e.target.value)} 
+              />
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="icon" 
+                className="absolute top-2 right-2 h-8 w-8 hover:bg-orange-100 rounded-lg transition-all duration-300" 
+                onClick={handleGenerateDescription} 
+                disabled={isGenerating}
+              >
                 {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-primary" />}
               </Button>
             </div>
           </div>
 
-          <Input className='text-black bg-gray-200 border-0 focus:ring-0' type="number" placeholder="Prix (FCFA)" value={price} onChange={e => setPrice(e.target.value)} required />
+          <Input 
+            className="border-0 bg-muted/50 focus:ring-2 focus:ring-primary/20 rounded-xl h-12 text-foreground placeholder:text-muted-foreground" 
+            type="number" 
+            placeholder="Prix (FCFA)" 
+            value={price} 
+            onChange={e => setPrice(e.target.value)} 
+            required 
+          />
 
-          <div>
-            <label htmlFor="product-images" className="text-sm font-medium">Image(s) du produit</label>
-            <Input className='text-black bg-gray-200 border-0 focus:ring-0' id="product-images" type="file" multiple onChange={e => setImageFiles(Array.from(e.target.files || []))} />
-            <p className="text-xs text-muted-foreground mt-1">{isEditing ? "Laissez vide pour ne pas changer les images." : "Sélectionnez une ou plusieurs images."}</p>
+          <div className="space-y-2">
+            <label htmlFor="product-images" className="text-sm font-semibold text-foreground">Image(s) du produit</label>
+            <Input 
+              className="border-0 bg-muted/50 focus:ring-2 focus:ring-primary/20 rounded-xl h-12 text-foreground file:bg-primary file:text-white file:border-0 file:rounded-lg file:px-4 file:py-2 file:mr-4" 
+              id="product-images" 
+              type="file" 
+              multiple 
+              onChange={e => setImageFiles(Array.from(e.target.files || []))} 
+            />
+            <p className="text-xs text-muted-foreground">
+              {isEditing ? "Laissez vide pour ne pas changer les images." : "Sélectionnez une ou plusieurs images."}
+            </p>
           </div>
 
           <div>
             {isEditing && editingProduct?.images && editingProduct.images.length > 0 && (
-              <div className="mt-2"><p className="text-sm font-medium mb-2">Images actuelles :</p><div className="flex flex-wrap gap-2">{editingProduct.images.map((url, index) => <img key={index} src={url} alt={`Image ${index + 1}`} className="h-20 w-20 object-cover rounded-md border" />)}</div></div>
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-foreground">Images actuelles :</p>
+                <div className="flex flex-wrap gap-3">
+                  {editingProduct.images.map((url, index) => (
+                    <img 
+                      key={index} 
+                      src={url} 
+                      alt={`Image ${index + 1}`} 
+                      className="h-24 w-24 object-cover rounded-xl border-2 border-orange-200 shadow-md hover:shadow-lg transition-all duration-300" 
+                    />
+                  ))}
+                </div>
+              </div>
             )}
             {imageFiles.length > 0 && (
-              <div className="mt-2"><p className="text-sm font-medium mb-2">Nouvelles images :</p><div className="flex flex-wrap gap-2">{imageFiles.map((file, index) => <img key={index} src={URL.createObjectURL(file)} alt={`Aperçu ${index + 1}`} className="h-20 w-20 object-cover rounded-md border" />)}</div></div>
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-foreground">Nouvelles images :</p>
+                <div className="flex flex-wrap gap-3">
+                  {imageFiles.map((file, index) => (
+                    <img 
+                      key={index} 
+                      src={URL.createObjectURL(file)} 
+                      alt={`Aperçu ${index + 1}`} 
+                      className="h-24 w-24 object-cover rounded-xl border-2 border-primary shadow-md hover:shadow-lg transition-all duration-300" 
+                    />
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 
-          <div className="flex gap-2 justify-end">
-            {isEditing && (<Button type="button" variant="ghost" onClick={onCancelEdit}>Annuler</Button>)}
-            <Button type="submit" disabled={isSubmitting}>
+          <div className="flex gap-3 justify-end pt-4">
+            {isEditing && (
+              <Button 
+                type="button" 
+                variant="ghost" 
+                onClick={onCancelEdit}
+                className="hover:bg-orange-50 text-foreground transition-all duration-300"
+              >
+                Annuler
+              </Button>
+            )}
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 px-8"
+            >
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isEditing ? 'Mettre à jour' : 'Ajouter le produit'}
             </Button>

@@ -58,9 +58,9 @@ const ProductCard = ({ id, imageUrl, name, shopName, price, shopId, showShopLink
         </Link>
       </CardContent>
       
-      <CardFooter className="p-6 pt-0 flex justify-between items-center">
-        <div className="bg-orange-500 text-white px-4 py-2 rounded-full">
-          <p className="font-bold text-lg">{price.toLocaleString('fr-FR')} FCFA</p>
+      <CardFooter className="p-4 pt-2 flex justify-begin items-center gap-4 bg-white/80 backdrop-blur-sm">
+        <div className="bg-orange-500 text-white px-3 py-1 rounded-xl shadow-lg flex items-center gap-2">
+          <p className="font-semibold text-base">{price.toLocaleString('fr-FR')} FCFA</p>
         </div>
       </CardFooter>
     </Card>
