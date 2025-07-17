@@ -65,34 +65,33 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
     );
   };
 
-const handleGenerateDescription = async () => {
-  if (!name) {
-    alert("Veuillez d'abord entrer le nom de la boutique.");
-    return;
-  }
-  setIsGenerating(true);
-  try {
-    const response = await fetch("http://localhost:8000/ai/generate-description", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      // On ajoute la description actuelle au corps de la requête
-      body: JSON.stringify({ 
-        name: name, 
-        target_type: 'boutique',
-        category: category,
-        location: location,
-        description: description // <-- On envoie le texte existant
-      })
-    });
-    if (!response.ok) throw new Error("La génération a échoué.");
-    const data = await response.json();
-    setDescription(data.description);
-  } catch (error) {
-    alert("Erreur lors de la génération de la description.");
-  } finally {
-    setIsGenerating(false);
-  }
-};
+  const handleGenerateDescription = async () => {
+    if (!name) {
+      alert("Veuillez d'abord entrer le nom de la boutique.");
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const response = await fetch("http://localhost:8000/ai/generate-description", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ 
+          name: name, 
+          target_type: 'boutique',
+          category: category,
+          location: location,
+          description: description
+        })
+      });
+      if (!response.ok) throw new Error("La génération a échoué.");
+      const data = await response.json();
+      setDescription(data.description);
+    } catch (error) {
+      alert("Erreur lors de la génération de la description.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,25 +143,54 @@ const handleGenerateDescription = async () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{isEditing ? 'Modifier la boutique' : 'Créer une nouvelle boutique'}</CardTitle>
-        <CardDescription>{isEditing ? `Vous modifiez : "${initialData?.name}"` : 'Remplissez les informations pour créer votre vitrine.'}</CardDescription>
+    <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
+      <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-t-lg">
+        <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          {isEditing ? 'Modifier la boutique' : 'Créer une nouvelle boutique'}
+        </CardTitle>
+        <CardDescription className="text-muted-foreground">
+          {isEditing ? `Vous modifiez : "${initialData?.name}"` : 'Remplissez les informations pour créer votre vitrine.'}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input className="border-0 bg-gray-200" placeholder="Nom de la boutique" value={name} onChange={e => setName(e.target.value)} required />
-          <div>
-            <label htmlFor="location" className="text-sm font-medium">Localisation</label>
-            <div className="flex items-center gap-2">
-              <Input id="location" className="border-0 bg-gray-200" placeholder="Entrez une adresse ou utilisez le GPS" value={location} onChange={e => setLocation(e.target.value)} required />
-              <Button className="border-0 bg-gray-200" type="button" variant="outline" size="icon" onClick={handleGeolocate} disabled={isGeocoding} title="Me géolocaliser">
-                {isGeocoding ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
+      <CardContent className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Input 
+            className="border-0 bg-muted/50 focus:ring-2 focus:ring-primary/20 rounded-xl h-12 text-foreground placeholder:text-muted-foreground" 
+            placeholder="Nom de la boutique" 
+            value={name} 
+            onChange={e => setName(e.target.value)} 
+            required 
+          />
+          
+          <div className="space-y-2">
+            <label htmlFor="location" className="text-sm font-semibold text-foreground">Localisation</label>
+            <div className="flex items-center gap-3">
+              <Input 
+                id="location" 
+                className="border-0 bg-muted/50 focus:ring-2 focus:ring-primary/20 rounded-xl h-12 text-foreground placeholder:text-muted-foreground flex-1" 
+                placeholder="Entrez une adresse ou utilisez le GPS" 
+                value={location} 
+                onChange={e => setLocation(e.target.value)} 
+                required 
+              />
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="icon" 
+                onClick={handleGeolocate} 
+                disabled={isGeocoding} 
+                title="Me géolocaliser"
+                className="h-12 w-12 border-orange-200 bg-orange-50 hover:bg-orange-100 text-primary rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                {isGeocoding ? <Loader2 className="h-5 w-5 animate-spin" /> : <LocateFixed className="h-5 w-5" />}
               </Button>
             </div>
           </div>
+          
           <Select value={category} onValueChange={setCategory} required>
-            <SelectTrigger className='border-0 bg-gray-200'><SelectValue placeholder="Choisissez une catégorie" /></SelectTrigger>
+            <SelectTrigger className="border-0 bg-muted/50 focus:ring-2 focus:ring-primary/20 rounded-xl h-12">
+              <SelectValue placeholder="Choisissez une catégorie" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="Alimentaire & Boissons">Alimentaire & Boissons</SelectItem>
               <SelectItem value="Vêtements & Mode">Vêtements & Mode</SelectItem>
@@ -181,23 +209,62 @@ const handleGenerateDescription = async () => {
               <SelectItem value="Autre">Autre</SelectItem>
             </SelectContent>
           </Select>
-          <div>
-            <label htmlFor="description" className="text-sm font-medium">Description</label>
+          
+          <div className="space-y-2">
+            <label htmlFor="description" className="text-sm font-semibold text-foreground">Description</label>
             <div className="relative">
-              <Textarea className="border-0 bg-gray-200" id="description" placeholder="Décrivez votre boutique ou cliquez sur l'éclair..." value={description} onChange={e => setDescription(e.target.value)} rows={4} />
-              <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleGenerateDescription} disabled={isGenerating} title="Générer avec l'IA">
+              <Textarea 
+                className="border-0 bg-muted/50 focus:ring-2 focus:ring-primary/20 rounded-xl text-foreground placeholder:text-muted-foreground pr-12" 
+                id="description" 
+                placeholder="Décrivez votre boutique ou cliquez sur l'éclair..." 
+                value={description} 
+                onChange={e => setDescription(e.target.value)} 
+                rows={4} 
+              />
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="icon" 
+                className="absolute top-2 right-2 h-8 w-8 hover:bg-orange-100 rounded-lg transition-all duration-300" 
+                onClick={handleGenerateDescription} 
+                disabled={isGenerating} 
+                title="Générer avec l'IA"
+              >
                 {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-primary" />}
               </Button>
             </div>
           </div>
-          <div>
-            <label htmlFor="images" className="text-sm font-medium">Images</label>
-            <Input className="border-0 bg-gray-200" id="images" type="file" multiple onChange={e => setImages(Array.from(e.target.files || []))} />
-            <p className="text-xs text-muted-foreground mt-1">{isEditing ? "Laissez vide pour ne pas changer les images existantes." : "Sélectionnez une ou plusieurs images."}</p>
+          
+          <div className="space-y-2">
+            <label htmlFor="images" className="text-sm font-semibold text-foreground">Images</label>
+            <Input 
+              className="border-0 bg-muted/50 focus:ring-2 focus:ring-primary/20 rounded-xl h-12 text-foreground file:bg-primary file:text-white file:border-0 file:rounded-lg file:px-4 file:py-2 file:mr-4" 
+              id="images" 
+              type="file" 
+              multiple 
+              onChange={e => setImages(Array.from(e.target.files || []))} 
+            />
+            <p className="text-xs text-muted-foreground">
+              {isEditing ? "Laissez vide pour ne pas changer les images existantes." : "Sélectionnez une ou plusieurs images."}
+            </p>
           </div>
-          <div className="flex gap-2 justify-end">
-            {isEditing && (<Button type="button" variant="ghost" onClick={onCancelEdit}>Annuler</Button>)}
-            <Button type="submit" disabled={isSubmitting}>
+          
+          <div className="flex gap-3 justify-end pt-4">
+            {isEditing && (
+              <Button 
+                type="button" 
+                variant="ghost" 
+                onClick={onCancelEdit}
+                className="hover:bg-orange-50 text-foreground transition-all duration-300"
+              >
+                Annuler
+              </Button>
+            )}
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 px-8"
+            >
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isEditing ? 'Mettre à jour' : 'Créer la boutique'}
             </Button>

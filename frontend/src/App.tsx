@@ -16,6 +16,7 @@ import ShopDetail from "./pages/ShopDetail";
 import ProductDetail from "./pages/ProductDetail";
 import ProfilePage from "./pages/ProfilePage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import SuggestionsPage from './pages/admin/SuggestionsPage';
 
 
 // Import des composants de structure
@@ -64,6 +65,7 @@ const App = () => (
               <Route path="/profil" element={<ProfilePage />} />
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
               <Route path="/admin/users/:userId" element={<AdminUserDetailPage />} />
+              <Route path="/admin/suggestions" element={<SuggestionsPage />} />
             </Route>
           </Route>
 

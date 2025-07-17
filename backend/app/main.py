@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import users, auth, shop, product, search, reviews, ai, admin
+from app.routes import users, auth, shop, product, search, reviews, ai, admin, suggestions
 from fastapi.openapi.utils import get_openapi
 from fastapi.security import OAuth2PasswordBearer
 
@@ -17,6 +17,7 @@ app.include_router(search.router, prefix="/search", tags=["Search"])
 app.include_router(reviews.router, prefix="/reviews", tags=["Reviews"])
 app.include_router(ai.router, prefix="/ai", tags=["AI"])
 app.include_router(admin.router, prefix="/admin", tags=["Admin"])
+app.include_router(suggestions.router, prefix="/suggestions", tags=["Suggestions"])
 
 app.add_middleware(
     CORSMiddleware,

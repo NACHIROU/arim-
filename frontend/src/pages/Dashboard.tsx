@@ -7,7 +7,6 @@ import BoutiquesList from '@/components/dashboard/BoutiquesList';
 import ProduitForm from '@/components/dashboard/ProduitForm';
 import ProduitsList from '@/components/dashboard/ProduitsList';
 import { Boutique, Produit } from '@/types';
-import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -143,70 +142,94 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="container py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Gérez vos boutiques et vos produits</h1>
-      </div>
-
-      <DashboardTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-
-      {activeTab === 'boutiques' && (
-        <div className="mt-6">
-          <div ref={boutiqueFormRef}>
-            <BoutiqueForm 
-              isEditing={!!editingShop}
-              initialData={editingShop}
-              onSuccess={handleBoutiqueFormSuccess}
-              onCancelEdit={handleCancelBoutiqueEdit}
-            />
-          </div>
-          <div className="mt-8">
-            <h2 className="text-2xl font-semibold mb-4">Mes Boutiques</h2>
-            <BoutiquesList
-              boutiques={boutiques}
-              onPublishToggle={handlePublishToggle}
-              onEdit={handleEditShop}
-              onDelete={handleDeleteShop}
-            />
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
+      <div className="container py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Gérez vos boutiques et vos produits
+          </h1>
         </div>
-      )}
 
-      {activeTab === 'produits' && (
-        <div className="mt-6">
-          <h2 className="text-2xl font-semibold mb-4">Gestion des Produits</h2>
-          <div>
-            <h3 className="text-lg font-medium mb-2 border-b">1. Choisissez une boutique</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-6">
-              {boutiques.map((boutique) => (
-                <Button key={boutique._id} variant={selectedShopId === boutique._id ? 'default' : 'outline'} onClick={() => setSelectedShopId(boutique._id)}>
-                  {boutique.name}
-                </Button>
-              ))}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-8">
+          <DashboardTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+        </div>
+
+        {activeTab === 'boutiques' && (
+          <div className="space-y-8">
+            <div ref={boutiqueFormRef}>
+              <BoutiqueForm 
+                isEditing={!!editingShop}
+                initialData={editingShop}
+                onSuccess={handleBoutiqueFormSuccess}
+                onCancelEdit={handleCancelBoutiqueEdit}
+              />
             </div>
-          </div>
-          
-          {selectedShopId ? (
-            <div ref={produitFormRef}>
-              <h3 className="text-lg font-medium mb-2">{editingProduct ? '2. Modifier le produit' : '2. Ajouter un produit'}</h3>
-              <ProduitForm
-                selectedShopId={selectedShopId}
-                onSuccess={handleProduitFormSuccess}
-                editingProduct={editingProduct}
-                onCancelEdit={handleCancelProduitEdit}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6">
+              <h2 className="text-2xl font-semibold mb-6 text-foreground">Mes Boutiques</h2>
+              <BoutiquesList
                 boutiques={boutiques}
-              />
-              <ProduitsList
-                produits={produits}
-                onEdit={handleEditProduit}
-                onDelete={handleDeleteProduit}
+                onPublishToggle={handlePublishToggle}
+                onEdit={handleEditShop}
+                onDelete={handleDeleteShop}
               />
             </div>
-          ) : (
-            <p className="text-center text-muted-foreground mt-10">Veuillez sélectionner une boutique pour voir et gérer ses produits.</p>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+
+        {activeTab === 'produits' && (
+          <div className="space-y-8">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6">
+              <h2 className="text-2xl font-semibold mb-6 text-foreground">Gestion des Produits</h2>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium mb-4 text-foreground border-b border-orange-200 pb-2">
+                    1. Choisissez une boutique
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                    {boutiques.map((boutique) => (
+                      <Button 
+                        key={boutique._id} 
+                        variant={selectedShopId === boutique._id ? 'default' : 'outline'} 
+                        onClick={() => setSelectedShopId(boutique._id)}
+                        className={selectedShopId === boutique._id 
+                          ? 'bg-gradient-to-r from-primary to-accent text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300'
+                          : 'border-orange-200 text-foreground hover:bg-orange-50 hover:border-primary transition-all duration-300'
+                        }
+                      >
+                        {boutique.name}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                
+                {selectedShopId ? (
+                  <div ref={produitFormRef}>
+                    <h3 className="text-lg font-medium mb-4 text-foreground border-b border-orange-200 pb-2">
+                      {editingProduct ? '2. Modifier le produit' : '2. Ajouter un produit'}
+                    </h3>
+                    <ProduitForm
+                      selectedShopId={selectedShopId}
+                      onSuccess={handleProduitFormSuccess}
+                      editingProduct={editingProduct}
+                      onCancelEdit={handleCancelProduitEdit}
+                      boutiques={boutiques}
+                    />
+                    <ProduitsList
+                      produits={produits}
+                      onEdit={handleEditProduit}
+                      onDelete={handleDeleteProduit}
+                    />
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground py-16 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl border-2 border-dashed border-orange-200">
+                    <p className="text-lg">Veuillez sélectionner une boutique pour voir et gérer ses produits.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
