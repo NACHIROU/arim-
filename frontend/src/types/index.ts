@@ -14,10 +14,10 @@ export interface Boutique {
 export interface Produit {
   _id: string;
   name: string;
-  description: string;
+  description?: string;
   price: number;
   images?: string[];
-  shop_id: string;
+  shop_id?: string;
   seller?: string; // Le nom du vendeur
   // L'objet boutique imbriqué, qui contient toutes les infos nécessaires
   shop?: {
@@ -35,6 +35,16 @@ export interface User {
   location?: string;
   role: 'client' | 'merchant' | 'admin';
   is_active: boolean;
+}
+
+export interface Review {
+  _id: string;
+  shop_id: string;
+  user_id: string;
+  author_name: string;
+  rating: number;
+  message: string;
+  created_at: string; // Date au format string (ISO)
 }
 
 export interface Suggestion {

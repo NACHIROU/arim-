@@ -60,3 +60,11 @@ async def get_reviews_for_shop(shop_id: str):
     review_list = await cursor.to_list(length=100) # On limite à 100 avis pour la performance
 
     return [ReviewOut(**review) for review in review_list]
+
+@router.get("/my-reviews", response_model=List[ReviewOut])
+async def get_my_reviews(current_user: UserOut = Depends(get_current_user)):
+    """
+    Récupère tous les avis laissés par l'utilisateur actuellement connecté.
+    """
+    user_reviews = await reviews.find({"user_id": ObjectId(current_user.id)}).sort("created_at", -1).to_list(length=None)
+    return [ReviewOut(**review) for review in user_reviews]

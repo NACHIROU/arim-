@@ -20,34 +20,34 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, showShopLink = false
     : 'https://via.placeholder.com/400x300?text=Image';
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 group border-0 bg-white/90 backdrop-blur-sm shadow-lg">
+    <Card className="group relative overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 rounded-3xl">
       <CardHeader className="p-0 relative overflow-hidden">
         <Link to={`/products/${product._id}`}>
           <AspectRatio ratio={4 / 3}>
             <img 
               src={imageUrl} 
               alt={product.name} 
-              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" 
+              className="object-cover w-full h-full transition-all duration-700 group-hover:scale-110 rounded-t-3xl" 
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
           </AspectRatio>
         </Link>
         
-        {/* Action buttons overlay */}
-        <div className="absolute top-3 right-3 space-y-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-          <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white shadow-lg">
-            <Heart className="h-4 w-4 text-orange-500" />
+        {/* Floating action buttons */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-4 group-hover:translate-x-0">
+          <Button size="icon" variant="secondary" className="h-10 w-10 rounded-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/20 shadow-xl">
+            <Heart className="h-4 w-4 text-white" />
           </Button>
-          <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white shadow-lg">
-            <Eye className="h-4 w-4 text-orange-500" />
+          <Button size="icon" variant="secondary" className="h-10 w-10 rounded-full bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/20 shadow-xl">
+            <Eye className="h-4 w-4 text-white" />
           </Button>
         </div>
         
         {showShopLink && product.shop?._id && (
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center rounded-t-3xl">
             <Link to={`/shops/${product.shop._id}`}>
-              <Button variant="secondary" className="bg-white/90 hover:bg-white shadow-lg transform scale-95 hover:scale-100 transition-all">
-                <Store className="h-4 w-4 mr-2 text-orange-500" />
+              <Button variant="secondary" className="bg-white/90 backdrop-blur-sm hover:bg-white text-black border-0 rounded-full px-6 py-2 shadow-xl transform scale-90 hover:scale-100 transition-all duration-300">
+                <Store className="h-4 w-4 mr-2" />
                 Voir la boutique
               </Button>
             </Link>
@@ -55,17 +55,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, showShopLink = false
         )}
       </CardHeader>
       
-      <CardContent className="p-6 space-y-3">
+      <CardContent className="p-6 space-y-4">
         <Link to={`/products/${product._id}`} className="block">
-          <h3 className="font-semibold text-lg hover:text-orange-500 transition-colors duration-200 truncate group-hover:text-orange-500">
+          <h3 className="font-bold text-xl text-gray-900 hover:text-primary transition-colors duration-300 truncate leading-tight">
             {product.name}
           </h3>
         </Link>
         
         {product.shop && (
           <Link to={`/shops/${product.shop._id}`} className="block">
-            <p className="text-sm text-muted-foreground hover:text-orange-500 transition-colors duration-200 flex items-center gap-2">
-              <Store className="h-4 w-4 text-orange-500" /> 
+            <p className="text-sm text-gray-500 hover:text-primary transition-colors duration-300 flex items-center gap-2 font-medium">
+              <div className="w-4 h-4 rounded-full bg-gradient-to-r from-orange-400 to-amber-400 flex items-center justify-center">
+                <Store className="h-2.5 w-2.5 text-white" />
+              </div>
               <span className="hover:underline">{product.shop.name}</span>
             </p>
           </Link>
@@ -73,7 +75,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, showShopLink = false
       </CardContent>
       
       <CardFooter className="p-6 pt-0 flex justify-between items-center">
-        <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-2 rounded-full shadow-lg">
+        <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-5 py-3 rounded-2xl shadow-lg">
           <p className="font-bold text-lg">{product.price.toLocaleString('fr-FR')} FCFA</p>
         </div>
         <Button 
@@ -81,9 +83,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, showShopLink = false
           size="icon" 
           onClick={() => addToCart(product)} 
           title="Ajouter au panier"
-          className="border-orange-200 hover:border-orange-300 hover:bg-orange-50 transition-all duration-300 shadow-md hover:shadow-lg"
+          className="w-12 h-12 rounded-full border-2 border-orange-200 bg-orange-50 hover:border-orange-400 hover:bg-orange-100 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-110"
         >
-          <ShoppingCart className="h-5 w-5 text-orange-500" />
+          <ShoppingCart className="h-5 w-5 text-orange-600" />
         </Button>
       </CardFooter>
     </Card>

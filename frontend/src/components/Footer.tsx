@@ -37,40 +37,47 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="border-t bg-muted/30">
-      <div className="container py-12 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
+    <footer className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      {/* Decorative background */}
+      <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-transparent to-amber-500/5"></div>
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-amber-500"></div>
+      
+      <div className="relative container py-16 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-12">
         
-        {/* Colonne 1: Logo et description */}
+        {/* Colonne 1: Logo et description moderne */}
         <div className="md:col-span-3 lg:col-span-1">
-          <Link to="/" className="flex items-center gap-2 mb-4 group">
-            <Store className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-xl">Arimin</span>
+          <Link to="/" className="flex items-center gap-3 mb-6 group">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <Store className="h-6 w-6 text-white" />
+            </div>
+            <span className="font-black text-2xl text-white">Arimin</span>
           </Link>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            La marketplace qui rapproche les commerçants locaux et les clients de leur quartier.
-            Découvrez les produits disponibles près de chez vous et soutenez l'économie locale.
+          <p className="text-gray-300 leading-relaxed text-lg font-medium mb-8">
+            La marketplace nouvelle génération qui révolutionne le commerce local et rapproche les communautés.
           </p>
-          <div className="flex items-center gap-5 mt-6">
-            <a href="#" aria-label="Facebook" className="hover:text-primary transition-colors transform hover:scale-110">
-              <Facebook className="h-5 w-5" />
+          <div className="flex items-center gap-6">
+            <a href="#" aria-label="Facebook" className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-orange-500 transition-all duration-300 transform hover:scale-110">
+              <Facebook className="h-5 w-5 text-white" />
             </a>
-            <a href="#" aria-label="Instagram" className="hover:text-primary transition-colors transform hover:scale-110">
-              <Instagram className="h-5 w-5" />
+            <a href="#" aria-label="Instagram" className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-orange-500 transition-all duration-300 transform hover:scale-110">
+              <Instagram className="h-5 w-5 text-white" />
             </a>
-            <a href="#" aria-label="Twitter" className="hover:text-primary transition-colors transform hover:scale-110">
-              <Twitter className="h-5 w-5" />
+            <a href="#" aria-label="Twitter" className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-orange-500 transition-all duration-300 transform hover:scale-110">
+              <Twitter className="h-5 w-5 text-white" />
             </a>
           </div>
         </div>
 
-        {/* Colonne 2: Formulaire de suggestion */}
+        {/* Colonne 2: Formulaire moderne */}
         <div className="md:col-span-2 lg:col-span-2">
-          <h3 className="font-semibold mb-4 text-lg flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-primary" />
+          <h3 className="font-black mb-6 text-2xl flex items-center gap-3 text-white">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center">
+              <MessageSquare className="h-4 w-4 text-white" />
+            </div>
             Une suggestion ? Écrivez-nous !
           </h3>
-          <form onSubmit={handleSubmitSuggestion} className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <form onSubmit={handleSubmitSuggestion} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input 
                 type="text" 
                 name="name" 
@@ -78,7 +85,7 @@ const Footer: React.FC = () => {
                 value={suggestion.name} 
                 onChange={handleInputChange} 
                 required
-                className="bg-background/60 focus:bg-background transition-colors"
+                className="bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-gray-300 focus:bg-white/20 transition-all duration-300 rounded-xl h-12"
               />
               <Input 
                 type="email" 
@@ -87,7 +94,7 @@ const Footer: React.FC = () => {
                 value={suggestion.email} 
                 onChange={handleInputChange} 
                 required
-                className="bg-background/60 focus:bg-background transition-colors" 
+                className="bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-gray-300 focus:bg-white/20 transition-all duration-300 rounded-xl h-12" 
               />
             </div>
             <Textarea 
@@ -96,57 +103,68 @@ const Footer: React.FC = () => {
               value={suggestion.message} 
               onChange={handleInputChange} 
               required
-              className="bg-background/60 focus:bg-background transition-colors resize-none min-h-[100px]"
+              className="bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-gray-300 focus:bg-white/20 transition-all duration-300 resize-none min-h-[120px] rounded-xl"
             />
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="bg-primary hover:bg-primary/90 transition-colors"
+              className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 border-0 rounded-xl h-12 px-8 font-bold transition-all duration-300 transform hover:scale-105"
             >
               {isSubmitting ? 'Envoi en cours...' : 'Envoyer'}
             </Button>
           </form>
         </div>
 
-        {/* Colonne 3: Liens utiles */}
+        {/* Colonne 3: Liens modernes */}
         <div className="lg:col-span-1">
-          <h3 className="font-semibold mb-4 text-lg flex items-center gap-2">
-            <Phone className="h-5 w-5 text-primary" />
+          <h3 className="font-black mb-6 text-2xl flex items-center gap-3 text-white">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center">
+              <Phone className="h-4 w-4 text-white" />
+            </div>
             Contact
           </h3>
-          <ul className="space-y-3 text-sm">
-            <li className="flex items-center gap-2 group">
-              <Mail className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
-              <a href="mailto:contact@arimin.com" className="text-muted-foreground hover:text-primary transition-colors">
+          <ul className="space-y-4">
+            <li className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center group-hover:bg-orange-500 transition-all duration-300">
+                <Mail className="h-4 w-4 text-white" />
+              </div>
+              <a href="mailto:contact@arimin.com" className="text-gray-300 hover:text-white transition-colors font-medium">
                 contact@arimin.com
               </a>
             </li>
-            <li className="flex items-center gap-2 group">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-muted-foreground group-hover:text-primary">
-                <circle cx="12" cy="12" r="10" />
-                <path d="m12 16 4-4-4-4" />
-                <path d="M8 12h8" />
-              </svg>
-              <a href="/faq" className="text-muted-foreground hover:text-primary transition-colors">
+            <li className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center group-hover:bg-orange-500 transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-white">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="m12 16 4-4-4-4" />
+                  <path d="M8 12h8" />
+                </svg>
+              </div>
+              <a href="/faq" className="text-gray-300 hover:text-white transition-colors font-medium">
                 FAQ
               </a>
             </li>
-            <li className="flex items-center gap-2 group">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-muted-foreground group-hover:text-primary">
-                <circle cx="12" cy="12" r="10" />
-                <path d="m12 16 4-4-4-4" />
-                <path d="M8 12h8" />
-              </svg>
-              <a href="/terms" className="text-muted-foreground hover:text-primary transition-colors">
+            <li className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center group-hover:bg-orange-500 transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-white">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="m12 16 4-4-4-4" />
+                  <path d="M8 12h8" />
+                </svg>
+              </div>
+              <a href="/terms" className="text-gray-300 hover:text-white transition-colors font-medium">
                 Conditions d'utilisation
               </a>
             </li>
           </ul>
         </div>
       </div>
-      <div className="border-t border-border/30">
-        <div className="container py-4 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Arimin. Tous droits réservés.
+      
+      <div className="border-t border-white/10">
+        <div className="container py-6 text-center">
+          <p className="text-gray-400 font-medium">
+            © {new Date().getFullYear()} Arimin. Tous droits réservés. Made with ❤️ for local communities.
+          </p>
         </div>
       </div>
     </footer>
