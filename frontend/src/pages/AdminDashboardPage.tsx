@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
+import { ShoppingBasket } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +20,7 @@ const AdminDashboardPage: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [orderStats, setOrderStats] = useState({ total: 0, pending: 0 });
   const [suggestionStats, setSuggestionStats] = useState({ total: 0, new: 0 });
 
   const { toast } = useToast();
@@ -35,16 +37,19 @@ const AdminDashboardPage: React.FC = () => {
     
     const usersUrl = `http://localhost:8000/admin/users?${userParams.toString()}`;
     const statsUrl = "http://localhost:8000/admin/suggestions/stats";
+    const ordersStatsUrl = "http://localhost:8000/admin/orders/stats";
 
     try {
-      const [usersResponse, statsResponse] = await Promise.all([
+      const [usersResponse, statsResponse, ordersStatsResponse] = await Promise.all([
         fetch(usersUrl, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(statsUrl, { headers: { Authorization: `Bearer ${token}` } })
+        fetch(statsUrl, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(ordersStatsUrl, { headers: { Authorization: `Bearer ${token}` } })
       ]);
 
       if (!usersResponse.ok) throw new Error("Erreur de chargement des utilisateurs.");
       if (!statsResponse.ok) throw new Error("Erreur de chargement des statistiques.");
-      
+      if (!ordersStatsResponse.ok) throw new Error("Erreur de chargement des statistiques des commandes.");
+      setOrderStats(await ordersStatsResponse.json());
       setUsers(await usersResponse.json());
       setSuggestionStats(await statsResponse.json());
 
@@ -210,6 +215,18 @@ const AdminDashboardPage: React.FC = () => {
               </CardContent>
             </Card>
           </Link>
+
+      <Link to="/admin/orders" className="lg:col-span-2">
+        <Card className="hover:shadow-lg hover:border-primary transition-all h-full">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-indigo-600">Commandes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-indigo-600">{orderStats.pending}</div>
+            <p className="text-xs text-muted-foreground">{orderStats.total} au total</p>
+          </CardContent>
+        </Card>
+      </Link>
         </div>
 
         <Card className="shadow-lg">

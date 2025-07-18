@@ -2,12 +2,13 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 
-from app.db.database import users, shops, suggestions
+from app.db.database import users, shops, suggestions, orders
 from app.schemas.users import UserOut
 from app.core.dependencies import get_current_admin
 from app.models import shop, product
 from app.schemas.shop import ShopOut
 from app.schemas.suggestions import SuggestionCreate, SuggestionOut, SuggestionReply
+from app.schemas.order import OrderOut
 router = APIRouter()
 
 
@@ -197,3 +198,30 @@ async def reply_to_suggestion(
         raise HTTPException(status_code=404, detail="Suggestion non trouvée après la mise à jour.")
 
     return SuggestionOut(**updated_suggestion)
+
+
+
+# --- NOUVELLE ROUTE : Lister toutes les commandes ---
+@router.get("/orders", response_model=List[OrderOut])
+async def get_all_orders(admin_user: UserOut = Depends(get_current_admin)):
+    all_orders_from_db = await orders.find().sort("created_at", -1).to_list(length=100)
+    
+    # --- On ajoute la conversion manuelle ici ---
+    for order in all_orders_from_db:
+        order["_id"] = str(order["_id"])
+        order["user_id"] = str(order["user_id"])
+        for sub in order.get("sub_orders", []):
+            sub["shop_id"] = str(sub["shop_id"])
+
+    return [OrderOut.model_validate(o) for o in all_orders_from_db]
+
+# --- NOUVELLE ROUTE : Obtenir les statistiques des commandes ---
+@router.get("/orders/stats", response_model=dict)
+async def get_order_stats(admin_user: UserOut = Depends(get_current_admin)):
+    """
+    Renvoie les statistiques sur les commandes.
+    """
+    total_count = await orders.count_documents({})
+    pending_count = await orders.count_documents({"status": "En attente"})
+    
+    return {"total": total_count, "pending": pending_count}

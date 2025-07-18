@@ -8,7 +8,7 @@ from app.core.cloudinary import upload_images_to_cloudinary
 from app.core.dependencies import get_current_merchant
 from app.schemas.shop import ShopOut, ShopBase, ShopWithContact
 from app.schemas.users import UserOut
-from app.schemas.product import ProductOut
+from app.schemas.product import ProductOut, ProductWithShopInfo
 
 router = APIRouter()
 
@@ -236,29 +236,36 @@ async def retrieve_public_shop(shop_id: str):
 
     return ShopWithContact(**result[0])
 
-@router.get("/{shop_id}/products/", response_model=List[ProductOut])
+@router.get("/{shop_id}/products/", response_model=List[ProductWithShopInfo])
 async def get_public_products_by_shop(shop_id: str):
-    """
-    Récupère les produits d'une boutique, mais seulement si la boutique 
-    est accessible au public (publiée ET propriétaire actif).
-    """
     if not ObjectId.is_valid(shop_id):
         raise HTTPException(status_code=400, detail="ID de boutique invalide")
 
-    # Pipeline pour valider si la boutique est visible par le public
+    # 1. Valider la boutique et son propriétaire
     validation_pipeline = [
         {"$match": {"_id": ObjectId(shop_id), "is_published": True}},
         {"$lookup": {"from": "users", "localField": "owner_id", "foreignField": "_id", "as": "owner_details"}},
         {"$unwind": "$owner_details"},
         {"$match": {"owner_details.is_active": True}}
     ]
+    shop_data = await shops.find_one(validation_pipeline)
+    if not shop_data:
+        raise HTTPException(status_code=404, detail="Boutique non trouvée ou invalide.")
     
-    # --- CORRECTION ICI : On utilise .aggregate() et on vérifie si le résultat n'est pas vide ---
-    valid_shop_result = await shops.aggregate(validation_pipeline).to_list(length=1)
-
-    if not valid_shop_result:
-        raise HTTPException(status_code=404, detail="Boutique non trouvée, non publiée, ou propriétaire inactif.")
+    # 2. Récupérer les produits de cette boutique
+    products_cursor = products.find({"shop_id": ObjectId(shop_id)})
     
-    # Si la boutique est valide, on peut renvoyer ses produits
-    cursor = products.find({"shop_id": ObjectId(shop_id)})
-    return [ProductOut(**product) async for product in cursor]
+    # 3. Enrichir chaque produit avec les infos de la boutique
+    product_list = []
+    async for product in products_cursor:
+        product_info = {
+            **product,
+            "shop": {
+                "_id": shop_data.get("_id"),
+                "name": shop_data.get("name"),
+                "contact_phone": shop_data.get("contact_phone")
+            }
+        }
+        product_list.append(ProductWithShopInfo.model_validate(product_info))
+        
+    return product_list

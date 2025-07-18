@@ -146,7 +146,7 @@ const ShopDetail: React.FC = () => {
             {products.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {products.map((product) => (
-                  <ProductCard key={product._id} id={product._id} imageUrl={(product.images && product.images.length > 0) ? product.images[0] : 'https://via.placeholder.com/300?text=Image'} name={product.name} shopName={shop.name} price={product.price} shopId={shop._id} />
+                  <ProductCard key={product._id} product={product} />
                 ))}   
               </div>
             ) : (<p className="text-center text-muted-foreground py-10">Cette boutique n'a pas encore de produits.</p>)}

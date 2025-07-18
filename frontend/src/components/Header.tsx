@@ -1,4 +1,3 @@
-
 import { ShoppingCart, Store, Menu, UserCircle2, LogOut, User, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
@@ -6,6 +5,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import { useCart } from '@/context/CartContext';
+import { CartPanel } from './CartPanel';
+import { Badge } from '@/components/ui/badge';
 
 interface DecodedToken {
   role: string;
@@ -17,19 +19,17 @@ const Header: React.FC = () => {
   const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const { itemCount } = useCart();
 
-  // Ce useEffect se met à jour à chaque changement de page pour refléter l'état de connexion
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const decodedToken: DecodedToken = jwtDecode(token);
-        // On vérifie si le token n'est pas expiré
         if (decodedToken.exp * 1000 > Date.now()) {
           setUserRole(decodedToken.role);
           setIsLoggedIn(true);
         } else {
-          // Si le token est expiré, on le supprime
           handleLogout(false);
         }
       } catch (error) {
@@ -39,7 +39,7 @@ const Header: React.FC = () => {
       setIsLoggedIn(false);
       setUserRole(null);
     }
-  }, [location.pathname]); // Dépend du changement d'URL
+  }, [location.pathname]);
 
   const handleLogout = (showAlert = true) => {
     localStorage.removeItem('token');
@@ -56,110 +56,104 @@ const Header: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-background via-background to-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo + Navigation */}
-        <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center gap-3 group transition-all duration-300 hover:scale-105">
-            <div className="relative">
-              <Store className="h-7 w-7 text-primary transition-all duration-300 group-hover:text-primary/80" />
-              <div className="absolute -inset-1 bg-primary/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </div>
-            <span className="font-bold text-xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Ahimin
-            </span>
+        <div className="flex items-center gap-6">
+          <Link to="/" className="flex items-center gap-2 group">
+            <Store className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
+            <span className="font-bold text-lg">Arimin</span>
           </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm">
+          <nav className="hidden md:flex items-center gap-6 text-sm">
             {navLinks.map((link) => (
               <Link 
                 key={link.href} 
                 to={link.href} 
-                className={`relative text-muted-foreground transition-all duration-300 hover:text-foreground font-medium px-3 py-2 rounded-lg hover:bg-accent/50 ${
-                  location.pathname === link.href ? 'text-primary bg-accent/30' : ''
+                className={`transition-colors relative ${
+                  location.pathname === link.href 
+                    ? "text-foreground font-medium after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-primary after:bottom-[-18px] after:left-0" 
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {link.label}
-                {location.pathname === link.href && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"></div>
-                )}
               </Link>
             ))}
           </nav>
         </div>
 
         {/* Boutons de droite */}
-        <div className="flex items-center gap-3">
-  
-
-          {/* Si non connecté => Affiche les boutons Login/Register */}
-          {!isLoggedIn && (
-            <div className="hidden md:flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <Sheet>
+            <SheetTrigger asChild>
               <Button 
-                variant="outline" 
-                asChild 
-                className="transition-all duration-300 hover:scale-105 hover:shadow-md border-4 border-0 bg-white hover:bg-gray-50 hover:text-black"
+                variant="ghost" 
+                size="icon" 
+                className="relative hover:bg-muted/70 transition-colors"
               >
+                <ShoppingCart className="h-5 w-5" />
+                {itemCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs shadow-sm animate-in fade-in-50 zoom-in-95"
+                  >
+                    {itemCount}
+                  </Badge>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="border-l border-border/60">
+              <CartPanel />
+            </SheetContent>
+          </Sheet>
+
+          {!isLoggedIn ? (
+            <div className="hidden md:flex items-center gap-2">
+              <Button variant="outline" asChild className="border-primary/30 hover:border-primary/80 transition-colors">
                 <Link to="/login">Se connecter</Link>
               </Button>
-              <Button 
-                asChild 
-                className="transition-all duration-300 hover:scale-105 hover:shadow-lg bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
-              >
+              <Button asChild className="bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md transition-all">
                 <Link to="/register">S'inscrire</Link>
               </Button>
             </div>
-          )}
-
-          {/* Si connecté => Affiche le menu déroulant du profil */}
-          {isLoggedIn && (
+          ) : (
             <div className="hidden md:flex">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="rounded-full hover:bg-accent/80 transition-all duration-300 hover:scale-110 border-2 border-transparent hover:border-primary/20"
-                  >
+                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/70 transition-colors">
                     <UserCircle2 className="h-6 w-6" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="end" 
-                  className="w-56 mt-2 bg-white/95 "
-                >
-                
-                  {/* --- CORRECTION : On utilise la couleur de fond du projet --- */}
-                  <DropdownMenuLabel className="text-center py-3 bg-white">
-                    <div className="font-semibold">Mon Compte</div>
-                      <div className="text-xs text-muted-foreground capitalize">
-                        {userRole === 'admin' ? 'Administrateur' : (userRole === 'merchant' ? 'Marchand' : 'Client')}
-                      </div>
-                  </DropdownMenuLabel>
+                <DropdownMenuContent align="end" className="w-56 border-border/60 shadow-lg animate-in fade-in-80 zoom-in-95 slide-in-from-top-5">
+                  <DropdownMenuLabel className="text-primary">Mon Compte</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild className="cursor-pointer bg-white transition-colors duration-200">
-                    <Link to="/profil" className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
+                  <DropdownMenuItem asChild className="cursor-pointer hover:bg-muted focus:bg-muted">
+                    <Link to="/profil" className="flex w-full items-center">
+                      <User className="h-4 w-4 mr-2 text-muted-foreground" />
                       Mon Profil
                     </Link>
                   </DropdownMenuItem>
                   {userRole === 'merchant' && (
-                    <DropdownMenuItem asChild className="cursor-pointer bg-white transition-colors duration-200">
-                      <Link to="/dashboard" className="flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
+                    <DropdownMenuItem asChild className="cursor-pointer hover:bg-muted focus:bg-muted">
+                      <Link to="/dashboard" className="flex w-full items-center">
+                        <Store className="h-4 w-4 mr-2 text-muted-foreground" />
                         Mon Dashboard
                       </Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuSeparator />
                   {userRole === 'admin' && (
-                    <DropdownMenuItem asChild><Link to="/admin/dashboard">Dashboard Admin</Link></DropdownMenuItem>
-                )}
+                    <DropdownMenuItem asChild className="cursor-pointer hover:bg-muted focus:bg-muted">
+                      <Link to="/admin/dashboard" className="flex w-full items-center">
+                        <Settings className="h-4 w-4 mr-2 text-muted-foreground" />
+                        Dashboard Admin
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={() => handleLogout()} 
-                    className="text-red-500 bg-white focus:text-red-600 cursor-pointer transition-colors duration-200 flex items-center gap-2"
+                    className="text-destructive focus:text-destructive hover:bg-destructive/10 focus:bg-destructive/10 cursor-pointer"
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LogOut className="h-4 w-4 mr-2" />
                     Se déconnecter
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -167,96 +161,91 @@ const Header: React.FC = () => {
             </div>
           )}
 
-          {/* Menu mobile */}
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="hover:bg-accent/80 transition-all duration-300 hover:scale-110"
-                >
+                <Button variant="ghost" size="icon" className="hover:bg-muted/70 transition-colors">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent className="bg-gradient-to-b from-background to-background/95">
+              <SheetContent side="left" className="border-r border-border/60">
                 <div className="grid gap-6 py-6">
-                  {/* Logo mobile */}
-                  <div className="flex items-center gap-3 pb-4 border-b">
+                  <Link to="/" className="flex items-center gap-2 mb-4">
                     <Store className="h-6 w-6 text-primary" />
-                    <span className="font-bold text-lg bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                      Ahimin
-                    </span>
-                  </div>
-                  
-                  <nav className="grid gap-2">
+                    <span className="font-bold text-xl">Arimin</span>
+                  </Link>
+                  <nav className="grid gap-3">
                     {navLinks.map((link) => (
                       <SheetClose asChild key={link.href}>
                         <Link 
                           to={link.href} 
-                          className={`flex w-full items-center py-3 px-4 text-lg font-semibold rounded-lg transition-all duration-200 hover:bg-accent/80 ${
-                            location.pathname === link.href ? 'bg-accent text-primary' : ''
+                          className={`flex w-full items-center py-2 text-lg font-medium pl-2 rounded-md ${
+                            location.pathname === link.href 
+                              ? "text-primary bg-muted" 
+                              : "hover:bg-muted/50"
                           }`}
                         >
                           {link.label}
                         </Link>
                       </SheetClose>
                     ))}
-                    {/* Liens de profil dans le menu mobile */}
-                    {isLoggedIn && userRole === 'merchant' && (
-                       <SheetClose asChild>
-                         <Link 
-                           to="/dashboard" 
-                           className="flex w-full items-center py-3 px-4 text-lg font-semibold rounded-lg transition-all duration-200 hover:bg-accent/80"
-                         >
-                           <Settings className="h-5 w-5 mr-3" />
-                           Gestion
-                         </Link>
-                       </SheetClose>
-                    )}
                   </nav>
-                  
                   <div className="border-t pt-6 mt-2">
                     {!isLoggedIn ? (
                       <div className="grid gap-3">
-                        <Button 
-                          variant="outline" 
-                          className="w-full transition-all duration-300 hover:scale-105 border-4" 
-                          asChild
-                        >
+                        <Button variant="outline" className="w-full justify-start pl-2" asChild>
                           <SheetClose asChild>
-                            <Link to="/login">Se connecter</Link>
+                            <Link to="/login">
+                              <User className="mr-2 h-4 w-4" />
+                              Se connecter
+                            </Link>
                           </SheetClose>
                         </Button>
-                        <Button 
-                          className="w-full transition-all duration-300 hover:scale-105 bg-gradient-to-r from-primary to-primary/90" 
-                          asChild
-                        >
+                        <Button className="w-full justify-start pl-2 bg-primary" asChild>
                           <SheetClose asChild>
-                            <Link to="/register">S'inscrire</Link>
+                            <Link to="/register">
+                              <UserCircle2 className="mr-2 h-4 w-4" />
+                              S'inscrire
+                            </Link>
                           </SheetClose>
                         </Button>
                       </div>
                     ) : (
                        <div className="grid gap-3">
-                          <Button 
-                            variant="secondary" 
-                            className="w-full transition-all duration-300 hover:scale-105" 
-                            asChild
-                          >
+                          <Button variant="outline" className="w-full justify-start pl-2" asChild>
                             <SheetClose asChild>
-                              <Link to="/profile" className="flex items-center gap-2">
-                                <User className="h-4 w-4" />
+                              <Link to="/profil">
+                                <User className="mr-2 h-4 w-4" />
                                 Mon Profil
                               </Link>
                             </SheetClose>
                           </Button>
+                          {userRole === 'merchant' && 
+                            <Button variant="outline" className="w-full justify-start pl-2" asChild>
+                              <SheetClose asChild>
+                                <Link to="/dashboard">
+                                  <Store className="mr-2 h-4 w-4" />
+                                  Dashboard
+                                </Link>
+                              </SheetClose>
+                            </Button>
+                          }
+                          {userRole === 'admin' && 
+                            <Button variant="outline" className="w-full justify-start pl-2" asChild>
+                              <SheetClose asChild>
+                                <Link to="/admin/dashboard">
+                                  <Settings className="mr-2 h-4 w-4" />
+                                  Dashboard Admin
+                                </Link>
+                              </SheetClose>
+                            </Button>
+                          }
                           <Button 
                             variant="destructive" 
-                            className="w-full transition-all duration-300 hover:scale-105" 
+                            className="w-full justify-start pl-2 mt-4" 
                             onClick={() => handleLogout()}
                           >
-                            <LogOut className="h-4 w-4 mr-2" />
+                            <LogOut className="mr-2 h-4 w-4" />
                             Se déconnecter
                           </Button>
                        </div>

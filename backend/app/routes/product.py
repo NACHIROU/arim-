@@ -124,35 +124,24 @@ async def delete_product(product_id: str, current_user: UserOut = Depends(get_cu
 # == Routes Publiques (pour les visiteurs du site)
 # ===============================================================
 
-# Dans app/routers/products.py
 
 @router.get("/public-products/", response_model=List[ProductWithShopInfo])
 async def get_public_products():
-    """
-    Récupère tous les produits publics, en vérifiant que la boutique
-    est publiée ET que le marchand est actif.
-    """
     pipeline = [
         {"$lookup": {"from": "shops", "localField": "shop_id", "foreignField": "_id", "as": "shop_details"}},
         {"$unwind": "$shop_details"},
         {"$match": {"shop_details.is_published": True}},
-        
-        # --- On ajoute la vérification du statut du marchand ---
         {"$lookup": {"from": "users", "localField": "shop_details.owner_id", "foreignField": "_id", "as": "owner_details"}},
         {"$unwind": "$owner_details"},
         {"$match": {"owner_details.is_active": True}},
-        
         {
             "$project": {
-                "_id": 1, "name": 1, "description": 1, "price": 1,
-                "images": 1, "shop_id": 1,
-                "seller": "$owner_details.first_name",
-                "shop": {"_id": "$shop_details._id", "name": "$shop_details.name", "contact_phone": "$shop_details.contact_phone"}
+                "_id": 1, "name": 1, "price": 1, "images": 1, "shop_id": 1,
+                "shop": {"_id": "$shop_details._id", "name": "$shop_details.name"}
             }
         },
         {"$limit": 50}
     ]
-    
     product_list = await products.aggregate(pipeline).to_list(length=None)
     return [ProductWithShopInfo.model_validate(p) for p in product_list]
 

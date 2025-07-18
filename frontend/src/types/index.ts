@@ -1,4 +1,4 @@
-// Ce fichier contiendra toutes vos interfaces partagées.
+// Ce fichier contient toutes les interfaces partagées entre le frontend et le backend.
 
 export interface Boutique {
   _id: string;
@@ -12,33 +12,29 @@ export interface Boutique {
 }
 
 export interface Produit {
-  [x: string]: any;
   _id: string;
   name: string;
   description: string;
   price: number;
   images?: string[];
   shop_id: string;
-  shopName?: string; // <-- Rendre optionnel
+  seller?: string; // Le nom du vendeur
+  // L'objet boutique imbriqué, qui contient toutes les infos nécessaires
   shop?: {
-    contact_phone: any;         // <-- Rendre optionnel
     _id: string;
     name: string;
+    contact_phone?: string;
   };
 }
 
 export interface User {
-  id: string; // ou _id selon ce que votre API renvoie pour /users/me
-  _id: string;
+  _id: string; // On utilise _id pour être cohérent avec MongoDB
   first_name: string;
   email: string;
   phone?: string;
   location?: string;
-  role: 'client' | 'merchant' | 'admin'; // <-- Rendre optionnel
-  shops?: Boutique[]; // <-- Rendre optionnel
-  products?: Produit[]; // <-- Rendre optionnel
-  whatsapp_call_link?: string; // <-- Rendre optionnel
-  is_active?: boolean; // <-- Rendre optionnel
+  role: 'client' | 'merchant' | 'admin';
+  is_active: boolean;
 }
 
 export interface Suggestion {
@@ -47,15 +43,31 @@ export interface Suggestion {
   email: string;
   message: string;
   status: 'nouveau' | 'lu' | 'répondu';
-  created_at: string; // Ceci sera une date au format string (ISO)
+  created_at: string; // Date au format string ISO
   admin_reply?: string;
 }
 
-export interface SuggestionReply {
+export interface OrderedProduct {
+  product_id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface SubOrder {
+  shop_id: string;
+  shop_name: string; // Nom de la boutique au moment de la commande
+  products: OrderedProduct[];
+  sub_total: number;
+  status: 'En attente' | 'En cours de livraison' | 'Livrée' | 'Annulée';
+}
+
+export interface Order {
   _id: string;
-  suggestion_id: string;
   user_id: string;
-  user: User;
-  content: string;
-  created_at: Date;
+  shipping_address: string;
+  total_price: number;
+  sub_orders: SubOrder[];
+  status: string; // Le statut global de la commande
+  created_at: string; // Date au format string ISO
 }
