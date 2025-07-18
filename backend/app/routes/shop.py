@@ -66,6 +66,27 @@ async def get_my_shops(current_user: UserOut = Depends(get_current_merchant)):
     cursor = shops.find({"owner_id": ObjectId(current_user.id)})
     return [ShopOut(**shop) async for shop in cursor]
 
+
+@router.get("/my-shops/{shop_id}/products", response_model=List[ProductOut])
+async def get_my_shop_products(shop_id: str, current_user: UserOut = Depends(get_current_merchant)):
+    """
+    Récupère les produits d'une boutique spécifique appartenant au marchand connecté.
+    Ne vérifie pas si la boutique est publiée.
+    """
+    if not ObjectId.is_valid(shop_id):
+        raise HTTPException(status_code=400, detail="ID de boutique invalide")
+
+    # Sécurité : On vérifie que la boutique appartient bien au marchand connecté
+    shop = await shops.find_one({"_id": ObjectId(shop_id), "owner_id": ObjectId(current_user.id)})
+    if not shop:
+        raise HTTPException(status_code=404, detail="Boutique non trouvée ou non autorisée.")
+
+    # Si c'est bon, on renvoie les produits
+    products_cursor = products.find({"shop_id": ObjectId(shop_id)})
+    return [ProductOut(**p) async for p in products_cursor]
+
+
+
 @router.put("/update-shop/{shop_id}", response_model=ShopOut)
 async def update_shop(
     shop_id: str,

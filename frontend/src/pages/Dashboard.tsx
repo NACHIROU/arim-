@@ -101,7 +101,7 @@ const Dashboard: React.FC = () => {
   const fetchProduitsByShop = async (shopId: string) => {
     if (!shopId || !token) { setProduits([]); return; }
     try {
-      const response = await fetch(`http://localhost:8000/shops/${shopId}/products/`, {
+    const response = await fetch(`http://localhost:8000/shops/my-shops/${shopId}/products`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProduits(response.ok ? await response.json() : []);

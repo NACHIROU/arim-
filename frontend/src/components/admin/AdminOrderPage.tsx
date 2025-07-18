@@ -115,7 +115,7 @@ const AdminOrdersPage: React.FC = () => {
                         {new Date(order.created_at).toLocaleDateString('fr-FR')}
                       </TableCell>
                       <TableCell>
-                        {order.sub_orders.length > 0 ? order.sub_orders.map(sub => sub.shop_name).join(", ") : "Client"}
+                        {order.customer.first_name ? order.customer.first_name : "Client"}
                       </TableCell>
                       <TableCell className="max-w-xs truncate">
                         {order.shipping_address}

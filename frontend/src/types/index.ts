@@ -21,6 +21,8 @@ export interface Produit {
   seller?: string; // Le nom du vendeur
   // L'objet boutique imbriqué, qui contient toutes les infos nécessaires
   shop?: {
+    location: any;
+    category: string;
     _id: string;
     name: string;
     contact_phone?: string;
@@ -83,4 +85,5 @@ export interface Order {
   status: string; // Le statut global de la commande
   created_at: string; // Date au format string ISO
   is_archived: boolean;
+  customer?: User; // Détails du client, optionnel pour les commandes anonymes
 }

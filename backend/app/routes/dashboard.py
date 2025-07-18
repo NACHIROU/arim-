@@ -11,18 +11,45 @@ router = APIRouter()
 
 @router.get("/orders", response_model=List[OrderOut])
 async def get_merchant_orders(current_user: UserOut = Depends(get_current_merchant)):
-    # ... (logique pour trouver les commandes du marchand) ...
-    merchant_orders = await orders.find(Query).sort("created_at", -1).to_list(length=None)
+    """
+    Récupère les commandes du marchand, enrichies avec les infos du client.
+    """
+    # 1. Trouver les boutiques du marchand (inchangé)
+    merchant_shops_cursor = shops.find({"owner_id": ObjectId(current_user.id)}, {"_id": 1})
+    merchant_shop_ids = [s["_id"] for s in await merchant_shops_cursor.to_list(length=None)]
+
+    if not merchant_shop_ids:
+        return []
+
+    # 2. On utilise une agrégation pour trouver les commandes ET joindre les infos du client
+    pipeline = [
+        # On trouve les commandes actives pour les boutiques du marchand
+        {"$match": {
+            "sub_orders.shop_id": {"$in": merchant_shop_ids},
+            "is_archived": False
+        }},
+        {"$sort": {"created_at": -1}},
+        # On joint les informations de l'utilisateur qui a passé la commande
+        {"$lookup": {
+            "from": "users",
+            "localField": "user_id",
+            "foreignField": "_id",
+            "as": "customer"
+        }},
+        {"$unwind": "$customer"}
+    ]
+
+    merchant_orders = await orders.aggregate(pipeline).to_list(length=None)
     
-    # --- On ajoute la conversion manuelle ici aussi ---
+    # On convertit les IDs pour la réponse
     for order in merchant_orders:
         order["_id"] = str(order["_id"])
         order["user_id"] = str(order["user_id"])
+        order["customer"]["_id"] = str(order["customer"]["_id"])
         for sub in order.get("sub_orders", []):
             sub["shop_id"] = str(sub["shop_id"])
             
     return [OrderOut.model_validate(order) for order in merchant_orders]
-
 
 @router.patch("/orders/{order_id}/sub_orders/{shop_id}/status", response_model=OrderOut)
 async def update_sub_order_status(

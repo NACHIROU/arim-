@@ -9,12 +9,12 @@ interface DashboardTabsProps {
 
 const DashboardTabs: React.FC<DashboardTabsProps> = ({ activeTab, setActiveTab }) => {
   return (
-    <div className="flex gap-2 bg-muted/30 p-2 rounded-xl">
+    <div className="flex gap-2 bg-muted/30 p-2 rounded-xl center justify-center shadow-sm">
       <Button
         variant={activeTab === 'boutiques' ? 'default' : 'ghost'}
         onClick={() => setActiveTab('boutiques')}
         className={activeTab === 'boutiques' 
-          ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg hover:shadow-xl transition-all duration-300'
+          ? ' from-primary to-accent text-white shadow-lg hover:shadow-xl transition-all duration-300'
           : 'text-foreground hover:bg-orange-50 hover:text-primary transition-all duration-300'
         }
       >
@@ -25,7 +25,7 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({ activeTab, setActiveTab }
         variant={activeTab === 'produits' ? 'default' : 'ghost'}
         onClick={() => setActiveTab('produits')}
         className={activeTab === 'produits' 
-          ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg hover:shadow-xl transition-all duration-300'
+          ? ' from-primary to-accent text-white shadow-lg hover:shadow-xl transition-all duration-300'
           : 'text-foreground hover:bg-orange-50 hover:text-primary transition-all duration-300'
         }
       >
@@ -36,7 +36,7 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({ activeTab, setActiveTab }
         variant={activeTab === 'commandes' ? 'default' : 'ghost'}
         onClick={() => setActiveTab('commandes')}
         className={activeTab === 'commandes' 
-          ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg hover:shadow-xl transition-all duration-300'
+          ? ' from-primary to-accent text-white shadow-lg hover:shadow-xl transition-all duration-300'
           : 'text-foreground hover:bg-orange-50 hover:text-primary transition-all duration-300'
         }
       >

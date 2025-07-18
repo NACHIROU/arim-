@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
+
+from app.schemas.users import UserOut
 from .pydantic_object_id import PydanticObjectId
 
 # --- Sous-documents ---
@@ -32,7 +34,7 @@ class OrderOut(OrderBase):
     created_at: datetime
     status: str
     is_archived: bool = Field(default=False)
-
+    customer: Optional[UserOut] = None # Pour les détails du client
     class Config:
         from_attributes = True
         populate_by_name = True

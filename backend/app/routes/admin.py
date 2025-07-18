@@ -204,12 +204,18 @@ async def reply_to_suggestion(
 # --- NOUVELLE ROUTE : Lister toutes les commandes ---
 @router.get("/orders", response_model=List[OrderOut])
 async def get_all_orders(admin_user: UserOut = Depends(get_current_admin)):
-    all_orders_from_db = await orders.find().sort("created_at", -1).to_list(length=100)
+    pipeline = [
+        {"$sort": {"created_at": -1}},
+        {"$limit": 100},
+        {"$lookup": {"from": "users", "localField": "user_id", "foreignField": "_id", "as": "customer"}},
+        {"$unwind": "$customer"}
+    ]
+    all_orders_from_db = await orders.aggregate(pipeline).to_list(length=None)
     
-    # --- On ajoute la conversion manuelle ici ---
     for order in all_orders_from_db:
         order["_id"] = str(order["_id"])
         order["user_id"] = str(order["user_id"])
+        order["customer"]["_id"] = str(order["customer"]["_id"])
         for sub in order.get("sub_orders", []):
             sub["shop_id"] = str(sub["shop_id"])
 
