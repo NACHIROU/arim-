@@ -4,7 +4,7 @@ from datetime import datetime
 from bson import ObjectId
 
 from app.db.database import reviews # Assurez-vous d'avoir une collection 'reviews'
-from app.schemas.review import ReviewCreate, ReviewOut
+from app.schemas.review import ReviewCreate, ReviewOut, ReviewWithShopInfo
 from app.schemas.users import UserOut
 # Cette dépendance doit pouvoir récupérer n'importe quel utilisateur connecté
 from app.core.dependencies import get_current_user 
@@ -61,10 +61,45 @@ async def get_reviews_for_shop(shop_id: str):
 
     return [ReviewOut(**review) for review in review_list]
 
-@router.get("/my-reviews", response_model=List[ReviewOut])
+@router.get("/my-reviews", response_model=List[ReviewWithShopInfo])
 async def get_my_reviews(current_user: UserOut = Depends(get_current_user)):
     """
-    Récupère tous les avis laissés par l'utilisateur actuellement connecté.
+    Récupère les avis de l'utilisateur connecté, enrichis avec les infos de la boutique.
     """
-    user_reviews = await reviews.find({"user_id": ObjectId(current_user.id)}).sort("created_at", -1).to_list(length=None)
-    return [ReviewOut(**review) for review in user_reviews]
+    pipeline = [
+        # 1. On trouve les avis de l'utilisateur
+        {"$match": {"user_id": ObjectId(current_user.id)}},
+        # 2. On joint les informations de la boutique correspondante
+        {"$lookup": {
+            "from": "shops",
+            "localField": "shop_id",
+            "foreignField": "_id",
+            "as": "shop_details"
+        }},
+        {"$unwind": "$shop_details"},
+        # 3. On trie par date
+        {"$sort": {"created_at": -1}}
+    ]
+    
+    user_reviews = await reviews.aggregate(pipeline).to_list(length=None)
+    return [ReviewWithShopInfo.model_validate(review) for review in user_reviews]
+
+
+@router.delete("/{review_id}", response_model=dict)
+async def delete_review(review_id: str, current_user: UserOut = Depends(get_current_user)):
+    """
+    Permet à un utilisateur de supprimer son propre avis.
+    """
+    if not ObjectId.is_valid(review_id):
+        raise HTTPException(status_code=400, detail="ID d'avis invalide")
+
+    review_to_delete = await reviews.find_one({"_id": ObjectId(review_id)})
+    if not review_to_delete:
+        raise HTTPException(status_code=404, detail="Avis non trouvé")
+
+    # Sécurité : on vérifie que l'utilisateur est bien le propriétaire de l'avis
+    if review_to_delete["user_id"] != ObjectId(current_user.id):
+        raise HTTPException(status_code=403, detail="Action non autorisée")
+
+    await reviews.delete_one({"_id": ObjectId(review_id)})
+    return {"message": "Avis supprimé avec Succès ✅ ."}

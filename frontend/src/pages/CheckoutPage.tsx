@@ -73,7 +73,7 @@ const CheckoutPage: React.FC = () => {
       });
       if (!response.ok) throw new Error("La création de la commande a échoué.");
 
-      toast({ title: "Commande passée !", description: "Votre commande a été enregistrée avec succès." });
+      toast({ title: "Commande passée !", description: "Votre commande a été enregistrée avec Succès ✅ ." });
       clearCart();
       navigate('/');
     } catch (error) {

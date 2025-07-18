@@ -118,7 +118,7 @@ async def delete_product(product_id: str, current_user: UserOut = Depends(get_cu
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Produit non trouvé lors de la suppression")
 
-    return {"message": "Produit supprimé avec succès"}
+    return {"message": "Produit supprimé avec Succès ✅ "}
 
 # ===============================================================
 # == Routes Publiques (pour les visiteurs du site)

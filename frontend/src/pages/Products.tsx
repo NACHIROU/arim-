@@ -65,14 +65,8 @@ const Products: React.FC = () => {
                 <div className="text-center space-y-8 mb-16">
                     <div className="inline-flex items-center gap-3 bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 px-8 py-4 rounded-full text-sm font-semibold shadow-lg">
                         <Sparkles className="h-5 w-5" />
-                        Catalogue Premium
+                        Catalogue des Produits
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-black bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 bg-clip-text text-transparent leading-tight">
-                        Tous nos produits
-                    </h1>
-                    <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-medium">
-                        Découvrez notre collection exclusive de produits soigneusement sélectionnés par nos partenaires locaux
-                    </p>
                 </div>
 
                 {/* Barre de recherche moderne */}

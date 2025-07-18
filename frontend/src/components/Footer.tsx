@@ -50,7 +50,7 @@ const Footer: React.FC = () => {
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <Store className="h-6 w-6 text-white" />
             </div>
-            <span className="font-black text-2xl text-white">Arimin</span>
+            <span className="font-black text-2xl text-white">Ahimin</span>
           </Link>
           <p className="text-gray-300 leading-relaxed text-lg font-medium mb-8">
             La marketplace nouvelle génération qui révolutionne le commerce local et rapproche les communautés.
@@ -128,8 +128,8 @@ const Footer: React.FC = () => {
               <div className="w-10 h-10 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center group-hover:bg-orange-500 transition-all duration-300">
                 <Mail className="h-4 w-4 text-white" />
               </div>
-              <a href="mailto:contact@arimin.com" className="text-gray-300 hover:text-white transition-colors font-medium">
-                contact@arimin.com
+              <a href="mailto:contact@ahimin.com" className="text-gray-300 hover:text-white transition-colors font-medium">
+                contact@ahimin.com
               </a>
             </li>
             <li className="flex items-center gap-3 group">
@@ -163,7 +163,7 @@ const Footer: React.FC = () => {
       <div className="border-t border-white/10">
         <div className="container py-6 text-center">
           <p className="text-gray-400 font-medium">
-            © {new Date().getFullYear()} Arimin. Tous droits réservés. Made with ❤️ for local communities.
+            © {new Date().getFullYear()} Ahimin. Tous droits réservés. Fais avec ❤️ pour les communautés locales.
           </p>
         </div>
       </div>

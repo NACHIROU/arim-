@@ -60,4 +60,4 @@ async def update_current_user_password(
         {"$set": {"password": hashed_password}}
     )
 
-    return {"message": "Mot de passe mis à jour avec succès."}
+    return {"message": "Mot de passe mis à jour avec Succès ✅ ."}

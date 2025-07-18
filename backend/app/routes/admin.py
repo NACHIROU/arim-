@@ -60,7 +60,7 @@ async def update_user_status(
 
     await users.update_one({"_id": ObjectId(user_id)}, {"$set": {"is_active": is_active}})
     action = "réactivé" if is_active else "suspendu"
-    return {"message": f"L'utilisateur a été {action} avec succès."}
+    return {"message": f"L'utilisateur a été {action} avec Succès ✅ ."}
 
 @router.delete("/users/{user_id}", response_model=dict)
 async def delete_user(user_id: str, admin_user: UserOut = Depends(get_current_admin)):
@@ -95,7 +95,7 @@ async def delete_user(user_id: str, admin_user: UserOut = Depends(get_current_ad
             shop_delete_result = await shop.delete_many({"_id": {"$in": shop_ids_to_delete}})
             print(f"  -> {shop_delete_result.deleted_count} boutiques supprimées.")
     await users.delete_one({"_id": ObjectId(user_id)})
-    return {"message": "Utilisateur supprimé avec succès."}
+    return {"message": "Utilisateur supprimé avec Succès ✅ ."}
 
 @router.get("/users/{user_id}", response_model=UserOut)
 async def get_user_by_id(user_id: str, admin_user: UserOut = Depends(get_current_admin)):
@@ -170,14 +170,14 @@ async def reply_to_suggestion(
         raise HTTPException(status_code=404, detail="Suggestion non trouvée")
 
     # --- 2. On prépare et on envoie l'email de réponse ---
-    subject = f"Réponse à votre message sur Arimin"
+    subject = f"Réponse à votre message sur Ahimin"
     html_content = f"""
     <p>Bonjour {original_suggestion.get('name', 'Utilisateur')},</p>
     <p>Suite à votre récent message, voici la réponse de notre équipe :</p>
     <p style="border-left: 2px solid #ccc; padding-left: 1em; font-style: italic;">
         {reply_data.reply_message}
     </p>
-    <p>Cordialement,<br>L'équipe Arimin</p>
+    <p>Cordialement,<br>L'équipe Ahimin</p>
     """
     await send_email(
         to_email=original_suggestion['email'], 

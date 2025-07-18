@@ -66,12 +66,6 @@ const Shops: React.FC = () => {
             <Store className="h-5 w-5" />
             Répertoire Boutiques
           </div>
-          <h1 className="text-5xl md:text-7xl font-black bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 bg-clip-text text-transparent leading-tight">
-            Toutes nos boutiques
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-medium">
-            Explorez les meilleures boutiques de votre région et découvrez des produits uniques créés avec passion
-          </p>
         </div>
 
         {/* Barre de recherche moderne */}

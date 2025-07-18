@@ -131,7 +131,7 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
         throw new Error(`Erreur: ${await response.text()}`);
       }
       
-      alert(`Boutique ${isEditing ? 'mise à jour' : 'créée'} avec succès !`);
+      alert(`Boutique ${isEditing ? 'mise à jour' : 'créée'} avec Succès ✅  !`);
       onSuccess();
 
     } catch (error) {

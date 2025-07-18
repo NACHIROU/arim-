@@ -58,7 +58,7 @@ const SuggestionsPage: React.FC = () => {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Erreur lors de l'envoi.");
       }
-      toast({ title: "Succès", description: "Réponse envoyée avec succès." });
+      toast({ title: "Succès ✅ ", description: "Réponse envoyée avec Succès ✅ ." });
       setReplyingTo(null);
       setReplyMessage("");
       fetchSuggestions();

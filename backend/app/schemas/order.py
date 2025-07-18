@@ -21,6 +21,7 @@ class OrderBase(BaseModel):
     shipping_address: str
     total_price: float
     sub_orders: List[SubOrder]
+    is_archived: bool = Field(default=False)
 
 class OrderCreate(OrderBase):
     pass
@@ -30,6 +31,7 @@ class OrderOut(OrderBase):
     user_id: PydanticObjectId
     created_at: datetime
     status: str
+    is_archived: bool = Field(default=False)
 
     class Config:
         from_attributes = True

@@ -107,7 +107,7 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
         throw new Error(`Erreur: ${await response.text()}`);
       }
       
-      alert(`Produit ${isEditing ? 'modifié' : 'créé'} avec succès !`);
+      alert(`Produit ${isEditing ? 'modifié' : 'créé'} avec Succès ✅  !`);
       onSuccess();
     } catch (error) {
       console.error('Erreur formulaire produit:', error);

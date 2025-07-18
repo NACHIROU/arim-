@@ -62,7 +62,7 @@ const Header: React.FC = () => {
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center gap-2 group">
             <Store className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-lg">Arimin</span>
+            <span className="font-bold text-lg">Ahimin</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm">
             {navLinks.map((link) => (
@@ -172,7 +172,7 @@ const Header: React.FC = () => {
                 <div className="grid gap-6 py-6">
                   <Link to="/" className="flex items-center gap-2 mb-4">
                     <Store className="h-6 w-6 text-primary" />
-                    <span className="font-bold text-xl">Arimin</span>
+                    <span className="font-bold text-xl">Ahimin</span>
                   </Link>
                   <nav className="grid gap-3">
                     {navLinks.map((link) => (

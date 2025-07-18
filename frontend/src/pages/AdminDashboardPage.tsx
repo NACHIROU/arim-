@@ -82,7 +82,7 @@ const AdminDashboardPage: React.FC = () => {
         const errorData = await response.json();
         throw new Error(errorData.detail || "L'opération a échoué.");
       }
-      toast({ title: "Succès", description: `Utilisateur ${action} avec succès.` });
+      toast({ title: "Succès ✅ ", description: `Utilisateur ${action} avec Succès ✅ .` });
       fetchData();
     } catch (error) {
       toast({ title: "Erreur", description: (error as Error).message, variant: "destructive" });
@@ -100,7 +100,7 @@ const AdminDashboardPage: React.FC = () => {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Erreur lors de la suppression.");
       }
-      toast({ title: "Succès", description: "Utilisateur supprimé avec succès." });
+      toast({ title: "Succès ✅ ", description: "Utilisateur supprimé avec Succès ✅ ." });
       fetchData();
     } catch (error) {
       toast({ title: "Erreur", description: (error as Error).message, variant: "destructive" });

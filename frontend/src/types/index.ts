@@ -45,7 +45,9 @@ export interface Review {
   rating: number;
   message: string;
   created_at: string; // Date au format string (ISO)
+  shop_details?: Boutique
 }
+
 
 export interface Suggestion {
   _id: string;
@@ -80,4 +82,5 @@ export interface Order {
   sub_orders: SubOrder[];
   status: string; // Le statut global de la commande
   created_at: string; // Date au format string ISO
+  is_archived: boolean;
 }

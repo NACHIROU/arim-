@@ -3,6 +3,8 @@ from typing import Optional
 from datetime import datetime
 from bson import ObjectId
 
+from app.schemas.shop import ShopOut
+
 # Ce que le client envoie pour créer un avis
 class ReviewCreate(BaseModel):
     shop_id: str
@@ -34,3 +36,6 @@ class ReviewOut(BaseModel):
         arbitrary_types_allowed=True,
         json_encoders={ObjectId: str},
     )
+
+class ReviewWithShopInfo(ReviewOut):
+    shop_details: ShopOut

@@ -142,7 +142,7 @@ async def publish_shop(shop_id: str, current_user: UserOut = Depends(get_current
     if not shop or shop["owner_id"] != ObjectId(current_user.id):
         raise HTTPException(status_code=403, detail="Accès refusé ou boutique non trouvée")
     await shops.update_one({"_id": ObjectId(shop_id)}, {"$set": {"is_published": True}})
-    return {"message": "Boutique publiée avec succès"}
+    return {"message": "Boutique publiée avec Succès ✅ "}
 
 @router.patch("/unpublish/{shop_id}", response_model=dict)
 async def unpublish_shop(shop_id: str, current_user: UserOut = Depends(get_current_merchant)):
@@ -151,7 +151,7 @@ async def unpublish_shop(shop_id: str, current_user: UserOut = Depends(get_curre
     if not shop or shop["owner_id"] != ObjectId(current_user.id):
         raise HTTPException(status_code=403, detail="Accès refusé ou boutique non trouvée")
     await shops.update_one({"_id": ObjectId(shop_id)}, {"$set": {"is_published": False}})
-    return {"message": "Boutique dépubliée avec succès"}
+    return {"message": "Boutique dépubliée avec Succès ✅ "}
 
 
 
