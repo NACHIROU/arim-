@@ -6,7 +6,7 @@ import BoutiqueForm from '@/components/dashboard/BoutiqueForm';
 import BoutiquesList from '@/components/dashboard/BoutiquesList';
 import ProduitForm from '@/components/dashboard/ProduitForm';
 import ProduitsList from '@/components/dashboard/ProduitsList';
-import { Boutique, Order, Produit } from '@/types';
+import { Boutique, Order, Produit, ShopWithOrders } from '@/types';
 import { OrdersList } from '@/components/dashboard/OrderList';
 
 const Dashboard: React.FC = () => {
@@ -17,7 +17,7 @@ const Dashboard: React.FC = () => {
   const [boutiques, setBoutiques] = useState<Boutique[]>([]);
   const [editingShop, setEditingShop] = useState<Boutique | null>(null);
   const boutiqueFormRef = useRef<HTMLDivElement>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [groupedOrders, setGroupedOrders] = useState<ShopWithOrders[]>([]);
   // --- États pour les produits ---
   const [produits, setProduits] = useState<Produit[]>([]);
   const [selectedShopId, setSelectedShopId] = useState<string>('');
@@ -148,7 +148,7 @@ const Dashboard: React.FC = () => {
       const response = await fetch("http://localhost:8000/dashboard/orders", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (response.ok) setOrders(await response.json());
+      if (response.ok) setGroupedOrders(await response.json());
     } catch (error) { console.error("Erreur chargement commandes:", error); }
   }, [token]);
 
@@ -265,9 +265,8 @@ const Dashboard: React.FC = () => {
       {activeTab === 'commandes' && (
         <div className="mt-6">
           <h2 className="text-2xl font-semibold mb-4">Mes Commandes Reçues</h2>
-          <OrdersList 
-            orders={orders} 
-            merchantShopIds={merchantShopIds} 
+          <OrdersList
+            groupedOrders={groupedOrders} 
             onStatusChange={handleStatusChange} 
           />
         </div>

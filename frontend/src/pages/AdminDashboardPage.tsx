@@ -3,25 +3,35 @@ import { useNavigate, Link } from 'react-router-dom';
 import { User } from '@/types';
 import { 
   Loader2, Trash2, UserX, UserCheck, Users, 
-  Search, Filter, Eye, Shield, MessageSquare 
+  Search, Filter, Eye, Shield, MessageSquare, Store, Package, ShoppingBasket 
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
-import { ShoppingBasket } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const AdminDashboardPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [stats, setStats] = useState({
+    users: { total: 0, active: 0, suspended: 0, clients: 0, merchants: 0, admins: 0 },
+    shops: 0, products: 0, orders: 0, suggestions: 0
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [orderStats, setOrderStats] = useState({ total: 0, pending: 0 });
-  const [suggestionStats, setSuggestionStats] = useState({ total: 0, new: 0 });
+
+    const stat = {
+    total: users.length,
+    active: users.filter(u => u.is_active).length,
+    suspended: users.filter(u => !u.is_active).length,
+    clients: users.filter(u => u.role === 'client').length,
+    merchants: users.filter(u => u.role === 'merchant').length,
+    admins: users.filter(u => u.role === 'admin').length,
+  };
 
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -36,22 +46,19 @@ const AdminDashboardPage: React.FC = () => {
     if (searchTerm.trim().length >= 2) userParams.append('search', searchTerm);
     
     const usersUrl = `http://localhost:8000/admin/users?${userParams.toString()}`;
-    const statsUrl = "http://localhost:8000/admin/suggestions/stats";
-    const ordersStatsUrl = "http://localhost:8000/admin/orders/stats";
+    const statsUrl = "http://localhost:8000/admin/stats";
 
     try {
-      const [usersResponse, statsResponse, ordersStatsResponse] = await Promise.all([
+      const [usersResponse, statsResponse] = await Promise.all([
         fetch(usersUrl, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(statsUrl, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(ordersStatsUrl, { headers: { Authorization: `Bearer ${token}` } })
+        fetch(statsUrl, { headers: { Authorization: `Bearer ${token}` } })
       ]);
 
       if (!usersResponse.ok) throw new Error("Erreur de chargement des utilisateurs.");
       if (!statsResponse.ok) throw new Error("Erreur de chargement des statistiques.");
-      if (!ordersStatsResponse.ok) throw new Error("Erreur de chargement des statistiques des commandes.");
-      setOrderStats(await ordersStatsResponse.json());
+      
       setUsers(await usersResponse.json());
-      setSuggestionStats(await statsResponse.json());
+      setStats(await statsResponse.json());
 
     } catch (error) {
       console.error("Erreur de chargement du dashboard:", error);
@@ -67,12 +74,11 @@ const AdminDashboardPage: React.FC = () => {
       fetchData();
     }, 300);
     return () => clearTimeout(debounce);
-  }, [fetchData, roleFilter, statusFilter, searchTerm]);
+  }, [fetchData]);
 
   const handleUpdateStatus = async (userId: string, isActive: boolean) => {
     const action = isActive ? "réactiver" : "suspendre";
     if (!window.confirm(`Êtes-vous sûr de vouloir ${action} cet utilisateur ?`)) return;
-    
     try {
       const response = await fetch(`http://localhost:8000/admin/users/${userId}/status?is_active=${isActive}`, {
         method: 'PATCH',
@@ -82,7 +88,7 @@ const AdminDashboardPage: React.FC = () => {
         const errorData = await response.json();
         throw new Error(errorData.detail || "L'opération a échoué.");
       }
-      toast({ title: "Succès ✅ ", description: `Utilisateur ${action} avec Succès ✅ .` });
+      toast({ title: "Succès", description: `Utilisateur ${action} avec succès.` });
       fetchData();
     } catch (error) {
       toast({ title: "Erreur", description: (error as Error).message, variant: "destructive" });
@@ -100,7 +106,7 @@ const AdminDashboardPage: React.FC = () => {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Erreur lors de la suppression.");
       }
-      toast({ title: "Succès ✅ ", description: "Utilisateur supprimé avec Succès ✅ ." });
+      toast({ title: "Succès", description: "Utilisateur supprimé avec succès." });
       fetchData();
     } catch (error) {
       toast({ title: "Erreur", description: (error as Error).message, variant: "destructive" });
@@ -115,19 +121,8 @@ const AdminDashboardPage: React.FC = () => {
     }
   };
 
-    const stats = {
-    total: users.length,
-    active: users.filter(u => u.is_active).length,
-    suspended: users.filter(u => !u.is_active).length,
-    clients: users.filter(u => u.role === 'client').length,
-    merchants: users.filter(u => u.role === 'merchant').length,
-    admins: users.filter(u => u.role === 'admin').length,
-  };
-
   if (isLoading && users.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>
-    );
+    return <div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   }
 
   return (
@@ -140,93 +135,21 @@ const AdminDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
-            {/* Carte Total Utilisateurs */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <p className="text-xs text-muted-foreground">Utilisateurs</p>
-            </CardContent>
-          </Card>
-
-          {/* Carte Utilisateurs Actifs */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-green-600">Actifs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-              <p className="text-xs text-muted-foreground">{stats.total > 0 ? `${Math.round((stats.active / stats.total) * 100)}%` : '0%'} du total</p>
-            </CardContent>
-          </Card>
-
-          {/* Carte Utilisateurs Suspendus */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-red-600">Suspendus</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.suspended}</div>
-               <p className="text-xs text-muted-foreground">{stats.total > 0 ? `${Math.round((stats.suspended / stats.total) * 100)}%` : '0%'} du total</p>
-            </CardContent>
-          </Card>
-
-          {/* Carte Clients */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-blue-600">Clients</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.clients}</div>
-              <p className="text-xs text-muted-foreground">Utilisateurs finaux</p>
-            </CardContent>
-          </Card>
-
-          {/* Carte Marchands */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-purple-600">Marchands</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-purple-600">{stats.merchants}</div>
-              <p className="text-xs text-muted-foreground">Vendeurs</p>
-            </CardContent>
-          </Card>
-
-          {/* Carte Admins */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-orange-600">Admins</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{stats.admins}</div>
-              <p className="text-xs text-muted-foreground">Administrateurs</p>
-            </CardContent>
-          </Card>
-          <Link to="/admin/suggestions">
-            <Card className="hover:shadow-lg hover:border-primary transition-all h-full">
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-cyan-600">Messages</CardTitle></CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-cyan-600">{suggestionStats.new}</div>
-                <div className="flex items-center text-xs text-muted-foreground"><MessageSquare className="h-3 w-3 mr-1" />{suggestionStats.total} au total</div>
-              </CardContent>
-            </Card>
-          </Link>
-
-      <Link to="/admin/orders" className="lg:col-span-2">
-        <Card className="hover:shadow-lg hover:border-primary transition-all h-full">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-indigo-600">Commandes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-indigo-600">{orderStats.pending}</div>
-            <p className="text-xs text-muted-foreground">{orderStats.total} au total</p>
-          </CardContent>
-        </Card>
-      </Link>
+        {/* --- Cartes de Statistiques Complètes --- */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+          <Link to="/admin/dashboard" className="block"><Card className="hover:shadow-lg"><CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Utilisateurs</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stat.total}</div></CardContent></Card></Link>
+          <Link to="/admin/shops" className="block"><Card className="hover:shadow-lg"><CardHeader><CardTitle className="text-sm font-medium">Boutiques</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stats.shops}</div></CardContent></Card></Link>
+          <Link to="/admin/products" className="block"><Card className="hover:shadow-lg"><CardHeader><CardTitle className="text-sm font-medium">Produits</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stats.products}</div></CardContent></Card></Link>
+          <Link to="/admin/orders" className="block"><Card className="hover:shadow-lg"><CardHeader><CardTitle className="text-sm font-medium">Commandes</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stats.orders}</div></CardContent></Card></Link>
+          <Link to="/admin/suggestions" className="block"><Card className="hover:shadow-lg"><CardHeader><CardTitle className="text-sm font-medium">Messages</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stats.suggestions}</div></CardContent></Card></Link>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+            <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-green-600">Utilisateurs Actifs</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-green-600">{stat.active}</div></CardContent></Card>
+            <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-red-600">Utilisateurs Suspendus</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-red-600">{stat.suspended}</div></CardContent></Card>
+            <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-blue-600">Clients</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-blue-600">{stat.clients}</div></CardContent></Card>
+            <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-purple-600">Marchands</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-purple-600">{stat.merchants}</div></CardContent></Card>
+            <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-orange-600">Admins</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-orange-600">{stat.admins}</div></CardContent></Card>
         </div>
 
         <Card className="shadow-lg">
@@ -238,8 +161,9 @@ const AdminDashboardPage: React.FC = () => {
               </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
                 <div className="relative"><Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Rechercher..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 w-full sm:w-64" /></div>
-                <div className="flex gap-2"><Select value={roleFilter} onValueChange={setRoleFilter}><SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Tous les rôles</SelectItem><SelectItem value="client">Clients</SelectItem><SelectItem value="merchant">Marchands</SelectItem></SelectContent></Select>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Tous les statuts</SelectItem><SelectItem value="active">Actifs</SelectItem><SelectItem value="suspended">Suspendus</SelectItem></SelectContent></Select>
+                <div className="flex gap-2">
+                  <Select value={roleFilter} onValueChange={setRoleFilter}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Rôle" /></SelectTrigger><SelectContent><SelectItem value="all">Tous les rôles</SelectItem><SelectItem value="client">Clients</SelectItem><SelectItem value="merchant">Marchands</SelectItem></SelectContent></Select>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Statut" /></SelectTrigger><SelectContent><SelectItem value="all">Tous les statuts</SelectItem><SelectItem value="active">Actifs</SelectItem><SelectItem value="suspended">Suspendus</SelectItem></SelectContent></Select>
                 </div>
               </div>
             </div>
@@ -287,4 +211,5 @@ const AdminDashboardPage: React.FC = () => {
     </div>
   );
 };
+
 export default AdminDashboardPage;

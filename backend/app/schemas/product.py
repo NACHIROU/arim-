@@ -2,6 +2,8 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 from bson import ObjectId
 
+from app.schemas.pydantic_object_id import PydanticObjectId
+
 class ProductBase(BaseModel):
     name: str
     description: Optional[str] = ""
@@ -16,33 +18,36 @@ class ProductUpdate(BaseModel):
     description: Optional[str]
     price: Optional[float]
     image_url: Optional[str]
+# Schéma pour les informations de la boutique imbriquées
+class ShopInfo(BaseModel):
+    id: PydanticObjectId = Field(..., alias="_id") # L'API renverra "id"
+    name: str
+    contact_phone: Optional[str] = None
 
-class ProductOut(ProductBase):
-    # On a un seul champ 'id' qui est un alias pour '_id'
-    id: str = Field(..., alias="_id")
+# Le schéma final et unique pour un produit renvoyé par l'API
+class ProductOut(BaseModel):
+    id: PydanticObjectId = Field(..., alias="_id")
+    name: str
+    description: Optional[str] = ""
+    price: float
     images: List[str] = Field(default=[])
-    shop_id: str
-
-    # Le validateur ne cible que les champs 'id' et 'shop_id'
-    @field_validator("id", "shop_id", mode="before")
-    @classmethod
-    def convert_objectid_to_str(cls, v):
-        if isinstance(v, ObjectId):
-            return str(v)
-        return v
+    shop_id: PydanticObjectId
+    shop: Optional[ShopInfo]
 
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True,
         arbitrary_types_allowed=True,
-        json_encoders={ObjectId: str},
+        json_encoders={ PydanticObjectId: str }
     )
+
 class ShopInfo(BaseModel):
-    _id: str
+    id: PydanticObjectId = Field(..., alias="_id") # On utilise 'id' avec un alias '_id'
     name: str
-    contact_phone: Optional[str] = None 
+    contact_phone: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True, arbitrary_types_allowed=True)
 
 class ProductWithShopInfo(ProductOut):
-    seller: Optional[str] = None
     shop: Optional[ShopInfo] = None
-
+    seller: Optional[str] = None

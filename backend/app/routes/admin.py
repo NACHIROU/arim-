@@ -1,14 +1,15 @@
 from bson import ObjectId
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from typing import List, Optional
 
-from app.db.database import users, shops, suggestions, orders
+from app.db.database import users, shops, suggestions, orders, products
 from app.schemas.users import UserOut
 from app.core.dependencies import get_current_admin
 from app.models import shop, product
-from app.schemas.shop import ShopOut
+from app.schemas.shop import ShopOut, ShopWithOwner
 from app.schemas.suggestions import SuggestionCreate, SuggestionOut, SuggestionReply
 from app.schemas.order import OrderOut
+from app.schemas.product import ProductWithShopInfo
 router = APIRouter()
 
 
@@ -202,6 +203,9 @@ async def reply_to_suggestion(
 
 
 # --- NOUVELLE ROUTE : Lister toutes les commandes ---
+
+
+
 @router.get("/orders", response_model=List[OrderOut])
 async def get_all_orders(admin_user: UserOut = Depends(get_current_admin)):
     pipeline = [
@@ -231,3 +235,150 @@ async def get_order_stats(admin_user: UserOut = Depends(get_current_admin)):
     pending_count = await orders.count_documents({"status": "En attente"})
     
     return {"total": total_count, "pending": pending_count}
+
+
+
+@router.patch("/orders/{order_id}/sub_orders/{shop_id}/status", response_model=OrderOut)
+async def admin_update_sub_order_status(
+    order_id: str,
+    shop_id: str,
+    status: str = Body(..., embed=True),
+    admin_user: UserOut = Depends(get_current_admin)
+):
+    """
+    Permet à un administrateur de mettre à jour le statut d'une sous-commande spécifique.
+    """
+    if not ObjectId.is_valid(order_id) or not ObjectId.is_valid(shop_id):
+        raise HTTPException(status_code=400, detail="ID invalide.")
+
+    # La requête pour trouver la bonne sous-commande dans le tableau
+    query = {
+        "_id": ObjectId(order_id),
+        "sub_orders.shop_id": ObjectId(shop_id)
+    }
+    update = {
+        "$set": {"sub_orders.$.status": status}
+    }
+    
+    updated_order = await orders.find_one_and_update(query, update, return_document=True)
+    
+    if not updated_order:
+        raise HTTPException(status_code=404, detail="Sous-commande non trouvée.")
+
+    # On enrichit la réponse avec les infos du client pour être complet
+    customer = await users.find_one({"_id": updated_order["user_id"]})
+    if customer:
+        updated_order["customer"] = customer
+
+    # Conversion manuelle des IDs pour la réponse
+    updated_order["_id"] = str(updated_order["_id"])
+    updated_order["user_id"] = str(updated_order["user_id"])
+    if updated_order.get("customer"):
+        updated_order["customer"]["_id"] = str(updated_order["customer"]["_id"])
+    for sub in updated_order.get("sub_orders", []):
+        sub["shop_id"] = str(sub["shop_id"])
+        
+    return OrderOut.model_validate(updated_order)
+
+
+
+# --- NOUVELLE ROUTE : Obtenir toutes les statistiques en un seul appel ---
+@router.get("/stats", response_model=dict)
+async def get_platform_stats(admin_user: UserOut = Depends(get_current_admin)):
+    user_count = await users.count_documents({})
+    shop_count = await shops.count_documents({})
+    product_count = await products.count_documents({})
+    order_count = await orders.count_documents({})
+    suggestion_count = await suggestions.count_documents({"status": "nouveau"})
+    return {
+        "users": user_count,
+        "shops": shop_count,
+        "products": product_count,
+        "orders": order_count,
+        "suggestions": suggestion_count
+    }
+
+# --- NOUVELLE ROUTE : Lister toutes les boutiques ---
+@router.get("/shops", response_model=List[ShopWithOwner])
+async def get_all_shops(admin_user: UserOut = Depends(get_current_admin)):
+    """
+    Liste toutes les boutiques de la plateforme, enrichies avec les infos du propriétaire.
+    Gère les boutiques orphelines.
+    """
+    pipeline = [
+        {"$lookup": {
+            "from": "users",
+            "localField": "owner_id",
+            "foreignField": "_id",
+            "as": "owner_details"
+        }},
+        {"$unwind": {
+            "path": "$owner_details",
+            "preserveNullAndEmptyArrays": True
+        }}
+    ]
+    all_shops = await shops.aggregate(pipeline).to_list(length=None)
+    
+    # Conversion manuelle des IDs
+    for shop in all_shops:
+        shop["_id"] = str(shop["_id"])
+        if shop.get("owner_id"):
+            shop["owner_id"] = str(shop["owner_id"])
+            
+        if shop.get("owner_details"):
+            shop["owner_details"]["_id"] = str(shop["owner_details"]["_id"])
+        else: 
+            # --- CORRECTION ICI ---
+            # On fournit un email valide fictif
+            shop["owner_details"] = {
+                "_id": "", "first_name": "Propriétaire Supprimé", 
+                "email": "deleted@user.com", "role": "client", "is_active": False
+            }
+
+    return [ShopWithOwner.model_validate(s) for s in all_shops]
+
+# --- NOUVELLE ROUTE : Lister tous les produits ---
+@router.get("/products", response_model=List[ProductWithShopInfo])
+async def get_all_products(admin_user: UserOut = Depends(get_current_admin)):
+    # On réutilise la même logique que pour les produits publics
+    pipeline = [
+        {"$lookup": {"from": "shops", "localField": "shop_id", "foreignField": "_id", "as": "shop_details"}},
+        {"$unwind": "$shop_details"},
+        {"$project": {
+            "_id": 1, "name": 1, "price": 1, "images": 1, "shop_id": 1,
+            "shop": {"_id": "$shop_details._id", "name": "$shop_details.name"}
+        }}
+    ]
+    product_list = await products.aggregate(pipeline).to_list(length=None)
+    for p in product_list:
+        p["_id"] = str(p["_id"])
+        p["shop_id"] = str(p["shop_id"])
+        if p.get("shop"):
+            p["shop"]["_id"] = str(p["shop"]["_id"])
+    return [ProductWithShopInfo.model_validate(p) for p in product_list]
+
+# --- NOUVELLE ROUTE : Supprimer n'importe quelle boutique ---
+@router.delete("/shops/{shop_id}", response_model=dict)
+async def admin_delete_shop(shop_id: str, admin_user: UserOut = Depends(get_current_admin)):
+    if not ObjectId.is_valid(shop_id): raise HTTPException(status_code=400, detail="ID invalide")
+    
+    # Suppression en cascade des produits puis de la boutique
+    await products.delete_many({"shop_id": ObjectId(shop_id)})
+    result = await shops.delete_one({"_id": ObjectId(shop_id)})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Boutique non trouvée")
+    return {"message": "Boutique et produits associés supprimés"}
+
+# --- NOUVELLE ROUTE : Supprimer n'importe quel produit ---
+@router.delete("/products/{product_id}", response_model=dict)
+async def admin_delete_product(product_id: str, admin_user: UserOut = Depends(get_current_admin)):
+    if not ObjectId.is_valid(product_id):
+        raise HTTPException(status_code=400, detail="ID de produit invalide")
+
+    result = await products.delete_one({"_id": ObjectId(product_id)})
+
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Produit non trouvé")
+        
+    return {"message": "Produit supprimé avec succès."}

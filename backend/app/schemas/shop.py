@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field, ConfigDict, field_validator
 from typing import List, Optional
 from bson import ObjectId
 
+from app.schemas.users import UserOut
+
 class ShopBase(BaseModel):
     name: str = Field(..., example="Boutique Kpayou")
     description: Optional[str] = Field(None, example="Spécialiste en accessoires de téléphone")
@@ -33,3 +35,7 @@ class ShopOut(ShopBase):
 # Nouveau schéma qui hérite de ShopOut et ajoute le contact
 class ShopWithContact(ShopOut):
     contact_phone: Optional[str] = None
+
+
+class ShopWithOwner(ShopOut):
+    owner_details: UserOut

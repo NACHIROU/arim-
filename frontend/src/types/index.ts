@@ -1,4 +1,4 @@
-// Ce fichier contient toutes les interfaces partagées entre le frontend et le backend.
+// Ce fichier contient toutes les interfaces partagées.
 
 export interface Boutique {
   _id: string;
@@ -13,43 +13,39 @@ export interface Boutique {
 
 export interface Produit {
   _id: string;
+  id: string; // Vient de Pydantic
   name: string;
   description?: string;
   price: number;
   images?: string[];
-  shop_id?: string;
-  seller?: string; // Le nom du vendeur
-  // L'objet boutique imbriqué, qui contient toutes les infos nécessaires
+  shop_id: string;
+  // L'objet boutique imbriqué, la seule source de vérité pour les infos de la boutique
   shop?: {
-    location: any;
-    category: string;
-    _id: string;
+    id: string;
+    _id: string; // Pour la compatibilité avec les composants existants
     name: string;
     contact_phone?: string;
+    category?: string;
+    location?: string;
   };
 }
 
 export interface User {
-  _id: string; // On utilise _id pour être cohérent avec MongoDB
+  _id: string;
   first_name: string;
   email: string;
   phone?: string;
-  location?: string;
   role: 'client' | 'merchant' | 'admin';
   is_active: boolean;
 }
 
 export interface Review {
   _id: string;
-  shop_id: string;
-  user_id: string;
-  author_name: string;
   rating: number;
   message: string;
-  created_at: string; // Date au format string (ISO)
-  shop_details?: Boutique
+  created_at: string;
+  shop_details: Boutique;
 }
-
 
 export interface Suggestion {
   _id: string;
@@ -57,7 +53,7 @@ export interface Suggestion {
   email: string;
   message: string;
   status: 'nouveau' | 'lu' | 'répondu';
-  created_at: string; // Date au format string ISO
+  created_at: string;
   admin_reply?: string;
 }
 
@@ -70,7 +66,7 @@ export interface OrderedProduct {
 
 export interface SubOrder {
   shop_id: string;
-  shop_name: string; // Nom de la boutique au moment de la commande
+  shop_name: string;
   products: OrderedProduct[];
   sub_total: number;
   status: 'En attente' | 'En cours de livraison' | 'Livrée' | 'Annulée';
@@ -82,8 +78,15 @@ export interface Order {
   shipping_address: string;
   total_price: number;
   sub_orders: SubOrder[];
-  status: string; // Le statut global de la commande
-  created_at: string; // Date au format string ISO
+  status: string;
+
+  created_at: string;
   is_archived: boolean;
-  customer?: User; // Détails du client, optionnel pour les commandes anonymes
+  customer?: User;
+}
+
+export interface ShopWithOrders {
+  shop_id: string;
+  shop_name: string;
+  orders: Order[];
 }

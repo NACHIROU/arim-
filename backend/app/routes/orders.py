@@ -24,6 +24,9 @@ async def create_order(
         # On s'assure de stocker un vrai ObjectId dans la BDD
         if ObjectId.is_valid(sub_order_dict["shop_id"]):
             sub_order_dict["shop_id"] = ObjectId(sub_order_dict["shop_id"])
+            print(f"Shop ID validé : {sub_order_dict['shop_id']}")
+        else:
+            raise HTTPException(status_code=400, detail=f"ID de boutique invalide : {sub_order_dict['shop_id']}")
         sub_orders_for_db.append(sub_order_dict)
         
     new_order_doc = {

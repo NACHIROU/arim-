@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 from datetime import datetime
 
@@ -17,6 +17,7 @@ class SubOrder(BaseModel):
     shop_name: str 
     products: List[OrderedProduct]
     sub_total: float
+    status: str = "En attente" # <-- CHAMP CRUCIAL AJOUTÉ
 
 # --- Schéma principal de la commande ---
 class OrderBase(BaseModel):
@@ -33,10 +34,12 @@ class OrderOut(OrderBase):
     user_id: PydanticObjectId
     created_at: datetime
     status: str
-    is_archived: bool = Field(default=False)
-    customer: Optional[UserOut] = None # Pour les détails du client
-    class Config:
-        from_attributes = True
-        populate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = { PydanticObjectId: str }
+    customer: Optional[UserOut] = None
+
+    # On utilise la configuration moderne de Pydantic v2
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={ PydanticObjectId: str, datetime: lambda v: v.isoformat() }
+    )

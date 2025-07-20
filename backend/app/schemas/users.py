@@ -43,7 +43,7 @@ class Token(BaseModel):
 class UserOut(UserBase):
     id: str = Field(..., alias="_id")
     role: str
-    is_active: bool
+    is_active: bool = Field(default=True)
 
     @field_validator("id", mode="before")
     @classmethod
