@@ -1,8 +1,6 @@
-
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Star } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Star, User } from 'lucide-react';
 
 interface Review {
   author_name: string;
@@ -17,34 +15,41 @@ interface ReviewCardProps {
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
   return (
-    <Card className="border-0 shadow-sm bg-white/80 backdrop-blur-sm hover:shadow-md transition-all duration-300">
-      <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-3">
-        <Avatar className="h-10 w-10 ring-2 ring-orange-100">
-          <AvatarFallback className="bg-gradient-to-br from-orange-100 to-amber-100 text-orange-600 font-medium">
-            {review.author_name.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 space-y-1">
-          <CardTitle className="text-sm font-semibold text-gray-900">{review.author_name}</CardTitle>
-          <div className="flex items-center gap-1">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`h-3.5 w-3.5 transition-colors ${
-                  i < review.rating 
-                    ? 'text-amber-400 fill-amber-400' 
-                    : 'text-gray-200 fill-gray-200'
-                }`}
-              />
-            ))}
-            <span className="text-xs text-muted-foreground ml-2">
-              {new Date(review.created_at).toLocaleDateString('fr-FR')}
-            </span>
+    <Card className="hover:shadow-md transition-all duration-300">
+      <CardHeader className="pb-3">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <User className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <h4 className="font-semibold text-foreground truncate">
+                {review.author_name}
+              </h4>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                {new Date(review.created_at).toLocaleDateString('fr-FR')}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 mt-1">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-3.5 w-3.5 ${
+                    i < review.rating 
+                      ? 'text-warning fill-warning' 
+                      : 'text-muted fill-muted'
+                  }`}
+                />
+              ))}
+              <span className="text-xs text-muted-foreground ml-1">
+                {review.rating}/5
+              </span>
+            </div>
           </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <p className="text-sm text-gray-600 leading-relaxed italic">
+        <p className="text-sm text-muted-foreground leading-relaxed">
           "{review.message}"
         </p>
       </CardContent>

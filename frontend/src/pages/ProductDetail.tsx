@@ -111,15 +111,6 @@ const ProductDetail: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
               </div>
               
-              {/* Boutons d'action flottants modernes */}
-              <div className="absolute top-6 right-6 flex flex-col gap-3">
-                <Button size="icon" variant="secondary" className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-xl border-white/20 hover:bg-white/20 shadow-2xl">
-                  <Heart className="h-5 w-5 text-white" />
-                </Button>
-                <Button size="icon" variant="secondary" className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-xl border-white/20 hover:bg-white/20 shadow-2xl">
-                  <Share2 className="h-5 w-5 text-white" />
-                </Button>
-              </div>
             </div>
 
             {/* Galerie de miniatures futuriste */}

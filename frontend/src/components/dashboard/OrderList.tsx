@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from '@/components/ui/badge';
-import { Package } from 'lucide-react';
+import { Package, Store, User, Calendar } from 'lucide-react';
 
 interface OrdersListProps {
   groupedOrders: ShopWithOrders[];
@@ -12,12 +12,23 @@ interface OrdersListProps {
 }
 
 export const OrdersList: React.FC<OrdersListProps> = ({ groupedOrders, onStatusChange }) => {
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'Livrée': return 'success';
+      case 'En cours de livraison': return 'default';
+      case 'Annulée': return 'destructive';
+      default: return 'secondary';
+    }
+  };
+
   if (!groupedOrders || groupedOrders.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
-        <Package className="h-12 w-12 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold">Aucune commande pour le moment.</h3>
-        <p className="text-sm">Les nouvelles commandes apparaîtront ici.</p>
+      <div className="text-center py-16">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+          <Package className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <h3 className="text-lg font-semibold text-foreground mb-2">Aucune commande</h3>
+        <p className="text-sm text-muted-foreground">Les nouvelles commandes apparaîtront ici.</p>
       </div>
     );
   }
@@ -26,17 +37,23 @@ export const OrdersList: React.FC<OrdersListProps> = ({ groupedOrders, onStatusC
     <div className="space-y-6">
       {groupedOrders.map(group => (
         <Card key={group.shop_id} className="overflow-hidden">
-          <CardHeader className="bg-muted/50">
-            <CardTitle>{group.shop_name}</CardTitle>
+          <CardHeader className="bg-muted/30 border-b">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Store className="h-5 w-5 text-primary" />
+              {group.shop_name}
+              <Badge variant="secondary" className="ml-auto">
+                {group.orders.length} commande(s)
+              </Badge>
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Produits Commandés</TableHead>
-                  <TableHead>Statut</TableHead>
+                <TableRow className="border-b bg-muted/20">
+                  <TableHead className="font-semibold">Date</TableHead>
+                  <TableHead className="font-semibold">Client</TableHead>
+                  <TableHead className="font-semibold">Produits</TableHead>
+                  <TableHead className="font-semibold">Statut</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -45,15 +62,32 @@ export const OrdersList: React.FC<OrdersListProps> = ({ groupedOrders, onStatusC
                   if (!relevantSubOrder) return null;
 
                   return (
-                    <TableRow key={order._id}>
-                      <TableCell>{new Date(order.created_at).toLocaleDateString('fr-FR')}</TableCell>
-                      <TableCell>{order.customer?.first_name || 'Client inconnu'}</TableCell>
+                    <TableRow key={order._id} className="hover:bg-muted/30 transition-colors">
                       <TableCell>
-                        <ul className="list-disc pl-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-foreground">
+                            {new Date(order.created_at).toLocaleDateString('fr-FR')}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-foreground">
+                            {order.customer?.first_name || 'Client inconnu'}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
                           {relevantSubOrder.products.map(p => (
-                            <li key={p.product_id}>{p.name} (x{p.quantity})</li>
+                            <div key={p.product_id} className="text-sm">
+                              <span className="text-foreground">{p.name}</span>
+                              <span className="text-muted-foreground ml-2">×{p.quantity}</span>
+                            </div>
                           ))}
-                        </ul>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Select

@@ -36,8 +36,9 @@ const Products: React.FC = () => {
     const filteredProducts = useMemo(() => {
         return products.filter(product => {
             const searchMatch = searchTerm.length === 0 || product.name.toLowerCase().includes(searchTerm.toLowerCase());
-            const categoryMatch = categoryFilter === 'Tous' || product.shop?.category === categoryFilter;
-            const locationMatch = locationFilter === 'Toutes les villes' || product.shop?.location.toLowerCase().includes(locationFilter.toLowerCase());
+            const categoryMatch = categoryFilter === 'Tous' || product.shop?.category === categoryFilter;            
+            const locationMatch = locationFilter === 'Toutes les villes' || 
+                (product.shop?.location && product.shop.location.toLowerCase().includes(locationFilter.toLowerCase()));
             
             return searchMatch && categoryMatch && locationMatch;
         });

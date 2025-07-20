@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Order } from '@/types';
-import { Loader2, ArrowLeft, PackageCheck, Calendar, User, Store, Wallet } from 'lucide-react';
+import { Loader2, ArrowLeft, ShoppingBasket, Store, User } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -51,66 +51,129 @@ const AdminOrdersPage: React.FC = () => {
     }
   };
 
-  if (isLoading) return <div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin" /></div>;
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'Livrée': return 'success';
+      case 'En cours de livraison': return 'default';
+      case 'Annulée': return 'destructive';
+      default: return 'secondary';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto py-10">
-      <Button variant="outline" onClick={() => navigate(-1)} className="mb-6">Retour au Dashboard</Button>
-      <h1 className="text-3xl font-bold mb-6">Gestion de Toutes les Commandes</h1>
-      <Card>
-        <CardHeader><CardTitle>Liste des commandes par marchand</CardTitle></CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Boutique</TableHead>
-                <TableHead>Produits</TableHead>
-                <TableHead className="text-right">Total Partiel</TableHead>
-                <TableHead>Statut</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.flatMap(order => 
-                order.sub_orders.map(subOrder => (
-                  <TableRow key={`${order._id}-${subOrder.shop_id}`}>
-                    <TableCell className="font-medium">{new Date(order.created_at).toLocaleDateString('fr-FR')}</TableCell>
-                    <TableCell>{order.customer?.first_name || 'Client inconnu'}</TableCell>
-                    <TableCell>{subOrder.shop_name}</TableCell>
-                    <TableCell>
-                      <ul className="list-disc pl-4 text-sm">
-                        {subOrder.products.map(p => (
-                          <li key={p.product_id}>{p.name} (x{p.quantity})</li>
-                        ))}
-                      </ul>
-                    </TableCell>
-                    <TableCell className="text-right font-semibold">
-                      {subOrder.sub_total.toLocaleString('fr-FR')} FCFA
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        defaultValue={subOrder.status}
-                        onValueChange={(newStatus) => handleStatusChange(order._id, subOrder.shop_id, newStatus)}
-                      >
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="En attente">En attente</SelectItem>
-                          <SelectItem value="En cours de livraison">En cours de livraison</SelectItem>
-                          <SelectItem value="Livrée">Livrée</SelectItem>
-                          <SelectItem value="Annulée">Annulée</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto py-8 px-4 max-w-7xl">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate(-1)}
+            size="sm"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Gestion des Commandes</h1>
+            <p className="text-muted-foreground">
+              {orders.reduce((acc, order) => acc + order.sub_orders.length, 0)} commande(s) au total
+            </p>
+          </div>
+        </div>
+
+        {/* Orders Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShoppingBasket className="h-5 w-5" />
+              Liste des commandes par marchand
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="rounded-b-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b bg-muted/30">
+                    <TableHead className="font-semibold">Date</TableHead>
+                    <TableHead className="font-semibold">Client</TableHead>
+                    <TableHead className="font-semibold">Boutique</TableHead>
+                    <TableHead className="font-semibold">Produits</TableHead>
+                    <TableHead className="text-right font-semibold">Total Partiel</TableHead>
+                    <TableHead className="font-semibold">Statut</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {orders.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                        Aucune commande trouvée
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    orders.flatMap(order => 
+                      order.sub_orders.map(subOrder => (
+                        <TableRow key={`${order._id}-${subOrder.shop_id}`} className="hover:bg-muted/30 transition-colors">
+                          <TableCell className="font-medium text-foreground">
+                            {new Date(order.created_at).toLocaleDateString('fr-FR')}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-foreground">{order.customer?.first_name || 'Client inconnu'}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Store className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-foreground">{subOrder.shop_name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              {subOrder.products.map(p => (
+                                <div key={p.product_id} className="text-sm text-muted-foreground">
+                                  {p.name} <span className="font-medium">×{p.quantity}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right font-semibold text-foreground">
+                            {subOrder.sub_total.toLocaleString('fr-FR')} FCFA
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              defaultValue={subOrder.status}
+                              onValueChange={(newStatus) => handleStatusChange(order._id, subOrder.shop_id, newStatus)}
+                            >
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="En attente">En attente</SelectItem>
+                                <SelectItem value="En cours de livraison">En cours de livraison</SelectItem>
+                                <SelectItem value="Livrée">Livrée</SelectItem>
+                                <SelectItem value="Annulée">Annulée</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

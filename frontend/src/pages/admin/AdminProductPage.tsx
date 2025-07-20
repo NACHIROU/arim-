@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Produit } from '@/types';
-import { Loader2, ArrowLeft, Package, Trash2 } from 'lucide-react';
+import { Loader2, ArrowLeft, Package, Trash2, Store } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,59 +46,115 @@ const AdminProductsPage: React.FC = () => {
         throw new Error(errData.detail || "La suppression a échoué.");
       }
       toast({ title: "Succès", description: "Produit supprimé." });
-      fetchProducts(); // Rafraîchir la liste
+      fetchProducts();
     } catch (error) {
       toast({ title: "Erreur", description: (error as Error).message, variant: "destructive" });
     }
   };
 
-  if (isLoading) return <div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin" /></div>;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto py-10">
-      <Button variant="outline" onClick={() => navigate(-1)} className="mb-6">Retour au Dashboard</Button>
-      <h1 className="text-3xl font-bold mb-6">Gestion de Tous les Produits</h1>
-      <Card>
-        <CardHeader><CardTitle>Liste de tous les produits ({products.length})</CardTitle></CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Produit</TableHead>
-                <TableHead>Boutique</TableHead>
-                <TableHead className="text-right">Prix</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {products.map(product => (
-                <TableRow key={product._id}>
-                  <TableCell className="font-medium flex items-center gap-3">
-                    <img 
-                      src={product.images?.[0] || 'https://via.placeholder.com/40'} 
-                      alt={product.name} 
-                      className="w-10 h-10 object-cover rounded-md"
-                    />
-                    {product.name}
-                  </TableCell>
-                  <TableCell>{product.shop?.name || 'N/A'}</TableCell>
-                  <TableCell className="text-right">{product.price.toLocaleString('fr-FR')} FCFA</TableCell>
-                  <TableCell className="text-right">
-                    <Button 
-                      variant="destructive" 
-                      size="sm"
-                      onClick={() => handleDeleteProduct(product._id)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Supprimer
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto py-8 px-4 max-w-7xl">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate(-1)}
+            size="sm"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Gestion des Produits</h1>
+            <p className="text-muted-foreground">{products.length} produit(s) au total</p>
+          </div>
+        </div>
+
+        {/* Products Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Liste des produits
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="rounded-b-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b bg-muted/30">
+                    <TableHead className="font-semibold">Produit</TableHead>
+                    <TableHead className="font-semibold">Boutique</TableHead>
+                    <TableHead className="text-right font-semibold">Prix</TableHead>
+                    <TableHead className="text-right font-semibold">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {products.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
+                        Aucun produit trouvé
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    products.map(product => (
+                      <TableRow key={product._id} className="hover:bg-muted/30 transition-colors">
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                              {product.images?.[0] ? (
+                                <img 
+                                  src={product.images[0]} 
+                                  alt={product.name} 
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-muted flex items-center justify-center">
+                                  <Package className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-foreground font-medium">{product.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Store className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-foreground">{product.shop?.name || 'N/A'}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-semibold text-foreground">
+                          {product.price.toLocaleString('fr-FR')} FCFA
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteProduct(product._id)}
+                            title="Supprimer"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

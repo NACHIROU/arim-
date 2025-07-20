@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { User } from '@/types';
 import { 
   Loader2, Trash2, UserX, UserCheck, Users, 
-  Search, Filter, Eye, Shield, MessageSquare, Store, Package, ShoppingBasket 
+  Search, Eye, Store, Package, ShoppingBasket, MessageSquare 
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
@@ -24,7 +24,7 @@ const AdminDashboardPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-    const stat = {
+  const stat = {
     total: users.length,
     active: users.filter(u => u.is_active).length,
     suspended: users.filter(u => !u.is_active).length,
@@ -116,85 +116,306 @@ const AdminDashboardPage: React.FC = () => {
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case 'admin': return 'destructive';
-      case 'merchant': return 'secondary';
-      default: return 'outline';
+      case 'merchant': return 'default';
+      default: return 'secondary';
     }
   };
 
   if (isLoading && users.length === 0) {
-    return <div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Dashboard Administrateur</h1>
-            <p className="text-muted-foreground">Supervision et modération de la plateforme.</p>
-          </div>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto py-8 px-4 max-w-7xl">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard Administrateur</h1>
+          <p className="text-muted-foreground">Supervision et modération de la plateforme</p>
         </div>
 
-        {/* --- Cartes de Statistiques Complètes --- */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-          <Link to="/admin/dashboard" className="block"><Card className="hover:shadow-lg"><CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Utilisateurs</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stat.total}</div></CardContent></Card></Link>
-          <Link to="/admin/shops" className="block"><Card className="hover:shadow-lg"><CardHeader><CardTitle className="text-sm font-medium">Boutiques</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stats.shops}</div></CardContent></Card></Link>
-          <Link to="/admin/products" className="block"><Card className="hover:shadow-lg"><CardHeader><CardTitle className="text-sm font-medium">Produits</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stats.products}</div></CardContent></Card></Link>
-          <Link to="/admin/orders" className="block"><Card className="hover:shadow-lg"><CardHeader><CardTitle className="text-sm font-medium">Commandes</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stats.orders}</div></CardContent></Card></Link>
-          <Link to="/admin/suggestions" className="block"><Card className="hover:shadow-lg"><CardHeader><CardTitle className="text-sm font-medium">Messages</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stats.suggestions}</div></CardContent></Card></Link>
+        {/* Stats Grid - Main */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <Link to="/admin/dashboard" className="block group">
+            <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Utilisateurs</p>
+                    <p className="text-2xl font-bold text-foreground">{stat.total}</p>
+                  </div>
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/admin/shops" className="block group">
+            <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Boutiques</p>
+                    <p className="text-2xl font-bold text-foreground">{stats.shops}</p>
+                  </div>
+                  <Store className="h-5 w-5 text-primary" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/admin/products" className="block group">
+            <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Produits</p>
+                    <p className="text-2xl font-bold text-foreground">{stats.products}</p>
+                  </div>
+                  <Package className="h-5 w-5 text-primary" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/admin/orders" className="block group">
+            <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Commandes</p>
+                    <p className="text-2xl font-bold text-foreground">{stats.orders}</p>
+                  </div>
+                  <ShoppingBasket className="h-5 w-5 text-primary" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/admin/suggestions" className="block group">
+            <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Messages</p>
+                    <p className="text-2xl font-bold text-foreground">{stats.suggestions}</p>
+                  </div>
+                  <MessageSquare className="h-5 w-5 text-primary" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-            <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-green-600">Utilisateurs Actifs</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-green-600">{stat.active}</div></CardContent></Card>
-            <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-red-600">Utilisateurs Suspendus</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-red-600">{stat.suspended}</div></CardContent></Card>
-            <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-blue-600">Clients</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-blue-600">{stat.clients}</div></CardContent></Card>
-            <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-purple-600">Marchands</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-purple-600">{stat.merchants}</div></CardContent></Card>
-            <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-orange-600">Admins</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-orange-600">{stat.admins}</div></CardContent></Card>
+        {/* Stats Grid - Details */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green">Actifs</p>
+                  <p className="text-2xl font-bold text-green">{stat.active}</p>
+                </div>
+                <UserCheck className="h-5 w-5 text-green" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-destructive">Suspendus</p>
+                  <p className="text-2xl font-bold text-destructive">{stat.suspended}</p>
+                </div>
+                <UserX className="h-5 w-5 text-destructive" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-primary">Clients</p>
+                  <p className="text-2xl font-bold text-primary">{stat.clients}</p>
+                </div>
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium  text-brown">Marchands</p>
+                  <p className="text-2xl font-bold  text-brown">{stat.merchants}</p>
+                </div>
+                <Store className="h-5 w-5 text-brown" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-warning">Admins</p>
+                  <p className="text-2xl font-bold text-warning">{stat.admins}</p>
+                </div>
+                <Users className="h-5 w-5 text-warning" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        <Card className="shadow-lg">
+        {/* Users Management */}
+        <Card>
           <CardHeader>
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
               <div>
-                <CardTitle className="text-2xl flex items-center gap-2"><Users className="h-6 w-6" />Gestion des Utilisateurs</CardTitle>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Gestion des Utilisateurs
+                </CardTitle>
                 <CardDescription>{users.length} utilisateur(s) correspondant aux filtres</CardDescription>
               </div>
+              
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-                <div className="relative"><Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Rechercher..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 w-full sm:w-64" /></div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="Rechercher..." 
+                    value={searchTerm} 
+                    onChange={(e) => setSearchTerm(e.target.value)} 
+                    className="pl-10 w-full sm:w-64" 
+                  />
+                </div>
+                
                 <div className="flex gap-2">
-                  <Select value={roleFilter} onValueChange={setRoleFilter}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Rôle" /></SelectTrigger><SelectContent><SelectItem value="all">Tous les rôles</SelectItem><SelectItem value="client">Clients</SelectItem><SelectItem value="merchant">Marchands</SelectItem></SelectContent></Select>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Statut" /></SelectTrigger><SelectContent><SelectItem value="all">Tous les statuts</SelectItem><SelectItem value="active">Actifs</SelectItem><SelectItem value="suspended">Suspendus</SelectItem></SelectContent></Select>
+                  <Select value={roleFilter} onValueChange={setRoleFilter}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Rôle" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les rôles</SelectItem>
+                      <SelectItem value="client">Clients</SelectItem>
+                      <SelectItem value="merchant">Marchands</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Statut" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les statuts</SelectItem>
+                      <SelectItem value="active">Actifs</SelectItem>
+                      <SelectItem value="suspended">Suspendus</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
           </CardHeader>
+          
           <CardContent className="p-0">
             <div className="rounded-b-lg overflow-hidden">
               <Table>
-                <TableHeader><TableRow className="bg-slate-50 hover:bg-slate-50"><TableHead>Utilisateur</TableHead><TableHead>Email</TableHead><TableHead>Rôle</TableHead><TableHead>Statut</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                <TableHeader>
+                  <TableRow className="border-b bg-muted/30">
+                    <TableHead className="font-semibold">Utilisateur</TableHead>
+                    <TableHead className="font-semibold">Email</TableHead>
+                    <TableHead className="font-semibold">Rôle</TableHead>
+                    <TableHead className="font-semibold">Statut</TableHead>
+                    <TableHead className="text-right font-semibold">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={5} className="text-center py-12"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></TableCell></TableRow>
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-12">
+                        <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+                      </TableCell>
+                    </TableRow>
                   ) : users.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center py-12 text-muted-foreground">Aucun utilisateur trouvé</TableCell></TableRow>
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                        Aucun utilisateur trouvé
+                      </TableCell>
+                    </TableRow>
                   ) : (
                     users.map(user => (
-                      <TableRow key={user._id} className="hover:bg-muted/50">
-                        <TableCell className="font-medium"><div className="flex items-center gap-3"><span>{user.first_name}</span></div></TableCell>
+                      <TableRow key={user._id} className="hover:bg-muted/30 transition-colors">
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-sm font-medium text-primary">
+                                {user.first_name?.charAt(0)?.toUpperCase()}
+                              </span>
+                            </div>
+                            <span className="text-foreground">{user.first_name}</span>
+                          </div>
+                        </TableCell>
                         <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                        <TableCell><Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">{user.role}</Badge></TableCell>
-                        <TableCell><Badge variant={user.is_active ? 'outline' : 'destructive'}>{user.is_active ? 'Actif' : 'Suspendu'}</Badge></TableCell>
+                        <TableCell>
+                          <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">
+                            {user.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={user.is_active ? 'secondary' : 'destructive'}>
+                            {user.is_active ? 'Actif' : 'Suspendu'}
+                          </Badge>
+                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => navigate(`/admin/users/${user._id}`)} title="Voir les détails" className="h-8 w-8"><Eye className="h-4 w-4" /></Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => navigate(`/admin/users/${user._id}`)} 
+                              title="Voir les détails"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
                             {user.role !== 'admin' && (
                               <>
                                 {user.is_active ? (
-                                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleUpdateStatus(user._id, false); }} title="Suspendre" className="h-8 w-8 text-orange-600 hover:text-orange-700"><UserX className="h-4 w-4" /></Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={(e) => { e.stopPropagation(); handleUpdateStatus(user._id, false); }} 
+                                    title="Suspendre"
+                                    className="text-warning hover:text-warning hover:bg-warning/10"
+                                  >
+                                    <UserX className="h-4 w-4" />
+                                  </Button>
                                 ) : (
-                                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleUpdateStatus(user._id, true); }} title="Réactiver" className="h-8 w-8 text-green-600 hover:text-green-700"><UserCheck className="h-4 w-4" /></Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={(e) => { e.stopPropagation(); handleUpdateStatus(user._id, true); }} 
+                                    title="Réactiver"
+                                    className="text-success hover:text-success hover:bg-success/10"
+                                  >
+                                    <UserCheck className="h-4 w-4" />
+                                  </Button>
                                 )}
-                                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleDeleteUser(user._id); }} title="Supprimer" className="h-8 w-8 text-red-600 hover:text-red-700"><Trash2 className="h-4 w-4" /></Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteUser(user._id); }} 
+                                  title="Supprimer"
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                               </>
                             )}
                           </div>

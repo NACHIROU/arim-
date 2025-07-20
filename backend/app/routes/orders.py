@@ -78,7 +78,6 @@ async def archive_order(order_id: str, current_user: UserOut = Depends(get_curre
     if not ObjectId.is_valid(order_id):
         raise HTTPException(status_code=400, detail="ID de commande invalide")
 
-    # On vérifie que la commande appartient bien à l'utilisateur
     query = {"_id": ObjectId(order_id), "user_id": ObjectId(current_user.id)}
     update = {"$set": {"is_archived": True}}
     
@@ -86,6 +85,12 @@ async def archive_order(order_id: str, current_user: UserOut = Depends(get_curre
     if not updated_order:
         raise HTTPException(status_code=404, detail="Commande non trouvée ou non autorisée.")
         
+    # --- AJOUT : Conversion manuelle des IDs ---
+    updated_order["_id"] = str(updated_order["_id"])
+    updated_order["user_id"] = str(updated_order["user_id"])
+    for sub in updated_order.get("sub_orders", []):
+        sub["shop_id"] = str(sub["shop_id"])
+
     return OrderOut.model_validate(updated_order)
 
 
@@ -103,5 +108,11 @@ async def unarchive_order(order_id: str, current_user: UserOut = Depends(get_cur
     updated_order = await orders.find_one_and_update(query, update, return_document=True)
     if not updated_order:
         raise HTTPException(status_code=404, detail="Commande non trouvée ou non autorisée.")
+        
+    # --- AJOUT : Conversion manuelle des IDs ---
+    updated_order["_id"] = str(updated_order["_id"])
+    updated_order["user_id"] = str(updated_order["user_id"])
+    for sub in updated_order.get("sub_orders", []):
+        sub["shop_id"] = str(sub["shop_id"])
         
     return OrderOut.model_validate(updated_order)
