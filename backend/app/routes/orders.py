@@ -3,12 +3,14 @@ from typing import List
 from datetime import datetime
 from bson import ObjectId
 
-from app.db.database import orders, shops
+from app.db.database import orders, shops, users
 from app.schemas.order import OrderCreate, OrderOut
 from app.schemas.users import UserOut
 from app.core.dependencies import get_current_user
+from app.core.email import send_email
 
 router = APIRouter()
+
 
 @router.post("/", response_model=OrderOut)
 async def create_order(
@@ -16,22 +18,20 @@ async def create_order(
     current_user: UserOut = Depends(get_current_user)
 ):
     """
-    Crée une nouvelle commande et gère manuellement la conversion des ID.
+    Crée une nouvelle commande, gère la conversion des ID et envoie les notifications.
     """
     sub_orders_for_db = []
     for so in order_data.sub_orders:
         sub_order_dict = so.model_dump()
-        # On s'assure de stocker un vrai ObjectId dans la BDD
-        if ObjectId.is_valid(sub_order_dict["shop_id"]):
-            sub_order_dict["shop_id"] = ObjectId(sub_order_dict["shop_id"])
-            print(f"Shop ID validé : {sub_order_dict['shop_id']}")
-        else:
+        if not ObjectId.is_valid(sub_order_dict["shop_id"]):
             raise HTTPException(status_code=400, detail=f"ID de boutique invalide : {sub_order_dict['shop_id']}")
+        sub_order_dict["shop_id"] = ObjectId(sub_order_dict["shop_id"])
         sub_orders_for_db.append(sub_order_dict)
         
     new_order_doc = {
         "user_id": ObjectId(current_user.id),
         "shipping_address": order_data.shipping_address,
+        "contact_phone": order_data.contact_phone,
         "total_price": order_data.total_price,
         "sub_orders": sub_orders_for_db,
         "status": "En attente",
@@ -42,8 +42,32 @@ async def create_order(
     result = await orders.insert_one(new_order_doc)
     created_order = await orders.find_one({"_id": result.inserted_id})
 
-    # --- CORRECTION FINALE : Conversion manuelle avant de retourner ---
-    # On transforme tous les ObjectId en string pour que Pydantic soit content.
+    # --- ENVOI DES NOTIFICATIONS AUX MARCHANDS ---
+    for sub_order in created_order.get("sub_orders", []):
+        shop = await shops.find_one({"_id": sub_order["shop_id"]})
+        if shop:
+            owner = await users.find_one({"_id": shop["owner_id"]})
+            if owner and owner.get("email"):
+                # On construit la liste des produits pour l'email
+                products_html_list = "<ul>"
+                for product in sub_order.get("products", []):
+                    products_html_list += f"<li>{product['name']} (Quantité: {product['quantity']})</li>"
+                products_html_list += "</ul>"
+
+                subject = f"🎉 Nouvelle commande sur Ahimin pour votre boutique {shop['name']} !"
+                html_content = f"""
+                <h3>Bonjour {owner['first_name']},</h3>
+                <p>Excellente nouvelle ! Vous avez reçu une nouvelle commande.</p>
+                <p><strong>Détails :</strong></p>
+                {products_html_list}
+                <p><strong>Adresse de livraison du client :</strong> {created_order['shipping_address']}</p>
+                <p><strong>Numéro de contact du client :</strong> {created_order['contact_phone']}</p>
+                <p>Veuillez vous connecter à votre tableau de bord pour la traiter.</p>
+                """
+                await send_email(to_email=owner['email'], subject=subject, html_content=html_content)
+    # ---------------------------------------------
+
+    # Conversion manuelle des IDs pour la réponse
     created_order["_id"] = str(created_order["_id"])
     created_order["user_id"] = str(created_order["user_id"])
     for sub in created_order.get("sub_orders", []):

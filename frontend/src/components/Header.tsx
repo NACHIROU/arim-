@@ -17,8 +17,7 @@ interface DecodedToken {
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  const [userRole, setUserRole] = useState<string | null>(null);
   const { itemCount } = useCart();
 
   useEffect(() => {
@@ -30,14 +29,15 @@ const Header: React.FC = () => {
           setUserRole(decodedToken.role);
           setIsLoggedIn(true);
         } else {
-          handleLogout(false);
+          localStorage.removeItem('token'); 
+          setIsLoggedIn(false);
         }
       } catch (error) {
-        handleLogout(false);
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
       }
     } else {
       setIsLoggedIn(false);
-      setUserRole(null);
     }
   }, [location.pathname]);
 

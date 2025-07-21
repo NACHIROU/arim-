@@ -253,10 +253,10 @@ const AdminDashboardPage: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium  text-brown">Marchands</p>
-                  <p className="text-2xl font-bold  text-brown">{stat.merchants}</p>
+                  <p className="text-sm font-medium  text-green">Marchands</p>
+                  <p className="text-2xl font-bold  text-green">{stat.merchants}</p>
                 </div>
-                <Store className="h-5 w-5 text-brown" />
+                <Store className="h-5 w-5 text-green" />
               </div>
             </CardContent>
           </Card>

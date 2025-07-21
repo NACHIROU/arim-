@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ShoppingBag, MapPin, CreditCard, Store, ArrowLeft } from 'lucide-react';
-import { Produit } from '@/types';
+import { Input } from '@/components/ui/input';
+import { User, Produit } from '@/types'; // <-- Importer User
 
 // --- Interfaces pour clarifier la structure des données ---
 interface CartItem extends Produit {
@@ -20,11 +21,30 @@ interface ShopItemGroup {
 const CheckoutPage: React.FC = () => {
   const { cartItems, totalPrice, clearCart } = useCart();
   const [shippingAddress, setShippingAddress] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const token = localStorage.getItem('token');
 
+
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!token) return;
+      const response = await fetch("http://localhost:8000/users/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const user: User = await response.json();
+        // On pré-remplit le champ téléphone s'il existe
+        if (user.phone) {
+          setContactPhone(user.phone);
+        }
+      }
+    };
+    fetchUserData();
+  }, [token]);
   const groupedByShop = useMemo(() => {
     return cartItems.reduce((acc, item) => {
       const shopId = item.shop._id || 'boutique-inconnue';
@@ -69,7 +89,7 @@ const CheckoutPage: React.FC = () => {
       const response = await fetch("http://localhost:8000/orders/", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ shipping_address: shippingAddress, total_price: totalPrice, sub_orders }),
+        body: JSON.stringify({ shipping_address: shippingAddress, total_price: totalPrice, contact_phone: contactPhone, sub_orders }),
       });
       if (!response.ok) throw new Error("La création de la commande a échoué.");
 
@@ -115,6 +135,13 @@ const CheckoutPage: React.FC = () => {
                   rows={5}
                   required
                   className="bg-muted/20 resize-none focus:bg-background transition-colors"
+                />
+                <Input 
+                  type="tel"
+                  placeholder="Numéro de téléphone pour la livraison"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  required
                 />
               </CardContent>
             </Card>

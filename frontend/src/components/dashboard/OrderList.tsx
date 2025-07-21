@@ -4,7 +4,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from '@/components/ui/badge';
-import { Package, Store, User, Calendar } from 'lucide-react';
+import { Package, Store, User, Calendar, Phone } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
+import { Button } from '@/components/ui/button';
 
 interface OrdersListProps {
   groupedOrders: ShopWithOrders[];
@@ -20,6 +22,11 @@ export const OrdersList: React.FC<OrdersListProps> = ({ groupedOrders, onStatusC
       default: return 'secondary';
     }
   };
+
+const formatPhoneNumberForWhatsApp = (phone?: string) => {
+  if (!phone) return '';
+  return phone.replace(/[^0-9]/g, ''); // Garde seulement les chiffres
+};
 
   if (!groupedOrders || groupedOrders.length === 0) {
     return (
@@ -54,12 +61,16 @@ export const OrdersList: React.FC<OrdersListProps> = ({ groupedOrders, onStatusC
                   <TableHead className="font-semibold">Client</TableHead>
                   <TableHead className="font-semibold">Produits</TableHead>
                   <TableHead className="font-semibold">Statut</TableHead>
+                  <TableHead className="font-semibold">Contact Client</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {group.orders.map(order => {
                   const relevantSubOrder = order.sub_orders.find(so => so.shop_id === group.shop_id);
                   if (!relevantSubOrder) return null;
+
+                  const customerPhone = order.customer?.phone;
+                  const cleanPhone = formatPhoneNumberForWhatsApp(customerPhone);
 
                   return (
                     <TableRow key={order._id} className="hover:bg-muted/30 transition-colors">
@@ -104,6 +115,20 @@ export const OrdersList: React.FC<OrdersListProps> = ({ groupedOrders, onStatusC
                             <SelectItem value="Annulée">Annulée</SelectItem>
                           </SelectContent>
                         </Select>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button asChild variant="outline" size="icon" disabled={!cleanPhone}>
+                            <a href={`tel:${cleanPhone}`} title="Appeler le client">
+                              <Phone className="h-4 w-4" />
+                            </a>
+                          </Button>
+                          <Button asChild variant="outline" size="icon" disabled={!cleanPhone}>
+                            <a href={`https://wa.me/${cleanPhone}`} target="_blank" rel="noopener noreferrer" title="Contacter sur WhatsApp">
+                              <FaWhatsapp className="h-4 w-4 text-green-600" />
+                            </a>
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

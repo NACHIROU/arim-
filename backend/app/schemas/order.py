@@ -22,6 +22,7 @@ class SubOrder(BaseModel):
 # --- Schéma principal de la commande ---
 class OrderBase(BaseModel):
     shipping_address: str
+    contact_phone: Optional[str] = None 
     total_price: float
     sub_orders: List[SubOrder]
     is_archived: bool = Field(default=False)

@@ -76,6 +76,7 @@ export interface Order {
   _id: string;
   user_id: string;
   shipping_address: string;
+  contact_phone: string; // <-- On s'assure qu'il est bien là
   total_price: number;
   sub_orders: SubOrder[];
   status: string;

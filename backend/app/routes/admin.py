@@ -239,19 +239,19 @@ async def get_order_stats(admin_user: UserOut = Depends(get_current_admin)):
 
 
 @router.patch("/orders/{order_id}/sub_orders/{shop_id}/status", response_model=OrderOut)
-async def admin_update_sub_order_status(
+async def update_sub_order_status(
     order_id: str,
     shop_id: str,
     status: str = Body(..., embed=True),
-    admin_user: UserOut = Depends(get_current_admin)
+    current_user: UserOut = Depends(get_current_admin)
 ):
     """
-    Permet à un administrateur de mettre à jour le statut d'une sous-commande spécifique.
+    Met à jour le statut d'une sous-commande et recalcule le statut global de la commande.
     """
-    if not ObjectId.is_valid(order_id) or not ObjectId.is_valid(shop_id):
-        raise HTTPException(status_code=400, detail="ID invalide.")
+    if not ObjectId.is_valid(order_id):
+        raise HTTPException(status_code=400, detail="ID de commande invalide.")
 
-    # La requête pour trouver la bonne sous-commande dans le tableau
+    # --- CORRECTION : On cherche le shop_id en tant que string ---
     query = {
         "_id": ObjectId(order_id),
         "sub_orders.shop_id": ObjectId(shop_id)
@@ -259,27 +259,45 @@ async def admin_update_sub_order_status(
     update = {
         "$set": {"sub_orders.$.status": status}
     }
-    
-    updated_order = await orders.find_one_and_update(query, update, return_document=True)
-    
-    if not updated_order:
-        raise HTTPException(status_code=404, detail="Sous-commande non trouvée.")
+    # 1. Mise à jour de la sous-commande
+    updated_doc = await orders.find_one_and_update(query, update)
+    if not updated_doc:
+        raise HTTPException(status_code=404, detail="Commande non trouvée ou non autorisée pour cette boutique.")
 
-    # On enrichit la réponse avec les infos du client pour être complet
-    customer = await users.find_one({"_id": updated_order["user_id"]})
-    if customer:
-        updated_order["customer"] = customer
+    # 2. On récupère la commande complète pour recalculer le statut global
+    updated_order_doc = await orders.find_one({"_id": ObjectId(order_id)})
 
-    # Conversion manuelle des IDs pour la réponse
-    updated_order["_id"] = str(updated_order["_id"])
-    updated_order["user_id"] = str(updated_order["user_id"])
-    if updated_order.get("customer"):
-        updated_order["customer"]["_id"] = str(updated_order["customer"]["_id"])
-    for sub in updated_order.get("sub_orders", []):
+    # 3. Logique de mise à jour du statut global
+    sub_statuses = [so['status'] for so in updated_order_doc.get("sub_orders", [])]
+    new_global_status = updated_order_doc["status"]
+    if all(s == "Livrée" for s in sub_statuses):
+        new_global_status = "Livrée"
+    elif any(s == "En cours de livraison" for s in sub_statuses):
+        new_global_status = "En cours de livraison"
+    elif all(s == "Annulée" for s in sub_statuses):
+        new_global_status = "Annulée"
+    
+    # 4. On met à jour le statut global dans la BDD
+    if new_global_status != updated_order_doc["status"]:
+        await orders.update_one(
+            {"_id": ObjectId(order_id)},
+            {"$set": {"status": new_global_status}}
+        )
+        updated_order_doc["status"] = new_global_status
+
+    # 5. On enrichit et on renvoie la commande finale
+    customer = await users.find_one({"_id": updated_order_doc["user_id"]})
+    if customer: updated_order_doc["customer"] = customer
+    
+    # Conversion manuelle
+    updated_order_doc["_id"] = str(updated_order_doc["_id"])
+    updated_order_doc["user_id"] = str(updated_order_doc["user_id"])
+    if updated_order_doc.get("customer"):
+        updated_order_doc["customer"]["_id"] = str(updated_order_doc["customer"]["_id"])
+    for sub in updated_order_doc.get("sub_orders", []):
         sub["shop_id"] = str(sub["shop_id"])
-        
-    return OrderOut.model_validate(updated_order)
 
+    return OrderOut.model_validate(updated_order_doc)
 
 
 # --- NOUVELLE ROUTE : Obtenir toutes les statistiques en un seul appel ---
