@@ -21,7 +21,7 @@ const Shops: React.FC = () => {
   useEffect(() => {
     const fetchPublicShops = async () => {
       try {
-        const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/shops/public-shops/");
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/shops/public-shops/`);
         if (!response.ok) throw new Error("Erreur de récupération des boutiques.");
         setBoutiques(await response.json());
       } catch (err: any) {

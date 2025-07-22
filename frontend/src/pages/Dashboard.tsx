@@ -30,7 +30,7 @@ const Dashboard: React.FC = () => {
   const fetchBoutiques = async () => {
     if (!token) { navigate('/login'); return; }
     try {
-      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/shops/my-shops/", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/shops/my-shops/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) {
@@ -145,7 +145,7 @@ const Dashboard: React.FC = () => {
   const fetchOrders = useCallback(async () => {
     if (!token) return;
     try {
-      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/dashboard/orders", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dashboard/orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) setGroupedOrders(await response.json());

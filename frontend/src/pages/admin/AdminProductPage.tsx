@@ -17,7 +17,7 @@ const AdminProductsPage: React.FC = () => {
   const fetchProducts = useCallback(async () => {
     if (!token) { navigate('/login'); return; }
     try {
-      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/admin/products", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/products`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Erreur de chargement des produits.");

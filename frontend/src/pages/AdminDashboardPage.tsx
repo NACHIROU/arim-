@@ -46,7 +46,7 @@ const AdminDashboardPage: React.FC = () => {
     if (searchTerm.trim().length >= 2) userParams.append('search', searchTerm);
     
     const usersUrl = `${import.meta.env.VITE_API_BASE_URL}/admin/users?${userParams.toString()}`;
-    const statsUrl = "${import.meta.env.VITE_API_BASE_URL}/admin/stats";
+    const statsUrl = `${import.meta.env.VITE_API_BASE_URL}/admin/stats`;
 
     try {
       const [usersResponse, statsResponse] = await Promise.all([

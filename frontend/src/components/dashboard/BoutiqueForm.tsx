@@ -72,7 +72,7 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
     }
     setIsGenerating(true);
     try {
-      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/ai/generate-description", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/ai/generate-description`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ 
@@ -117,7 +117,7 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
 
     const endpoint = isEditing 
       ? `${import.meta.env.VITE_API_BASE_URL}/shops/update-shop/${initialData?._id}`
-      : "${import.meta.env.VITE_API_BASE_URL}/shops/create-shop/";
+      : `${import.meta.env.VITE_API_BASE_URL}/shops/create-shop/`;
     const method = isEditing ? 'PUT' : 'POST';
 
     try {

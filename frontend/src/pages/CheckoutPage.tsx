@@ -32,7 +32,7 @@ const CheckoutPage: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       if (!token) return;
-      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/users/me", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) {
@@ -86,7 +86,7 @@ const CheckoutPage: React.FC = () => {
     }));
 
     try {
-      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/orders/", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/orders/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ shipping_address: shippingAddress, total_price: totalPrice, contact_phone: contactPhone, sub_orders }),

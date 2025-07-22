@@ -33,8 +33,8 @@ const Index: React.FC = () => {
       try {
         setLoadingInitial(true);
         const [shopsResponse, productsResponse] = await Promise.all([
-          fetch("${import.meta.env.VITE_API_BASE_URL}/shops/public-shops/"),
-          fetch("${import.meta.env.VITE_API_BASE_URL}/products/public-products/")
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/shops/public-shops/`),
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/products/public-products/`)
         ]);
         if (!shopsResponse.ok || !productsResponse.ok) {
           throw new Error("Erreur lors de la récupération des données initiales.");

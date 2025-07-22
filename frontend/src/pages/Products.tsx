@@ -21,7 +21,7 @@ const Products: React.FC = () => {
     useEffect(() => {
         const fetchAllProducts = async () => {
             try {
-                const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/products/public-products/");
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/products/public-products/`);
                 if (!response.ok) throw new Error("Erreur lors de la récupération des produits.");
                 setProducts(await response.json());
             } catch (err: any) {

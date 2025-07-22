@@ -48,7 +48,7 @@ const ProfilePage: React.FC = () => {
   const fetchPrimaryData = useCallback(async () => {
     if (!token) { navigate('/login'); return; }
     try {
-      const userRes = await fetch("${import.meta.env.VITE_API_BASE_URL}/users/me", { headers: { Authorization: `Bearer ${token}` } });
+      const userRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/me`, { headers: { Authorization: `Bearer ${token}` } });
       if (!userRes.ok) throw new Error("Impossible de récupérer vos données.");
       const userData = await userRes.json();
       setUser(userData);
@@ -68,8 +68,8 @@ const ProfilePage: React.FC = () => {
     setIsLoadingLists(true);
     try {
       const [activeRes, archivedRes] = await Promise.all([
-        fetch("${import.meta.env.VITE_API_BASE_URL}/orders/my-orders?archived=false", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("${import.meta.env.VITE_API_BASE_URL}/orders/my-orders?archived=true", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/orders/my-orders?archived=false`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/orders/my-orders?archived=true`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
       if (activeRes.ok) setActiveOrders(await activeRes.json());
       if (archivedRes.ok) setArchivedOrders(await archivedRes.json());
@@ -83,7 +83,7 @@ const ProfilePage: React.FC = () => {
   const fetchReviews = async () => {
     setIsLoadingLists(true);
     try {
-      const res = await fetch("${import.meta.env.VITE_API_BASE_URL}/reviews/my-reviews", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/reviews/my-reviews`, { headers: { Authorization: `Bearer ${token}` } });
       if(res.ok) setReviews(await res.json());
     } catch (error) {
       toast({ title: "Erreur", description: "Impossible de charger les avis.", variant: "destructive" });
@@ -108,7 +108,7 @@ const ProfilePage: React.FC = () => {
 
   const onProfileSubmit = async (values: z.infer<typeof profileSchema>) => {
     try {
-      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/users/me", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/me`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(values),
@@ -123,7 +123,7 @@ const ProfilePage: React.FC = () => {
 
   const onPasswordSubmit = async (values: z.infer<typeof passwordSchema>) => {
      try {
-      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/users/me/password", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/me/password`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(values),

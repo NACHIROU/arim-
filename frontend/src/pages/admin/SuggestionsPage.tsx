@@ -25,7 +25,7 @@ const SuggestionsPage: React.FC = () => {
   const fetchSuggestions = useCallback(async () => {
     if (!token) { navigate('/login'); return; }
     try {
-      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/admin/suggestions", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/suggestions`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Erreur de chargement des suggestions.");
