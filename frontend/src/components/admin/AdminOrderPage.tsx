@@ -19,7 +19,7 @@ const AdminOrdersPage: React.FC = () => {
   const fetchOrders = useCallback(async () => {
     if (!token) { navigate('/login'); return; }
     try {
-      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/admin/orders", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Erreur de chargement des commandes.");

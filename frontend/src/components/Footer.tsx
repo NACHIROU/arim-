@@ -21,7 +21,7 @@ const Footer: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/suggestions/", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/suggestions/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(suggestion),
