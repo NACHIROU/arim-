@@ -1,4 +1,4 @@
-// Ce fichier contiendra toutes vos interfaces partagées.
+// Ce fichier contient toutes les interfaces partagées.
 
 export interface Boutique {
   _id: string;
@@ -12,33 +12,39 @@ export interface Boutique {
 }
 
 export interface Produit {
-  [x: string]: any;
   _id: string;
+  id: string; // Vient de Pydantic
   name: string;
-  description: string;
+  description?: string;
   price: number;
   images?: string[];
   shop_id: string;
-  shopName?: string; // <-- Rendre optionnel
+  // L'objet boutique imbriqué, la seule source de vérité pour les infos de la boutique
   shop?: {
-    contact_phone: any;         // <-- Rendre optionnel
-    _id: string;
+    id: string;
+    _id: string; // Pour la compatibilité avec les composants existants
     name: string;
+    contact_phone?: string;
+    category?: string;
+    location?: string;
   };
 }
 
 export interface User {
-  id: string; // ou _id selon ce que votre API renvoie pour /users/me
   _id: string;
   first_name: string;
   email: string;
   phone?: string;
-  location?: string;
-  role: 'client' | 'merchant' | 'admin'; // <-- Rendre optionnel
-  shops?: Boutique[]; // <-- Rendre optionnel
-  products?: Produit[]; // <-- Rendre optionnel
-  whatsapp_call_link?: string; // <-- Rendre optionnel
-  is_active?: boolean; // <-- Rendre optionnel
+  role: 'client' | 'merchant' | 'admin';
+  is_active: boolean;
+}
+
+export interface Review {
+  _id: string;
+  rating: number;
+  message: string;
+  created_at: string;
+  shop_details: Boutique;
 }
 
 export interface Suggestion {
@@ -47,15 +53,41 @@ export interface Suggestion {
   email: string;
   message: string;
   status: 'nouveau' | 'lu' | 'répondu';
-  created_at: string; // Ceci sera une date au format string (ISO)
+  created_at: string;
   admin_reply?: string;
 }
 
-export interface SuggestionReply {
+export interface OrderedProduct {
+  product_id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface SubOrder {
+  shop_id: string;
+  shop_name: string;
+  products: OrderedProduct[];
+  sub_total: number;
+  status: 'En attente' | 'En cours de livraison' | 'Livrée' | 'Annulée';
+}
+
+export interface Order {
   _id: string;
-  suggestion_id: string;
   user_id: string;
-  user: User;
-  content: string;
-  created_at: Date;
+  shipping_address: string;
+  contact_phone: string; // <-- On s'assure qu'il est bien là
+  total_price: number;
+  sub_orders: SubOrder[];
+  status: string;
+
+  created_at: string;
+  is_archived: boolean;
+  customer?: User;
+}
+
+export interface ShopWithOrders {
+  shop_id: string;
+  shop_name: string;
+  orders: Order[];
 }

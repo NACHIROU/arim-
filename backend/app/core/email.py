@@ -38,6 +38,6 @@ async def send_email(to_email: str, subject: str, html_content: str):
         server.send_message(msg)
         
         server.quit()
-        print(f"Email envoyé avec succès à {to_email}.")
+        print(f"Email envoyé avec Succès ✅  à {to_email}.")
     except Exception as e:
         print(f"Échec de l'envoi de l'email : {e}")

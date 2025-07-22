@@ -8,7 +8,7 @@ from app.core.cloudinary import upload_images_to_cloudinary
 from app.core.dependencies import get_current_merchant
 from app.schemas.shop import ShopOut, ShopBase, ShopWithContact
 from app.schemas.users import UserOut
-from app.schemas.product import ProductOut
+from app.schemas.product import ProductOut, ProductWithShopInfo
 
 router = APIRouter()
 
@@ -65,6 +65,40 @@ async def create_shop(
 async def get_my_shops(current_user: UserOut = Depends(get_current_merchant)):
     cursor = shops.find({"owner_id": ObjectId(current_user.id)})
     return [ShopOut(**shop) async for shop in cursor]
+
+
+@router.get("/my-shops/{shop_id}/products", response_model=List[ProductOut])
+async def get_my_shop_products(shop_id: str, current_user: UserOut = Depends(get_current_merchant)):
+    """
+    Récupère les produits d'une boutique spécifique appartenant au marchand connecté.
+    """
+    if not ObjectId.is_valid(shop_id):
+        raise HTTPException(status_code=400, detail="ID de boutique invalide")
+
+    # 1. Sécurité : On vérifie que la boutique appartient bien au marchand connecté
+    shop_data = await shops.find_one({"_id": ObjectId(shop_id), "owner_id": ObjectId(current_user.id)})
+    if not shop_data:
+        raise HTTPException(status_code=404, detail="Boutique non trouvée ou non autorisée.")
+
+    # 2. Si c'est bon, on récupère les produits
+    products_cursor = products.find({"shop_id": ObjectId(shop_id)})
+    
+    # 3. On enrichit chaque produit avec les infos de la boutique
+    product_list = []
+    async for product in products_cursor:
+        product_info = {
+            **product,
+            "shop": {
+                "_id": shop_data.get("_id"),
+                "name": shop_data.get("name"),
+                "contact_phone": shop_data.get("contact_phone")
+            }
+        }
+        product_list.append(ProductOut.model_validate(product_info))
+        
+    return product_list
+
+
 
 @router.put("/update-shop/{shop_id}", response_model=ShopOut)
 async def update_shop(
@@ -142,7 +176,7 @@ async def publish_shop(shop_id: str, current_user: UserOut = Depends(get_current
     if not shop or shop["owner_id"] != ObjectId(current_user.id):
         raise HTTPException(status_code=403, detail="Accès refusé ou boutique non trouvée")
     await shops.update_one({"_id": ObjectId(shop_id)}, {"$set": {"is_published": True}})
-    return {"message": "Boutique publiée avec succès"}
+    return {"message": "Boutique publiée avec Succès ✅ "}
 
 @router.patch("/unpublish/{shop_id}", response_model=dict)
 async def unpublish_shop(shop_id: str, current_user: UserOut = Depends(get_current_merchant)):
@@ -151,7 +185,7 @@ async def unpublish_shop(shop_id: str, current_user: UserOut = Depends(get_curre
     if not shop or shop["owner_id"] != ObjectId(current_user.id):
         raise HTTPException(status_code=403, detail="Accès refusé ou boutique non trouvée")
     await shops.update_one({"_id": ObjectId(shop_id)}, {"$set": {"is_published": False}})
-    return {"message": "Boutique dépubliée avec succès"}
+    return {"message": "Boutique dépubliée avec Succès ✅ "}
 
 
 
@@ -190,9 +224,7 @@ async def get_public_shops():
     Liste toutes les boutiques dont le statut est "publié" ET dont le propriétaire est "actif".
     """
     pipeline = [
-        # 1. On ne prend que les boutiques publiées
         {"$match": {"is_published": True}},
-        # 2. On joint les informations du propriétaire
         {"$lookup": {
             "from": "users",
             "localField": "owner_id",
@@ -200,11 +232,12 @@ async def get_public_shops():
             "as": "owner_details"
         }},
         {"$unwind": "$owner_details"},
-        # 3. On ne garde que celles dont le propriétaire est actif
         {"$match": {"owner_details.is_active": True}}
     ]
     
     shops_cursor = shops.aggregate(pipeline)
+    
+    # --- CORRECTION : On utilise bien le modèle ShopOut ici ---
     return [ShopOut(**shop) async for shop in shops_cursor]
 
 @router.get("/retrieve-shop/{shop_id}", response_model=ShopWithContact)
@@ -236,29 +269,43 @@ async def retrieve_public_shop(shop_id: str):
 
     return ShopWithContact(**result[0])
 
-@router.get("/{shop_id}/products/", response_model=List[ProductOut])
+
+@router.get("/{shop_id}/products/", response_model=List[ProductWithShopInfo])
 async def get_public_products_by_shop(shop_id: str):
     """
-    Récupère les produits d'une boutique, mais seulement si la boutique 
-    est accessible au public (publiée ET propriétaire actif).
+    Récupère les produits d'une boutique, en s'assurant que la boutique
+    est visible et que chaque produit est enrichi avec les infos complètes de sa boutique.
     """
     if not ObjectId.is_valid(shop_id):
         raise HTTPException(status_code=400, detail="ID de boutique invalide")
 
-    # Pipeline pour valider si la boutique est visible par le public
+    # 1. On valide que la boutique parente est bien visible par le public
     validation_pipeline = [
         {"$match": {"_id": ObjectId(shop_id), "is_published": True}},
         {"$lookup": {"from": "users", "localField": "owner_id", "foreignField": "_id", "as": "owner_details"}},
         {"$unwind": "$owner_details"},
         {"$match": {"owner_details.is_active": True}}
     ]
-    
-    # --- CORRECTION ICI : On utilise .aggregate() et on vérifie si le résultat n'est pas vide ---
-    valid_shop_result = await shops.aggregate(validation_pipeline).to_list(length=1)
-
-    if not valid_shop_result:
+    valid_shop_list = await shops.aggregate(validation_pipeline).to_list(length=1)
+    if not valid_shop_list:
         raise HTTPException(status_code=404, detail="Boutique non trouvée, non publiée, ou propriétaire inactif.")
     
-    # Si la boutique est valide, on peut renvoyer ses produits
-    cursor = products.find({"shop_id": ObjectId(shop_id)})
-    return [ProductOut(**product) async for product in cursor]
+    shop_data = valid_shop_list[0]
+    
+    # 2. Si la boutique est valide, on récupère ses produits
+    products_cursor = products.find({"shop_id": ObjectId(shop_id)})
+    
+    # 3. On enrichit chaque produit avec les infos COMPLÈTES de la boutique
+    product_list = []
+    async for product in products_cursor:
+        product_info = {
+            **product,
+            "shop": {
+                "_id": shop_data.get("_id"), # <-- C'EST CETTE LIGNE QUI MANQUAIT
+                "name": shop_data.get("name"),
+                "contact_phone": shop_data.get("contact_phone")
+            }
+        }
+        product_list.append(ProductWithShopInfo.model_validate(product_info))
+        
+    return product_list

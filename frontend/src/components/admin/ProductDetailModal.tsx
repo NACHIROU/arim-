@@ -31,7 +31,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
         const errorData = await response.json();
         throw new Error(errorData.detail || "Erreur lors de la suppression.");
       }
-      toast({ title: "Succès", description: "Produit supprimé avec succès." });
+      toast({ title: "Succès ✅ ", description: "Produit supprimé avec Succès ✅ ." });
       onProductDeleted(); // Appelle la fonction pour rafraîchir et fermer
     } catch (error) {
       toast({ title: "Erreur", description: (error as Error).message, variant: "destructive" });

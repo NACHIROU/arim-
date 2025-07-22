@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,19 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useToast } from "@/components/ui/use-toast";
-import { Loader2, User, Mail, Phone, Lock, Settings } from 'lucide-react';
-import { User as UserType } from '@/types'; 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, User, Settings, ShoppingBag, Star, Lock, Trash2, Archive, ArchiveRestore } from 'lucide-react';
+import { User as UserType, Order, Review } from '@/types'; 
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
-// Schéma de validation pour le formulaire de profil
 const profileSchema = z.object({
   first_name: z.string().min(2, "Le nom est trop court."),
   email: z.string().email("L'email est invalide."),
   phone: z.string().optional(),
 });
 
-// Schéma de validation pour le mot de passe
 const passwordSchema = z.object({
   current_password: z.string().min(1, "Mot de passe actuel requis."),
   new_password: z.string().min(8, "Le nouveau mot de passe doit faire au moins 8 caractères."),
@@ -29,45 +29,83 @@ const passwordSchema = z.object({
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  
   const [user, setUser] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  
+  const [activeOrders, setActiveOrders] = useState<Order[]>([]);
+  const [archivedOrders, setArchivedOrders] = useState<Order[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [isLoadingLists, setIsLoadingLists] = useState(false);
+  
   const token = localStorage.getItem('token');
 
-  const fetchUserData = async () => {
-    if (!token) { navigate('/login'); return; }
-    try {
-      const response = await fetch("http://localhost:8000/users/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error("Impossible de récupérer les données de l'utilisateur.");
-      const data = await response.json();
-      setUser(data);
-      profileForm.reset(data); // Pré-remplir le formulaire
-    } catch (error) {
-      console.error(error);
-      navigate('/login');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  // --- Configuration des formulaires ---
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: { first_name: '', email: '', phone: '' },
   });
+
+  const fetchPrimaryData = useCallback(async () => {
+    if (!token) { navigate('/login'); return; }
+    try {
+      const userRes = await fetch("http://localhost:8000/users/me", { headers: { Authorization: `Bearer ${token}` } });
+      if (!userRes.ok) throw new Error("Impossible de récupérer vos données.");
+      const userData = await userRes.json();
+      setUser(userData);
+      profileForm.reset(userData);
+    } catch (error) {
+      toast({ title: "Erreur", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [token, navigate, toast, profileForm]);
+
+  useEffect(() => {
+    fetchPrimaryData();
+  }, [fetchPrimaryData]);
+  
+  const fetchOrders = async () => {
+    setIsLoadingLists(true);
+    try {
+      const [activeRes, archivedRes] = await Promise.all([
+        fetch("http://localhost:8000/orders/my-orders?archived=false", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch("http://localhost:8000/orders/my-orders?archived=true", { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+      if (activeRes.ok) setActiveOrders(await activeRes.json());
+      if (archivedRes.ok) setArchivedOrders(await archivedRes.json());
+    } catch (error) {
+      toast({ title: "Erreur", description: "Impossible de charger les commandes.", variant: "destructive" });
+    } finally {
+      setIsLoadingLists(false);
+    }
+  };
+
+  const fetchReviews = async () => {
+    setIsLoadingLists(true);
+    try {
+      const res = await fetch("http://localhost:8000/reviews/my-reviews", { headers: { Authorization: `Bearer ${token}` } });
+      if(res.ok) setReviews(await res.json());
+    } catch (error) {
+      toast({ title: "Erreur", description: "Impossible de charger les avis.", variant: "destructive" });
+    } finally {
+      setIsLoadingLists(false);
+    }
+  };
+  
+  const onTabChange = (value: string) => {
+    if ((value === 'orders' && activeOrders.length === 0) || (value === 'archived' && archivedOrders.length === 0)) {
+        fetchOrders();
+    }
+    if (value === 'reviews' && reviews.length === 0) {
+        fetchReviews();
+    }
+  };
 
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
     defaultValues: { current_password: '', new_password: '' },
   });
 
-  // --- Logique de soumission ---
   const onProfileSubmit = async (values: z.infer<typeof profileSchema>) => {
     try {
       const response = await fetch("http://localhost:8000/users/me", {
@@ -76,8 +114,8 @@ const ProfilePage: React.FC = () => {
         body: JSON.stringify(values),
       });
       if (!response.ok) throw new Error("Erreur lors de la mise à jour.");
-      toast({ title: "Succès ✅ ", description: "Votre profil a été mis à jour." });
-      fetchUserData(); // Rafraîchir les données
+      toast({ title: "Succès", description: "Votre profil a été mis à jour." });
+      fetchPrimaryData();
     } catch (error) {
       toast({ title: "Erreur", description: "Impossible de mettre à jour le profil.", variant: "destructive" });
     }
@@ -99,255 +137,231 @@ const ProfilePage: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-orange-50 to-amber-50">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-orange-500 mx-auto mb-4" />
-          <p className="text-gray-600">Chargement de votre profil...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet avis ?")) return;
+    try {
+      const response = await fetch(`http://localhost:8000/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("La suppression a échoué.");
+      toast({ title: "Succès", description: "Votre avis a été supprimé." });
+      fetchReviews();
+    } catch (error) {
+      toast({ title: "Erreur", description: (error as Error).message, variant: "destructive" });
+    }
+  };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
-      <div className="container max-w-6xl mx-auto py-8 px-4">
-        {/* En-tête avec avatar et informations utilisateur */}
-        <div className="mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-orange-100">
-            <div className="flex items-center space-x-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-amber-500 rounded-full flex items-center justify-center shadow-lg">
-                <User className="h-10 w-10 text-white" />
-              </div>
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  Bonjour, {user?.first_name || 'Utilisateur'} 👋
-                </h1>
-                <p className="text-gray-600 text-lg">
-                  Gérez vos informations personnelles et vos préférences de compte
-                </p>
-                {user?.role === 'merchant' && (
-                  <div className="mt-3">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
-                      <Settings className="h-4 w-4 mr-1" />
-                      Compte Marchand
-                    </span>
-                  </div>
-                )}
-              </div>
+  const handleArchiveOrder = async (orderId: string) => {
+    try {
+      const response = await fetch(`http://localhost:8000/orders/${orderId}/archive`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error("L'archivage a échoué.");
+      toast({ title: "Succès", description: "Commande archivée." });
+      fetchOrders();
+    } catch (error) {
+      toast({ title: "Erreur", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+  
+  const handleUnarchiveOrder = async (orderId: string) => {
+    try {
+      const response = await fetch(`http://localhost:8000/orders/${orderId}/unarchive`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error("La restauration a échoué.");
+      toast({ title: "Succès", description: "Commande restaurée." });
+      fetchOrders();
+    } catch (error) {
+      toast({ title: "Erreur", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
+  if (isLoading) return <div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+
+
+return (
+    <div className="min-h-screen bg-slate-50">
+      <div className="container max-w-6xl mx-auto py-12 space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold text-gray-900">Bonjour, {user?.first_name} 👋</h1>
+            <p className="text-gray-600">Bienvenue dans votre espace personnel</p>
+          </div>
+          {user?.role === 'merchant' && (
+            <Button asChild className="shadow-lg"><Link to="/dashboard"><Settings className="h-4 w-4 mr-2" />Accéder au Dashboard</Link></Button>
+          )}
+        </div>
+
+        <Tabs defaultValue="profile" className="w-full" onValueChange={onTabChange}>
+          <TabsList className="grid w-full grid-cols-4 bg-white/60 backdrop-blur-sm shadow-sm h-12 rounded-lg">
+            <TabsTrigger value="profile" className="data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-primary"><User className="h-4 w-4 mr-2" /> Mon Profil</TabsTrigger>
+            <TabsTrigger value="orders" className="data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-primary"><ShoppingBag className="h-4 w-4 mr-2" /> Mes Commandes</TabsTrigger>
+            <TabsTrigger value="reviews" className="data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-primary"><Star className="h-4 w-4 mr-2" /> Mes Avis</TabsTrigger>
+            <TabsTrigger value="archived" className="data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-primary"><Archive className="h-4 w-4 mr-2" /> Commandes Archivées</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile" className="mt-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="shadow-lg"><CardHeader><CardTitle>Informations Personnelles</CardTitle></CardHeader><CardContent><Form {...profileForm}><form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4"><FormField control={profileForm.control} name="first_name" render={({ field }) => (<FormItem><FormLabel>Nom</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} /><FormField control={profileForm.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} /><FormField control={profileForm.control} name="phone" render={({ field }) => (<FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} /><Button type="submit" disabled={profileForm.formState.isSubmitting}>Enregistrer</Button></form></Form></CardContent></Card>
+              <Card className="shadow-lg"><CardHeader><CardTitle>Sécurité</CardTitle></CardHeader><CardContent><Form {...passwordForm}><form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4"><FormField control={passwordForm.control} name="current_password" render={({ field }) => (<FormItem><FormLabel>Actuel</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>)} /><FormField control={passwordForm.control} name="new_password" render={({ field }) => (<FormItem><FormLabel>Nouveau</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>)} /><Button type="submit" disabled={passwordForm.formState.isSubmitting}>Changer</Button></form></Form></CardContent></Card>
             </div>
-          </div>
-        </div>
-        
-        <div className="grid lg:grid-cols-4 gap-8">
-          {/* Sidebar Navigation */}
-          <div className="lg:col-span-1">
-            <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-lg">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
-                  <Settings className="h-5 w-5 mr-2 text-orange-500" />
-                  Actions rapides
-                </CardTitle>
+          </TabsContent>
+
+          <TabsContent value="orders" className="mt-6">
+            <Card><CardHeader><CardTitle>Historique des Commandes</CardTitle></CardHeader><CardContent>{isLoadingLists ? <div className="text-center py-12"><Loader2 className="mx-auto h-6 w-6 animate-spin"/></div> : <div className="space-y-6">{activeOrders.length > 0 ? activeOrders.map(order => (<div key={order._id} className="border p-4 rounded-xl bg-white relative"><div className="flex justify-between items-start mb-4"><div><p className="font-semibold">Cde du {new Date(order.created_at).toLocaleDateString('fr-FR')}</p><p className="text-xs text-muted-foreground">ID: {order._id}</p></div><Badge>{order.status}</Badge></div><div className="absolute bottom-4 left-4"><Button variant="destructive" size="sm" onClick={() => handleArchiveOrder(order._id)}><Archive className="h-4 w-4 mr-2"/>Archiver</Button></div><div className="space-y-3 pr-28">{order.sub_orders.map(subOrder => (<div key={subOrder.shop_id}><p className="text-sm font-medium">Vendu par : {subOrder.shop_name}</p><ul className="list-disc pl-5 mt-1 text-sm space-y-1">{subOrder.products.map(product => (<li key={product.product_id} className="flex justify-between"><span>{product.name} (x{product.quantity})</span><span>{(product.price * product.quantity).toLocaleString('fr-FR')} FCFA</span></li>))}</ul></div>))}</div><Separator className="my-4" /><p className="text-right font-bold text-lg">Total : {order.total_price.toLocaleString('fr-FR')} FCFA</p></div>)) : <div className="text-center py-12"><ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-4" /><p>Aucune commande active.</p></div>}</div>}</CardContent></Card>
+          </TabsContent>
+
+          <TabsContent value="reviews" className="mt-6">
+            <Card><CardHeader><CardTitle>Avis Laissés</CardTitle></CardHeader><CardContent>{isLoadingLists ? <div className="text-center py-12"><Loader2 className="mx-auto h-6 w-6 animate-spin"/></div> : <div className="space-y-4">{reviews.length > 0 ? reviews.map(review => (<div key={review._id} className="border p-4 rounded-lg relative hover:bg-slate-50"><p className="text-sm font-semibold mb-1">Pour : <Link to={`/shops/${review.shop_details._id}`} className="text-primary hover:underline">{review.shop_details.name}</Link></p><div className="flex items-center mb-2">{[...Array(5)].map((_, i) => <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />)}</div><p className="italic">"{review.message}"</p><Button variant="ghost" size="icon" className="absolute top-2 right-2 h-8 w-8" onClick={() => handleDeleteReview(review._id)}><Trash2 className="h-4 w-4 text-red-500" /></Button></div>)) : <div className="text-center py-12"><Star className="h-12 w-12 text-gray-300 mx-auto mb-4" /><p>Vous n'avez laissé aucun avis.</p></div>}</div>}</CardContent></Card>
+          </TabsContent>
+          
+          <TabsContent value="archived" className="mt-6">
+
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+
+              <CardHeader>
+
+                <CardTitle className="text-gray-900">Commandes Archivées</CardTitle>
+
+                <CardDescription className="text-gray-600">
+
+                  Voici les commandes que vous avez masquées de votre historique principal.
+
+                </CardDescription>
+
               </CardHeader>
-              <CardContent className="space-y-3">
-                {user?.role === 'merchant' && (
-                  <Link to="/dashboard" className="block">
-                    <Button className="w-full bg-orange-500 from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Dashboard Marchand
-                    </Button>
-                  </Link>
+
+              <CardContent className="space-y-6">
+
+                {archivedOrders.length > 0 ? archivedOrders.map(order => (
+
+                  <div key={order._id} className="border border-slate-200 p-6 rounded-xl bg-slate-100 relative opacity-70">
+
+                    <div className="flex justify-between items-start mb-4">
+
+                      <div className="space-y-1">
+
+                        <p className="font-semibold text-gray-700">
+
+                          Commande du {new Date(order.created_at).toLocaleDateString('fr-FR')}
+
+                        </p>
+
+                        <p className="text-xs text-gray-500">ID: {order._id}</p>
+
+                      </div>
+
+                      <Badge 
+
+                        variant={order.status === 'Livrée' ? 'default' : 'secondary'} 
+
+                        className="capitalize"
+
+                      >
+
+                        {order.status}
+
+                      </Badge>
+
+                    </div>
+
+
+                    <div className="absolute bottom-4 left-4">
+
+                      <Button
+
+                        variant="outline"
+
+                        size="sm"
+
+                        onClick={() => handleUnarchiveOrder(order._id)}
+
+                        title="Restaurer cette commande"
+
+                      >
+
+                        <ArchiveRestore className="h-4 w-4 mr-2"/> Restaurer
+
+                      </Button>
+
+                    </div>
+
+                
+
+                    {/* --- On ajoute les détails des produits ici --- */}
+
+                    <div className="space-y-4 pr-32">
+
+                      {order.sub_orders.map(subOrder => (
+
+                        <div key={subOrder.shop_id} className="bg-white/60 rounded-lg p-4">
+
+                          <p className="text-sm font-medium text-slate-600 mb-2">
+
+                            Vendu par : {subOrder.shop_name}
+
+                          </p>
+
+                          <ul className="space-y-2">
+
+                            {subOrder.products.map(product => (
+
+                              <li key={product.product_id} className="flex justify-between items-center text-sm">
+
+                                <span className="text-gray-600">{product.name} (x{product.quantity})</span>
+
+                                <span className="font-medium text-gray-800">
+
+                                  {(product.price * product.quantity).toLocaleString('fr-FR')} FCFA
+
+                                </span>
+
+                              </li>
+
+                            ))}
+
+                          </ul>
+
+                        </div>
+
+                      ))}
+
+                    </div>
+
+                    
+
+                    <Separator className="my-4 bg-slate-200" />
+
+                    <p className="text-right font-bold text-lg text-gray-700">
+
+                      Total : {order.total_price.toLocaleString('fr-FR')} FCFA
+
+                    </p>
+
+                  </div>
+
+                )) : (
+
+                  <div className="text-center py-12">
+
+                    <Archive className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+
+                    <p className="text-gray-500">Vous n'avez aucune commande archivée.</p>
+
+                  </div>
+
                 )}
-                <Separator className="my-4" />
-                <div className="text-sm text-gray-500 space-y-2">
-                  <p className="font-medium">Prochainement :</p>
-                  <ul className="space-y-1 text-xs">
-                    <li>• Mes commandes</li>
-                    <li>• Mes avis</li>
-                    <li>• Historique</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3 space-y-8">
-            {/* Informations Personnelles */}
-            <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <CardHeader className="bg-orange-500 text-white rounded-t-lg">
-                <CardTitle className="flex items-center text-xl">
-                  <User className="h-6 w-6 mr-3" />
-                  Informations Personnelles
-                </CardTitle>
-                <CardDescription className="text-orange-100">
-                  Mettez à jour vos informations de contact et vos données personnelles
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-8">
-                <Form {...profileForm}>
-                  <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
-                    <FormField 
-                      control={profileForm.control} 
-                      name="first_name" 
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-medium flex items-center">
-                            <User className="h-4 w-4 mr-2 text-orange-500" />
-                            Nom complet
-                          </FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field} 
-                              className="border-orange-200 focus:border-orange-400 focus:ring-orange-300 transition-colors" 
-                              placeholder="Votre nom complet"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} 
-                    />
-                    <FormField 
-                      control={profileForm.control} 
-                      name="email" 
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-medium flex items-center">
-                            <Mail className="h-4 w-4 mr-2 text-orange-500" />
-                            Adresse email
-                          </FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="email" 
-                              {...field} 
-                              className="border-orange-200 focus:border-orange-400 focus:ring-orange-300 transition-colors"
-                              placeholder="votre@email.com"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} 
-                    />
-                    <FormField 
-                      control={profileForm.control} 
-                      name="phone" 
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-medium flex items-center">
-                            <Phone className="h-4 w-4 mr-2 text-orange-500" />
-                            Numéro de téléphone
-                          </FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field} 
-                              className="border-orange-200 focus:border-orange-400 focus:ring-orange-300 transition-colors"
-                              placeholder="+33 1 23 45 67 89"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} 
-                    />
-                    <div className="pt-4">
-                      <Button 
-                        type="submit" 
-                        disabled={profileForm.formState.isSubmitting}
-                        className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-                      >
-                        {profileForm.formState.isSubmitting ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Enregistrement...
-                          </>
-                        ) : (
-                          'Enregistrer les modifications'
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
               </CardContent>
+
             </Card>
 
-            {/* Changement de Mot de Passe */}
-            <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <CardHeader className="bg-orange-500 text-white rounded-t-lg">
-                <CardTitle className="flex items-center text-xl">
-                  <Lock className="h-6 w-6 mr-3" />
-                  Sécurité du Compte
-                </CardTitle>
-                <CardDescription className="text-red-100">
-                  Modifiez votre mot de passe pour sécuriser votre compte
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-8">
-                <Form {...passwordForm}>
-                  <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
-                    <FormField 
-                      control={passwordForm.control} 
-                      name="current_password" 
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-medium flex items-center">
-                            <Lock className="h-4 w-4 mr-2 text-red-500" />
-                            Mot de passe actuel
-                          </FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="password" 
-                              {...field} 
-                              className="border-orange-200 focus:border-red-400 focus:ring-red-300 transition-colors"
-                              placeholder="Votre mot de passe actuel"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} 
-                    />
-                    <FormField 
-                      control={passwordForm.control} 
-                      name="new_password" 
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-medium flex items-center">
-                            <Lock className="h-4 w-4 mr-2 text-red-500" />
-                            Nouveau mot de passe
-                          </FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="password" 
-                              {...field} 
-                              className="border-orange-200 focus:border-red-400 focus:ring-red-300 transition-colors"
-                              placeholder="Minimum 8 caractères"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} 
-                    />
-                    <div className="pt-4">
-                      <Button 
-                        type="submit" 
-                        disabled={passwordForm.formState.isSubmitting}
-                        className="bg-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-                      >
-                        {passwordForm.formState.isSubmitting ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Modification...
-                          </>
-                        ) : (
-                          'Changer le mot de passe'
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

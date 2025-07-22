@@ -1,67 +1,76 @@
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
 import { Button } from './ui/button';
-import { Store, Heart, Eye } from 'lucide-react';
+import { Store, ShoppingCart, Tag } from 'lucide-react';
+import { Produit } from '@/types';
+import { useCart } from '@/context/CartContext';
 
-// --- CORRECTION : On change les props ---
 interface ProductCardProps {
-  id: string;
-  imageUrl: string;
-  name: string;
-  shopName: string; // 
-  price: number;
-  shopId?: string;
-  showShopLink?: boolean;
+  product: Produit;
 }
 
-const ProductCard = ({ id, imageUrl, name, shopName, price, shopId, showShopLink = false }: ProductCardProps) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const { addToCart } = useCart();
+
+  const imageUrl = (product.images && product.images.length > 0) 
+    ? product.images[0] 
+    : 'https://via.placeholder.com/400x300?text=Image';
+
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 group border-0 bg-white/90 backdrop-blur-sm">
+    <Card className="overflow-hidden h-full flex flex-col group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-0 bg-white/90 backdrop-blur-sm">
       <CardHeader className="p-0 relative overflow-hidden">
-        <Link to={`/products/${id}`}>
+        <Link to={`/products/${product._id}`}>
           <AspectRatio ratio={4 / 3}>
             <img 
               src={imageUrl} 
-              alt={name} 
+              alt={product.name} 
               className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" 
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
           </AspectRatio>
         </Link>
         
-
-        {showShopLink && shopId && (
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
-            <Link to={`/shops/${shopId}`}>
-              <Button variant="secondary" className="bg-white/90 hover:bg-white shadow-lg transform scale-95 hover:scale-100 transition-all">
-                <Store className="h-4 w-4 mr-2" />
-                Voir la boutique
-              </Button>
-            </Link>
+        {/* Badge pour la catégorie de la boutique */}
+        {product.shop?.category && (
+          <div className="absolute top-4 left-4">
+            <Badge variant="secondary" className="bg-white/90 text-foreground shadow-lg">
+              <Tag className="h-3 w-3 mr-1" />
+              {product.shop.category}
+            </Badge>
           </div>
         )}
       </CardHeader>
       
-      <CardContent className="p-6 space-y-3">
-        <Link to={`/products/${id}`} className="block">
-          <h3 className="font-semibold text-lg hover:text-primary transition-colors duration-200 truncate group-hover:text-primary">
-            {name}
+      <CardContent className="p-4 flex-grow space-y-2">
+        <Link to={`/products/${product._id}`} className="block">
+          <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors duration-200 line-clamp-2">
+            {product.name}
           </h3>
         </Link>
         
-        <Link to={`/shops/${shopId}`} className="block">
-          <p className="text-sm text-muted-foreground hover:text-primary transition-colors duration-200 flex items-center gap-2">
-            <Store className="h-4 w-4 text-primary" /> 
-            <span className="hover:underline">{shopName}</span>
-          </p>
-        </Link>
+        {product.shop && (
+          <Link to={`/shops/${product.shop._id}`} className="block">
+            <p className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5">
+              <Store className="h-4 w-4" /> 
+              <span className="hover:underline">{product.shop.name}</span>
+            </p>
+          </Link>
+        )}
       </CardContent>
       
-      <CardFooter className="p-4 pt-2 flex justify-begin items-center gap-4 bg-white/80 backdrop-blur-sm">
-        <div className="bg-orange-500 text-white px-3 py-1 rounded-xl shadow-lg flex items-center gap-2">
-          <p className="font-semibold text-base">{price.toLocaleString('fr-FR')} FCFA</p>
-        </div>
+      <CardFooter className="p-4 pt-0 flex justify-between items-center">
+        <p className="font-bold text-primary text-lg">{product.price.toLocaleString('fr-FR')} FCFA</p>
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={() => addToCart(product)} 
+          title="Ajouter au panier"
+          className="transition-transform hover:scale-110"
+        >
+          <ShoppingCart className="h-5 w-5" />
+        </Button>
       </CardFooter>
     </Card>
   );

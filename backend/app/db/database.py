@@ -17,4 +17,5 @@ shops = database.get_collection("shops")
 products = database.get_collection("products")
 reviews = database.get_collection("reviews")
 suggestions = database.get_collection("suggestions")
+orders = database.get_collection("orders")
 

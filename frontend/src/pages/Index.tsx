@@ -205,12 +205,7 @@ const Index: React.FC = () => {
             {products.slice(0, 8).map((product) => (
               <div key={product._id} className="group">
                 <ProductCard
-                  id={product._id}
-                  imageUrl={(product.images && product.images.length > 0) ? product.images[0] : ''}
-                  name={product.name}
-                  price={product.price}
-                  shopId={product.shop_id}
-                  shopName={product.shop?.name || 'Boutique Inconnue'}
+                  product={product}
                 />
               </div>
             ))}

@@ -131,7 +131,7 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
         throw new Error(`Erreur: ${await response.text()}`);
       }
       
-      alert(`Boutique ${isEditing ? 'mise à jour' : 'créée'} avec succès !`);
+      alert(`Boutique ${isEditing ? 'mise à jour' : 'créée'} avec Succès ✅  !`);
       onSuccess();
 
     } catch (error) {
@@ -144,8 +144,8 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
 
   return (
     <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
-      <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-t-lg">
-        <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+      <CardHeader className="from-primary/10 to-accent/10 rounded-t-lg">
+        <CardTitle className="text-2xl from-primary to-accent bg-clip-text text-transparent">
           {isEditing ? 'Modifier la boutique' : 'Créer une nouvelle boutique'}
         </CardTitle>
         <CardDescription className="text-muted-foreground">
@@ -263,7 +263,7 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 px-8"
+              className="from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 px-8"
             >
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isEditing ? 'Mettre à jour' : 'Créer la boutique'}

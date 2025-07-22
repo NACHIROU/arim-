@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import DashboardTabs from '@/components/dashboard/DashboardTabs';
@@ -6,17 +6,18 @@ import BoutiqueForm from '@/components/dashboard/BoutiqueForm';
 import BoutiquesList from '@/components/dashboard/BoutiquesList';
 import ProduitForm from '@/components/dashboard/ProduitForm';
 import ProduitsList from '@/components/dashboard/ProduitsList';
-import { Boutique, Produit } from '@/types';
+import { Boutique, Order, Produit, ShopWithOrders } from '@/types';
+import { OrdersList } from '@/components/dashboard/OrderList';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'boutiques' | 'produits'>('boutiques');
-  
+  const [activeTab, setActiveTab] = useState<'boutiques' | 'produits' | 'commandes'>('boutiques');
+
   // --- États pour les boutiques ---
   const [boutiques, setBoutiques] = useState<Boutique[]>([]);
   const [editingShop, setEditingShop] = useState<Boutique | null>(null);
   const boutiqueFormRef = useRef<HTMLDivElement>(null);
-  
+  const [groupedOrders, setGroupedOrders] = useState<ShopWithOrders[]>([]);
   // --- États pour les produits ---
   const [produits, setProduits] = useState<Produit[]>([]);
   const [selectedShopId, setSelectedShopId] = useState<string>('');
@@ -100,7 +101,7 @@ const Dashboard: React.FC = () => {
   const fetchProduitsByShop = async (shopId: string) => {
     if (!shopId || !token) { setProduits([]); return; }
     try {
-      const response = await fetch(`http://localhost:8000/shops/${shopId}/products/`, {
+    const response = await fetch(`http://localhost:8000/shops/my-shops/${shopId}/products`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProduits(response.ok ? await response.json() : []);
@@ -140,7 +141,39 @@ const Dashboard: React.FC = () => {
       alert("Erreur lors de la suppression du produit.");
     }
   };
+  
+  const fetchOrders = useCallback(async () => {
+    if (!token) return;
+    try {
+      const response = await fetch("http://localhost:8000/dashboard/orders", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) setGroupedOrders(await response.json());
+    } catch (error) { console.error("Erreur chargement commandes:", error); }
+  }, [token]);
 
+  useEffect(() => {
+    if (activeTab === 'commandes') {
+      fetchOrders();
+    }
+  }, [activeTab, fetchOrders]);
+
+  const handleStatusChange = async (orderId: string, shopId: string, newStatus: string) => {
+    try {
+        const response = await fetch(`http://localhost:8000/dashboard/orders/${orderId}/sub_orders/${shopId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ status: newStatus })
+        });
+        if (!response.ok) throw new Error("La mise à jour a échoué.");
+        alert("Statut mis à jour !");
+        fetchOrders(); // Rafraîchir
+    } catch(error) {
+        alert((error as Error).message);
+    }
+  };
+
+  const merchantShopIds = boutiques.map(b => b._id);
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
       <div className="container py-8">
@@ -229,6 +262,15 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         )}
+      {activeTab === 'commandes' && (
+        <div className="mt-6">
+          <h2 className="text-2xl font-semibold mb-4">Mes Commandes Reçues</h2>
+          <OrdersList
+            groupedOrders={groupedOrders} 
+            onStatusChange={handleStatusChange} 
+          />
+        </div>
+      )}
       </div>
     </div>
   );
