@@ -51,9 +51,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* --- ROUTES PUBLIQUES (Seulement l'accueil et l'authentification) --- */}
+          {/* --- ROUTES PUBLIQUES --- */}
           <Route element={<Layout />}>
             <Route path="/" element={<Index />} />
+            <Route path="/shops" element={<Shops />} />
+            <Route path="/shops/:shopId" element={<ShopDetail />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/products/:productId" element={<ProductDetail />} />
           </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -62,10 +66,6 @@ const App = () => (
           {/* --- ROUTES PROTÉGÉES (Toutes les autres pages) --- */}
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
-              <Route path="/shops" element={<Shops />} />
-              <Route path="/shops/:shopId" element={<ShopDetail />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/products/:productId" element={<ProductDetail />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/profil" element={<ProfilePage />} />
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
