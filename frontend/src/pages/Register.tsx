@@ -114,7 +114,7 @@ const Register = () => {
                     <FormItem>
                       <FormLabel>Prénom</FormLabel>
                       <FormControl>
-                        <Input placeholder="John" {...field} />
+                        <Input placeholder="John" {...field} className="bg-gray-100" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -127,7 +127,7 @@ const Register = () => {
                     <FormItem>
                       <FormLabel>Nom</FormLabel>
                       <FormControl>
-                        <Input placeholder="Doe" {...field} />
+                        <Input placeholder="Doe" {...field} className="bg-gray-100" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -142,7 +142,7 @@ const Register = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="nom@exemple.com" {...field} />
+                      <Input placeholder="nom@exemple.com" {...field} className="bg-gray-100" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -159,7 +159,7 @@ const Register = () => {
                       Téléphone
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="+229 12 34 56 78" {...field} />
+                      <Input placeholder="+229 12 34 56 78" {...field} className="bg-gray-100" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -176,7 +176,7 @@ const Register = () => {
                       Lien WhatsApp (Optionnel)
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="https://wa.me/..." {...field} />
+                      <Input placeholder="https://wa.me/..." {...field} className="bg-gray-100" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -191,7 +191,7 @@ const Register = () => {
                     <FormItem>
                       <FormLabel>Ville</FormLabel>
                       <FormControl>
-                        <Input placeholder="Cotonou" {...field} />
+                        <Input placeholder="Cotonou" {...field} className="bg-gray-100" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -204,7 +204,7 @@ const Register = () => {
                     <FormItem>
                       <FormLabel>Quartier</FormLabel>
                       <FormControl>
-                        <Input placeholder="Haie Vive" {...field} />
+                        <Input placeholder="Haie Vive" {...field} className="bg-gray-100" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -254,7 +254,7 @@ const Register = () => {
                   <FormItem>
                     <FormLabel>Mot de passe</FormLabel>
                     <FormControl>
-                      <Input type="password" {...field} />
+                      <Input type="password" {...field} className="bg-gray-100" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -268,7 +268,7 @@ const Register = () => {
                   <FormItem>
                     <FormLabel>Confirmer le mot de passe</FormLabel>
                     <FormControl>
-                      <Input type="password" {...field} />
+                      <Input type="password" {...field} className="bg-gray-100" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

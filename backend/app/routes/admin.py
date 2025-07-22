@@ -400,3 +400,30 @@ async def admin_delete_product(product_id: str, admin_user: UserOut = Depends(ge
         raise HTTPException(status_code=404, detail="Produit non trouvé")
         
     return {"message": "Produit supprimé avec succès."}
+
+
+
+# --- NOUVELLE ROUTE : Publier/Dépublier  n'importe quelle boutique ---
+
+@router.patch("/shops/{shop_id}/publish", response_model=dict)
+async def admin_publish_shop(shop_id: str, admin_user: UserOut = Depends(get_current_admin)):
+    if not ObjectId.is_valid(shop_id):
+        raise HTTPException(status_code=400, detail="ID invalide")
+    
+    result = await shops.update_one({"_id": ObjectId(shop_id)}, {"$set": {"is_published": True}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Boutique non trouvée")
+        
+    return {"message": "Boutique publiée par l'administrateur."}
+
+
+@router.patch("/shops/{shop_id}/unpublish", response_model=dict)
+async def admin_unpublish_shop(shop_id: str, admin_user: UserOut = Depends(get_current_admin)):
+    if not ObjectId.is_valid(shop_id):
+        raise HTTPException(status_code=400, detail="ID invalide")
+
+    result = await shops.update_one({"_id": ObjectId(shop_id)}, {"$set": {"is_published": False}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Boutique non trouvée")
+        
+    return {"message": "Boutique dépubliée par l'administrateur."}

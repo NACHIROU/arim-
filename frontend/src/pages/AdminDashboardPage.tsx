@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { User } from '@/types';
 import { 
   Loader2, Trash2, UserX, UserCheck, Users, 
-  Search, Eye, Store, Package, ShoppingBasket, MessageSquare 
+  Search, Eye, Store, Package, ShoppingBasket, MessageSquare, ExternalLink 
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
@@ -131,151 +131,191 @@ const AdminDashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-8 px-4 max-w-7xl">
+      <div className="container mx-auto py-12 px-6 max-w-7xl">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard Administrateur</h1>
-          <p className="text-muted-foreground">Supervision et modération de la plateforme</p>
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold text-foreground mb-3">Dashboard Administrateur</h1>
+          <p className="text-lg text-muted-foreground">Supervision et modération de la plateforme</p>
         </div>
 
-        {/* Stats Grid - Main */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        {/* Stats Grid - Main (Cartes Cliquables) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
           <Link to="/admin/dashboard" className="block group">
-            <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Card className="bg-white border border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Utilisateurs</p>
-                    <p className="text-2xl font-bold text-foreground">{stat.total}</p>
+                    <p className="text-sm font-medium text-slate-600 mb-1">UTILISATEURS</p>
+                    <p className="text-2xl font-bold text-slate-900">{stat.total}</p>
                   </div>
-                  <Users className="h-5 w-5 text-primary" />
+                  <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <Users className="h-5 w-5 text-blue-600" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-blue-600">
+                  <ExternalLink className="h-4 w-4" />
+                  <span className="text-sm font-medium">Consulter</span>
                 </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link to="/admin/shops" className="block group">
-            <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Card className="bg-white border border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Boutiques</p>
-                    <p className="text-2xl font-bold text-foreground">{stats.shops}</p>
+                    <p className="text-sm font-medium text-slate-600 mb-1">BOUTIQUES</p>
+                    <p className="text-2xl font-bold text-slate-900">{stats.shops}</p>
                   </div>
-                  <Store className="h-5 w-5 text-primary" />
+                  <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                    <Store className="h-5 w-5 text-emerald-600" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-emerald-600">
+                  <ExternalLink className="h-4 w-4" />
+                  <span className="text-sm font-medium">Consulter</span>
                 </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link to="/admin/products" className="block group">
-            <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Card className="bg-white border border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Produits</p>
-                    <p className="text-2xl font-bold text-foreground">{stats.products}</p>
+                    <p className="text-sm font-medium text-slate-600 mb-1">PRODUITS</p>
+                    <p className="text-2xl font-bold text-slate-900">{stats.products}</p>
                   </div>
-                  <Package className="h-5 w-5 text-primary" />
+                  <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                    <Package className="h-5 w-5 text-purple-600" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-purple-600">
+                  <ExternalLink className="h-4 w-4" />
+                  <span className="text-sm font-medium">Consulter</span>
                 </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link to="/admin/orders" className="block group">
-            <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Card className="bg-white border border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Commandes</p>
-                    <p className="text-2xl font-bold text-foreground">{stats.orders}</p>
+                    <p className="text-sm font-medium text-slate-600 mb-1">COMMANDES</p>
+                    <p className="text-2xl font-bold text-slate-900">{stats.orders}</p>
                   </div>
-                  <ShoppingBasket className="h-5 w-5 text-primary" />
+                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <ShoppingBasket className="h-5 w-5 text-orange-600" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-orange-600">
+                  <ExternalLink className="h-4 w-4" />
+                  <span className="text-sm font-medium">Consulter</span>
                 </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link to="/admin/suggestions" className="block group">
-            <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Card className="bg-white border border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Messages</p>
-                    <p className="text-2xl font-bold text-foreground">{stats.suggestions}</p>
+                    <p className="text-sm font-medium text-slate-600 mb-1">MESSAGES</p>
+                    <p className="text-2xl font-bold text-slate-900">{stats.suggestions}</p>
                   </div>
-                  <MessageSquare className="h-5 w-5 text-primary" />
+                  <div className="w-10 h-10 rounded-lg bg-rose-100 flex items-center justify-center">
+                    <MessageSquare className="h-5 w-5 text-rose-600" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-rose-600">
+                  <ExternalLink className="h-4 w-4" />
+                  <span className="text-sm font-medium">Consulter</span>
                 </div>
               </CardContent>
             </Card>
           </Link>
         </div>
         
-        {/* Stats Grid - Details */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <Card>
+        {/* Stats Grid - Details (Cartes Non-Cliquables) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
+          <Card className="bg-white border border-border shadow-sm">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green">Actifs</p>
-                  <p className="text-2xl font-bold text-green">{stat.active}</p>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                  <UserCheck className="h-5 w-5 text-green-600" />
                 </div>
-                <UserCheck className="h-5 w-5 text-green" />
+                <div>
+                  <p className="text-sm font-medium text-slate-600">Actifs</p>
+                  <p className="text-2xl font-bold text-green-600">{stat.active}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white border border-border shadow-sm">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-destructive">Suspendus</p>
-                  <p className="text-2xl font-bold text-destructive">{stat.suspended}</p>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+                  <UserX className="h-5 w-5 text-red-600" />
                 </div>
-                <UserX className="h-5 w-5 text-destructive" />
+                <div>
+                  <p className="text-sm font-medium text-slate-600">Suspendus</p>
+                  <p className="text-2xl font-bold text-red-600">{stat.suspended}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white border border-border shadow-sm">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-primary">Clients</p>
-                  <p className="text-2xl font-bold text-primary">{stat.clients}</p>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-blue-600" />
                 </div>
-                <Users className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-sm font-medium text-slate-600">Clients</p>
+                  <p className="text-2xl font-bold text-blue-600">{stat.clients}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white border border-border shadow-sm">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium  text-green">Marchands</p>
-                  <p className="text-2xl font-bold  text-green">{stat.merchants}</p>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <Store className="h-5 w-5 text-emerald-600" />
                 </div>
-                <Store className="h-5 w-5 text-green" />
+                <div>
+                  <p className="text-sm font-medium text-slate-600">Marchands</p>
+                  <p className="text-2xl font-bold text-emerald-600">{stat.merchants}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white border border-border shadow-sm">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-warning">Admins</p>
-                  <p className="text-2xl font-bold text-warning">{stat.admins}</p>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-amber-600" />
                 </div>
-                <Users className="h-5 w-5 text-warning" />
+                <div>
+                  <p className="text-sm font-medium text-slate-600">Admins</p>
+                  <p className="text-2xl font-bold text-amber-600">{stat.admins}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Users Management */}
-        <Card>
+        <Card className="bg-white">
           <CardHeader>
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
               <div>

@@ -56,9 +56,15 @@ const AdminShopsPage: React.FC = () => {
     }
   };
 
-  const handlePublishToggle = async (shopId: string, isPublished: boolean) => {
+const handlePublishToggle = async (shopId: string, isPublished: boolean) => {
     const action = isPublished ? 'dépublier' : 'publier';
-    const endpoint = isPublished ? `/shops/unpublish/${shopId}` : `/shops/publish/${shopId}`;
+    if (!window.confirm(`Voulez-vous vraiment ${action} cette boutique ?`)) return;
+
+    // --- On appelle la nouvelle route admin ---
+    const endpoint = isPublished 
+      ? `/admin/shops/${shopId}/unpublish` 
+      : `/admin/shops/${shopId}/publish`;
+    
     try {
       const response = await fetch(`http://localhost:8000${endpoint}`, {
         method: "PATCH", 

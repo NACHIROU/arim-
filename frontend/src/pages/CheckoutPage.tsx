@@ -129,19 +129,21 @@ const CheckoutPage: React.FC = () => {
               </CardHeader>
               <CardContent className="pt-5">
                 <Textarea 
-                  placeholder="Entrez votre adresse complète, ville, et numéro de téléphone pour la livraison..."
+                  placeholder="Entrez votre adresse complète pour la livraison..."
                   value={shippingAddress}
                   onChange={(e) => setShippingAddress(e.target.value)}
                   rows={5}
                   required
-                  className="bg-muted/20 resize-none focus:bg-background transition-colors"
+                  className="bg-muted/20 resize-none focus:bg-gray-200 transition-colors"
                 />
+                <br />
                 <Input 
                   type="tel"
                   placeholder="Numéro de téléphone pour la livraison"
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
                   required
+                  className="bg-muted/20 focus:bg-gray-200 transition-colors"
                 />
               </CardContent>
             </Card>

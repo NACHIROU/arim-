@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const categories = [ "Tous", "Alimentaire & Boissons", "Vêtements & Mode", "Santé & Beauté", "Électronique & Multimédia", "Maison & Jardin", "Construction & Bâtiment", "Autre" ];
+const categories = [ "Toutes les catégories", "Alimentaire & Boissons", "Vêtements & Mode", "Santé & Beauté", "Électronique & Multimédia", "Maison & Jardin", "Construction & Bâtiment", "Autre" ];
 const locations = ["Toutes les villes", "Cotonou", "Porto-Novo", "Parakou", "Abomey-Calavi"];
 
 const Products: React.FC = () => {
@@ -15,7 +15,7 @@ const Products: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [categoryFilter, setCategoryFilter] = useState('Tous');
+    const [categoryFilter, setCategoryFilter] = useState('Toutes les catégories');
     const [locationFilter, setLocationFilter] = useState('Toutes les villes');
 
     useEffect(() => {
@@ -36,7 +36,7 @@ const Products: React.FC = () => {
     const filteredProducts = useMemo(() => {
         return products.filter(product => {
             const searchMatch = searchTerm.length === 0 || product.name.toLowerCase().includes(searchTerm.toLowerCase());
-            const categoryMatch = categoryFilter === 'Tous' || product.shop?.category === categoryFilter;            
+            const categoryMatch = categoryFilter === 'Toutes les catégories' || product.shop?.category === categoryFilter;            
             const locationMatch = locationFilter === 'Toutes les villes' || 
                 (product.shop?.location && product.shop.location.toLowerCase().includes(locationFilter.toLowerCase()));
             
@@ -62,17 +62,17 @@ const Products: React.FC = () => {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
                                 <Input 
                                     placeholder="Rechercher par nom..." 
-                                    className="pl-10 h-12"
+                                    className="pl-10 h-12 bg-secondary/50 text-black border-0 focus:ring-2 focus:ring-primary rounded-xl"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
                             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                                <SelectTrigger className="h-12 w-full md:w-[200px]"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="h-12 w-full md:w-[200px] bg-orange-500 text-white"><SelectValue /></SelectTrigger>
                                 <SelectContent>{categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
                             </Select>
                             <Select value={locationFilter} onValueChange={setLocationFilter}>
-                                <SelectTrigger className="h-12 w-full md:w-[200px]"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="h-12 w-full md:w-[200px] bg-orange-500 text-white"><SelectValue /></SelectTrigger>
                                 <SelectContent>{locations.map(loc => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
