@@ -21,9 +21,14 @@ app.include_router(suggestions.router, prefix="/suggestions", tags=["Suggestions
 app.include_router(orders.router, prefix="/orders", tags=["Orders"])
 app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 
+
+origins = [
+    "https://ahimin.onrender.com", # Pour votre développement local
+    "https://votre-frontend.onrender.com", # Remplacez par l'URL de votre frontend déployé
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
