@@ -23,8 +23,8 @@ app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 
 
 origins = [
-    "https://ahimin.onrender.com", # Pour votre développement local
-    "https://votre-frontend.onrender.com", # Remplacez par l'URL de votre frontend déployé
+    "http://localhost:8080", # Pour votre développement local
+    "https://ahimin.onrender.com", # Remplacez par l'URL de votre frontend déployé
 ]
 app.add_middleware(
     CORSMiddleware,
