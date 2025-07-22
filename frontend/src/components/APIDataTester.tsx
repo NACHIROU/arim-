@@ -9,7 +9,7 @@ const APIDataTester: React.FC = () => {
       console.log(`--- TEST DIRECT DE L'API pour la boutique ${shopId} ---`);
       
       try {
-        const response = await fetch(`http://localhost:8000/shops/${shopId}/products/`);
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/shops/${shopId}/products/`);
         const data = await response.json();
 
         console.log("--- RÉPONSE BRUTE REÇUE DE L'API ---");

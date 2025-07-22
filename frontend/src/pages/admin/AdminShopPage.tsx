@@ -25,7 +25,7 @@ const AdminShopsPage: React.FC = () => {
   const fetchShops = useCallback(async () => {
     if (!token) { navigate('/login'); return; }
     try {
-      const response = await fetch("http://localhost:8000/admin/shops", {
+      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/admin/shops", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Erreur de chargement des boutiques.");
@@ -44,7 +44,7 @@ const AdminShopsPage: React.FC = () => {
   const handleDeleteShop = async (shopId: string) => {
     if (!window.confirm("Voulez-vous vraiment supprimer cette boutique et tous ses produits ?")) return;
     try {
-      const response = await fetch(`http://localhost:8000/admin/shops/${shopId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/shops/${shopId}`, {
         method: 'DELETE', 
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -66,7 +66,7 @@ const handlePublishToggle = async (shopId: string, isPublished: boolean) => {
       : `/admin/shops/${shopId}/publish`;
     
     try {
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`, {
         method: "PATCH", 
         headers: { Authorization: `Bearer ${token}` }
       });

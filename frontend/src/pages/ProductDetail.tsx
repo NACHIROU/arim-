@@ -28,7 +28,7 @@ const ProductDetail: React.FC = () => {
     const fetchProduct = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`http://localhost:8000/products/${productId}`);
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/products/${productId}`);
         if (!response.ok) {
           throw new Error("Produit non trouvé ou non disponible.");
         }

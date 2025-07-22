@@ -30,7 +30,7 @@ const Dashboard: React.FC = () => {
   const fetchBoutiques = async () => {
     if (!token) { navigate('/login'); return; }
     try {
-      const response = await fetch("http://localhost:8000/shops/my-shops/", {
+      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/shops/my-shops/", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) {
@@ -58,7 +58,7 @@ const Dashboard: React.FC = () => {
     
     const endpoint = publish ? `/shops/publish/${id}` : `/shops/unpublish/${id}`;
     try {
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -71,7 +71,7 @@ const Dashboard: React.FC = () => {
     if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette boutique ? Ses produits seront aussi supprimés.")) return;
     
     try {
-      const response = await fetch(`http://localhost:8000/shops/delete-shop/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/shops/delete-shop/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -101,7 +101,7 @@ const Dashboard: React.FC = () => {
   const fetchProduitsByShop = async (shopId: string) => {
     if (!shopId || !token) { setProduits([]); return; }
     try {
-    const response = await fetch(`http://localhost:8000/shops/my-shops/${shopId}/products`, {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/shops/my-shops/${shopId}/products`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProduits(response.ok ? await response.json() : []);
@@ -131,7 +131,7 @@ const Dashboard: React.FC = () => {
 
   const handleDeleteProduit = async (id: string) => {
     if (!window.confirm("Voulez-vous vraiment supprimer ce produit ?")) return;
-    const response = await fetch(`http://localhost:8000/products/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/products/${id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
     });
     if (response.ok) {
@@ -145,7 +145,7 @@ const Dashboard: React.FC = () => {
   const fetchOrders = useCallback(async () => {
     if (!token) return;
     try {
-      const response = await fetch("http://localhost:8000/dashboard/orders", {
+      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/dashboard/orders", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) setGroupedOrders(await response.json());
@@ -160,7 +160,7 @@ const Dashboard: React.FC = () => {
 
   const handleStatusChange = async (orderId: string, shopId: string, newStatus: string) => {
     try {
-        const response = await fetch(`http://localhost:8000/dashboard/orders/${orderId}/sub_orders/${shopId}/status`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dashboard/orders/${orderId}/sub_orders/${shopId}/status`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ status: newStatus })

@@ -23,7 +23,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
     if (!window.confirm(`Voulez-vous vraiment supprimer le produit "${product.name}" ?`)) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/products/${product._id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/products/${product._id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

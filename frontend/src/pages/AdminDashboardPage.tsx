@@ -45,8 +45,8 @@ const AdminDashboardPage: React.FC = () => {
     if (statusFilter !== "all") userParams.append('status', statusFilter);
     if (searchTerm.trim().length >= 2) userParams.append('search', searchTerm);
     
-    const usersUrl = `http://localhost:8000/admin/users?${userParams.toString()}`;
-    const statsUrl = "http://localhost:8000/admin/stats";
+    const usersUrl = `${import.meta.env.VITE_API_BASE_URL}/admin/users?${userParams.toString()}`;
+    const statsUrl = "${import.meta.env.VITE_API_BASE_URL}/admin/stats";
 
     try {
       const [usersResponse, statsResponse] = await Promise.all([
@@ -80,7 +80,7 @@ const AdminDashboardPage: React.FC = () => {
     const action = isActive ? "réactiver" : "suspendre";
     if (!window.confirm(`Êtes-vous sûr de vouloir ${action} cet utilisateur ?`)) return;
     try {
-      const response = await fetch(`http://localhost:8000/admin/users/${userId}/status?is_active=${isActive}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/users/${userId}/status?is_active=${isActive}`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` },
       });
@@ -98,7 +98,7 @@ const AdminDashboardPage: React.FC = () => {
   const handleDeleteUser = async (userId: string) => {
     if (!window.confirm("ACTION DÉFINITIVE : Voulez-vous vraiment supprimer cet utilisateur ?")) return;
     try {
-      const response = await fetch(`http://localhost:8000/admin/users/${userId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/users/${userId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       });

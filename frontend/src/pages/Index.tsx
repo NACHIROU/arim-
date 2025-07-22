@@ -33,8 +33,8 @@ const Index: React.FC = () => {
       try {
         setLoadingInitial(true);
         const [shopsResponse, productsResponse] = await Promise.all([
-          fetch("http://localhost:8000/shops/public-shops/"),
-          fetch("http://localhost:8000/products/public-products/")
+          fetch("${import.meta.env.VITE_API_BASE_URL}/shops/public-shops/"),
+          fetch("${import.meta.env.VITE_API_BASE_URL}/products/public-products/")
         ]);
         if (!shopsResponse.ok || !productsResponse.ok) {
           throw new Error("Erreur lors de la récupération des données initiales.");
@@ -85,7 +85,7 @@ const Index: React.FC = () => {
       }
 
       try {
-        const response = await fetch(`http://localhost:8000/search/?${params.toString()}`);
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/search/?${params.toString()}`);
         if (!response.ok) throw new Error("Erreur de l'API de recherche");
         const data = await response.json();
         setSearchResults(data);

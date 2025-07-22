@@ -19,7 +19,7 @@ const AdminOrdersPage: React.FC = () => {
   const fetchOrders = useCallback(async () => {
     if (!token) { navigate('/login'); return; }
     try {
-      const response = await fetch("http://localhost:8000/admin/orders", {
+      const response = await fetch("${import.meta.env.VITE_API_BASE_URL}/admin/orders", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Erreur de chargement des commandes.");
@@ -38,7 +38,7 @@ const AdminOrdersPage: React.FC = () => {
 
   const handleStatusChange = async (orderId: string, shopId: string, newStatus: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/admin/orders/${orderId}/sub_orders/${shopId}/status`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/orders/${orderId}/sub_orders/${shopId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status: newStatus })
