@@ -17,7 +17,7 @@ const AdminProductsPage: React.FC = () => {
   const fetchProducts = useCallback(async () => {
     if (!token) { navigate('/login'); return; }
     try {
-      const response = await fetch("http://localhost:8000/admin/products", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/products`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Erreur de chargement des produits.");
@@ -37,7 +37,7 @@ const AdminProductsPage: React.FC = () => {
     if (!window.confirm("Voulez-vous vraiment supprimer ce produit ? Cette action est irréversible.")) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/admin/products/${productId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/products/${productId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

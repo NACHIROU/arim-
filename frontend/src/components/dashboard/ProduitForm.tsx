@@ -52,7 +52,7 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
     setIsGenerating(true);
     const shopCategory = boutiques.find(b => b._id === selectedShopId)?.category;
     try {
-      const response = await fetch("http://localhost:8000/ai/generate-description", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/ai/generate-description`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name, target_type: 'produit', category: shopCategory })
@@ -92,8 +92,8 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
     }
 
     const endpoint = isEditing
-      ? `http://localhost:8000/products/update-products/${editingProduct?._id}`
-      : 'http://localhost:8000/products/create-products/';
+      ? `${import.meta.env.VITE_API_BASE_URL}/products/update-products/${editingProduct?._id}`
+      : `${import.meta.env.VITE_API_BASE_URL}/products/create-products/`;
     const method = isEditing ? 'PUT' : 'POST';
 
     try {

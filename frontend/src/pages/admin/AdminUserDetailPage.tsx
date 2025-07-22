@@ -41,7 +41,7 @@ const AdminUserDetailPage: React.FC = () => {
 
     try {
       // Récupérer les infos de l'utilisateur
-      const userRes = await fetch(`http://localhost:8000/admin/users/${userId}`, {
+      const userRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!userRes.ok) throw new Error("Utilisateur non trouvé");
@@ -50,7 +50,7 @@ const AdminUserDetailPage: React.FC = () => {
 
       // Si c'est un marchand, récupérer ses boutiques et produits
       if (userData.role === 'merchant') {
-        const shopsRes = await fetch(`http://localhost:8000/admin/users/${userId}/shops`, {
+        const shopsRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/users/${userId}/shops`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (shopsRes.ok) {
@@ -59,7 +59,7 @@ const AdminUserDetailPage: React.FC = () => {
           
           const productsData: Record<string, Produit[]> = {};
           for (const shop of shopsData) {
-            const productsRes = await fetch(`http://localhost:8000/shops/${shop._id}/products/`);
+            const productsRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/shops/${shop._id}/products/`);
             if (productsRes.ok) {
               productsData[shop._id] = await productsRes.json();
             }

@@ -32,7 +32,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ shopId, onReviewSubmitted }) =>
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch("http://localhost:8000/reviews/", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/reviews/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

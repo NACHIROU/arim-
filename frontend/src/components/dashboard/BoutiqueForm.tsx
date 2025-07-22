@@ -48,7 +48,7 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
       async (position) => {
         const { latitude, longitude } = position.coords;
         try {
-          const response = await fetch(`http://localhost:8000/shops/reverse-geocode/?lat=${latitude}&lon=${longitude}`);
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/shops/reverse-geocode/?lat=${latitude}&lon=${longitude}`);
           if (!response.ok) throw new Error("Impossible de trouver l'adresse.");
           const data = await response.json();
           setLocation(data.address);
@@ -72,7 +72,7 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
     }
     setIsGenerating(true);
     try {
-      const response = await fetch("http://localhost:8000/ai/generate-description", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/ai/generate-description`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ 
@@ -116,8 +116,8 @@ const BoutiqueForm: React.FC<BoutiqueFormProps> = ({
     }
 
     const endpoint = isEditing 
-      ? `http://localhost:8000/shops/update-shop/${initialData?._id}`
-      : "http://localhost:8000/shops/create-shop/";
+      ? `${import.meta.env.VITE_API_BASE_URL}/shops/update-shop/${initialData?._id}`
+      : `${import.meta.env.VITE_API_BASE_URL}/shops/create-shop/`;
     const method = isEditing ? 'PUT' : 'POST';
 
     try {

@@ -25,7 +25,7 @@ const SuggestionsPage: React.FC = () => {
   const fetchSuggestions = useCallback(async () => {
     if (!token) { navigate('/login'); return; }
     try {
-      const response = await fetch("http://localhost:8000/admin/suggestions", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/suggestions`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Erreur de chargement des suggestions.");
@@ -49,7 +49,7 @@ const SuggestionsPage: React.FC = () => {
     }
     setIsSubmittingReply(true);
     try {
-      const response = await fetch(`http://localhost:8000/admin/suggestions/${replyingTo._id}/reply`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/suggestions/${replyingTo._id}/reply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ reply_message: replyMessage })

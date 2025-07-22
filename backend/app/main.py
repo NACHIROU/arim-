@@ -23,7 +23,7 @@ app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -35,7 +35,7 @@ def custom_openapi():
     openapi_schema = get_openapi(
         title="My Marketplace API",
         version="1.0.0",
-        description="API pour le projet de mémoire",
+        description="API",
         routes=app.routes,
     )
     openapi_schema["components"]["securitySchemes"] = {

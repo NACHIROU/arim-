@@ -44,7 +44,7 @@ const ShopDetail: React.FC = () => {
   const fetchReviews = useCallback(async () => {
     if (!shopId) return;
     try {
-      const reviewsResponse = await fetch(`http://localhost:8000/reviews/shop/${shopId}`);
+      const reviewsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/reviews/shop/${shopId}`);
       if (reviewsResponse.ok) {
         setReviews(await reviewsResponse.json());
       }
@@ -67,8 +67,8 @@ const ShopDetail: React.FC = () => {
       try {
         setLoading(true);
         const [shopResponse, productsResponse] = await Promise.all([
-          fetch(`http://localhost:8000/shops/retrieve-shop/${shopId}`),
-          fetch(`http://localhost:8000/shops/${shopId}/products/`)
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/shops/retrieve-shop/${shopId}`),
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/shops/${shopId}/products/`)
         ]);
 
         if (!shopResponse.ok) throw new Error("Boutique non trouvée.");
