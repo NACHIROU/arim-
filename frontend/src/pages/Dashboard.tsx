@@ -79,7 +79,7 @@ const Dashboard: React.FC = () => {
     
     let url = `${import.meta.env.VITE_API_BASE_URL}/dashboard/orders`;
     if (orderStatusFilter !== "toutes") {
-      url += `?status_filter=${orderStatusFilter}`;
+      url += `?status=${orderStatusFilter}`;
     }
 
     try {
@@ -95,6 +95,7 @@ const Dashboard: React.FC = () => {
       fetchOrders();
     }
   }, [activeTab, fetchOrders]);
+
   
   // --- Fonctions de gestion (Handlers) ---
   const handleStatusChange = async (orderId: string, shopId: string, newStatus: string) => {
@@ -135,13 +136,13 @@ const Dashboard: React.FC = () => {
     } catch(error) { console.error(error); }
   };
 
-  const handleEditShop = (id: string) => {
-    const shopToEdit = boutiques.find(b => b._id === id);
-    if (shopToEdit) {
-      setEditingShop(shopToEdit);
-      boutiqueFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
+const handleEditShop = (id: string) => {
+  const shopToEdit = boutiques.find(b => b._id === id);
+  if (shopToEdit) {
+    setEditingShop(shopToEdit);
+    boutiqueFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+};
 
   const handleBoutiqueFormSuccess = () => {
     setEditingShop(null);
