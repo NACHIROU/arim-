@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Body
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException, Body, Query
+from typing import List, Optional
 from bson import ObjectId
 
 from app.db.database import orders, shops, users
@@ -11,26 +11,38 @@ from app.core.dependencies import get_current_merchant
 router = APIRouter()
 
 @router.get("/orders", response_model=List[ShopWithOrders])
-async def get_merchant_orders_grouped(current_user: UserOut = Depends(get_current_merchant)):
+async def get_merchant_orders_grouped(
+    current_user: UserOut = Depends(get_current_merchant),
+    status: Optional[str] = Query(None)
+):
     """
-    Récupère les commandes du marchand, groupées par boutique, en utilisant le bon type d'ID.
+    Récupère les commandes du marchand, groupées par boutique, avec filtre de statut.
     """
-    # 1. Récupérer toutes les boutiques du marchand
+    # 1. Récupérer les boutiques du marchand (inchangé)
     merchant_shops_cursor = shops.find({"owner_id": ObjectId(current_user.id)})
     merchant_shops = await merchant_shops_cursor.to_list(length=None)
     if not merchant_shops:
         return []
 
-    # --- CORRECTION : On utilise la liste des ObjectId pour la requête ---
     merchant_shop_ids = [s["_id"] for s in merchant_shops]
     
-    # 2. Pipeline pour trouver toutes les commandes liées à ces boutiques
+    # 2. On construit le filtre de base
+    match_filter = {
+        "sub_orders.shop_id": {"$in": merchant_shop_ids},
+        "is_archived": False
+    }
+
+    # --- 3. On ajoute la logique de filtre par statut ---
+    if status:
+        # Si un statut est fourni, on filtre sur ce statut
+        match_filter["sub_orders.status"] = status
+    else:
+        # Sinon, par défaut, on exclut les commandes terminées
+        match_filter["sub_orders.status"] = {"$nin": ["Livrée", "Annulée"]}
+
+    # 4. Pipeline pour trouver les commandes
     pipeline = [
-        # La requête compare maintenant des ObjectId avec des ObjectId
-        {"$match": {
-            "sub_orders.shop_id": {"$in": merchant_shop_ids},
-            "is_archived": False
-        }},
+        {"$match": match_filter},
         {"$sort": {"created_at": -1}},
         {"$lookup": {"from": "users", "localField": "user_id", "foreignField": "_id", "as": "customer"}},
         {"$unwind": "$customer"}
