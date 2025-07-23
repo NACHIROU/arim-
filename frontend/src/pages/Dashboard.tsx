@@ -113,28 +113,28 @@ const Dashboard: React.FC = () => {
     }
   };
   
-const handlePublishToggle = async (id: string, isPublished: boolean) => {
-    // Si la boutique est publiée (isPublished = true), l'action est de "dépublier".
-    const action = isPublished ? 'dépublier' : 'publier';
-    if (!window.confirm(`Êtes-vous sûr de vouloir ${action} cette boutique ?`)) return;
-    
-    // --- CORRECTION DE LA LOGIQUE ---
-    // Si elle est déjà publiée, on appelle "unpublish". Sinon, on appelle "publish".
-    const endpoint = isPublished ? `/shops/unpublish/${id}` : `/shops/publish/${id}`;
-    
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`, {
-        method: "PATCH", 
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (response.ok) {
-        toast({ title: "Succès", description: `Boutique ${action}e avec succès.` });
-        fetchBoutiques();
-      } else {
-        toast({ title: "Erreur", description: "L'opération a échoué.", variant: "destructive" });
-      }
-    } catch (error) { console.error(error); }
-};
+  const handlePublishToggle = async (id: string, isPublished: boolean) => {
+      // Si la boutique est publiée (isPublished = true), l'action est de "dépublier".
+      const action = isPublished ? 'dépubliée' : 'publiée';
+      if (!window.confirm(`Êtes-vous sûr de vouloir ${action} cette boutique ?`)) return;
+      
+      // --- CORRECTION DE LA LOGIQUE ---
+      // Si elle est déjà publiée, on appelle "unpublish". Sinon, on appelle "publish".
+      const endpoint = isPublished ? `/shops/unpublish/${id}` : `/shops/publish/${id}`;
+      
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`, {
+          method: "PATCH", 
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.ok) {
+          toast({ title: "Succès", description: `Boutique ${action} avec succès.` });
+          fetchBoutiques();
+        } else {
+          toast({ title: "Erreur", description: "L'opération a échoué.", variant: "destructive" });
+        }
+      } catch (error) { console.error(error); }
+  };
 
   const handleDeleteShop = async (id: string) => {
     if (!window.confirm("Supprimer cette boutique et tous ses produits ?")) return;
