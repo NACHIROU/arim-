@@ -33,13 +33,10 @@ async def get_merchant_orders_grouped(
     }
 
     # --- 3. On ajoute la logique de filtre par statut ---
-    if status:
-        # Si un statut est fourni, on filtre sur ce statut
-        match_filter["sub_orders.status"] = status
-    else:
-        # Sinon, par défaut, on exclut les commandes terminées
-        match_filter["sub_orders.status"] = {"$nin": ["Livrée", "Annulée"]}
-
+    if status == "en_cours":
+        pipeline.insert(1, {"$match": {"sub_orders.status": {"$nin": ["Livrée", "Annulée"]}}})
+    elif status and status != "toutes":
+        pipeline.insert(1, {"$match": {"sub_orders.status": status}})
     # 4. Pipeline pour trouver les commandes
     pipeline = [
         {"$match": match_filter},

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,6 @@ import ProduitForm from '@/components/dashboard/ProduitForm';
 import ProduitsList from '@/components/dashboard/ProduitsList';
 import { Boutique, Produit, ShopWithOrders } from '@/types';
 import { OrdersList } from '@/components/dashboard/OrderList';
-
 import { useToast } from "@/hooks/use-toast";
 
 const Dashboard: React.FC = () => {
@@ -18,16 +17,18 @@ const Dashboard: React.FC = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'boutiques' | 'produits' | 'commandes'>('boutiques');
 
-  // États
+  // États pour les boutiques
   const [boutiques, setBoutiques] = useState<Boutique[]>([]);
   const [editingShop, setEditingShop] = useState<Boutique | null>(null);
   const boutiqueFormRef = useRef<HTMLDivElement>(null);
   
+  // États pour les produits
   const [produits, setProduits] = useState<Produit[]>([]);
   const [selectedShopId, setSelectedShopId] = useState<string>('');
   const [editingProduct, setEditingProduct] = useState<Produit | null>(null);
   const produitFormRef = useRef<HTMLDivElement>(null);
 
+  // États pour les commandes
   const [groupedOrders, setGroupedOrders] = useState<ShopWithOrders[]>([]);
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>("en_cours"); 
 
@@ -55,7 +56,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     fetchBoutiques();
-  }, []); // Exécuté une seule fois au montage
+  }, [fetchBoutiques]);
 
   const fetchProduitsByShop = useCallback(async (shopId: string) => {
     if (!shopId || !token) { setProduits([]); return; }
@@ -77,8 +78,8 @@ const Dashboard: React.FC = () => {
     if (!token) return;
     
     let url = `${import.meta.env.VITE_API_BASE_URL}/dashboard/orders`;
-    if (orderStatusFilter !== "en_cours") {
-      url += `?status=${orderStatusFilter}`;
+    if (orderStatusFilter !== "toutes") {
+      url += `?status_filter=${orderStatusFilter}`;
     }
 
     try {
@@ -94,7 +95,7 @@ const Dashboard: React.FC = () => {
       fetchOrders();
     }
   }, [activeTab, fetchOrders]);
-
+  
   // --- Fonctions de gestion (Handlers) ---
   const handleStatusChange = async (orderId: string, shopId: string, newStatus: string) => {
     try {
@@ -111,9 +112,9 @@ const Dashboard: React.FC = () => {
     }
   };
   
-  const handlePublishToggle = async (id: string, publish: boolean) => {
-    const action = publish ? 'publier' : 'dépublier';
-    const endpoint = publish ? `/shops/publish/${id}` : `/shops/unpublish/${id}`;
+  const handlePublishToggle = async (id: string, isPublished: boolean) => {
+    const action = isPublished ? 'dépublier' : 'publier';
+    const endpoint = isPublished ? `/shops/unpublish/${id}` : `/shops/publish/${id}`;
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`, {
         method: "PATCH", headers: { Authorization: `Bearer ${token}` }
@@ -167,24 +168,24 @@ const Dashboard: React.FC = () => {
 
   const handleDeleteProduit = async (id: string) => {
     if (!window.confirm("Supprimer ce produit ?")) return;
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/products/${id}`, {
-        method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
-    });
-    if (response.ok) {
-      toast({ title: "Succès", description: "Produit supprimé." });
-      fetchProduitsByShop(selectedShopId);
-    } else {
-      toast({ title: "Erreur", description: "La suppression a échoué.", variant: "destructive" });
-    }
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/products/${id}`, {
+            method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.ok) {
+          toast({ title: "Succès", description: "Produit supprimé." });
+          fetchProduitsByShop(selectedShopId);
+        } else {
+          toast({ title: "Erreur", description: "La suppression a échoué.", variant: "destructive" });
+        }
+    } catch (error) { console.error(error); }
   };
 
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="container py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">
-            Mon Tableau de Bord
-          </h1>
+          <h1 className="text-3xl font-bold">Mon Tableau de Bord</h1>
         </div>
 
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-4 mb-8">
@@ -202,7 +203,7 @@ const Dashboard: React.FC = () => {
               />
             </div>
             <div>
-              <h2 className="text-2xl font-semibold mb-4 text-foreground">Mes Boutiques</h2>
+              <h2 className="text-2xl font-semibold mb-4">Mes Boutiques</h2>
               <BoutiquesList
                 boutiques={boutiques}
                 onPublishToggle={handlePublishToggle}
@@ -216,7 +217,7 @@ const Dashboard: React.FC = () => {
         {activeTab === 'produits' && (
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-semibold mb-4 text-foreground">Gestion des Produits</h2>
+              <h2 className="text-2xl font-semibold mb-4">Gestion des Produits</h2>
               <Card>
                 <CardHeader><CardTitle>1. Choisissez une boutique</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -232,7 +233,6 @@ const Dashboard: React.FC = () => {
                 </CardContent>
               </Card>
             </div>
-            
             {selectedShopId ? (
               <div ref={produitFormRef}>
                 <h3 className="text-xl font-semibold mb-4">{editingProduct ? '2. Modifier le produit' : '2. Ajouter un produit'}</h3>
@@ -256,12 +256,11 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="text-center text-muted-foreground py-16">
-                <p className="text-lg">Veuillez sélectionner une boutique pour voir et gérer ses produits.</p>
-              </div>
+              <p className="text-center text-muted-foreground py-16">Veuillez sélectionner une boutique.</p>
             )}
           </div>
         )}
+        
         {activeTab === 'commandes' && (
           <div className="mt-6">
             <div className="flex justify-between items-center mb-4">
@@ -272,6 +271,7 @@ const Dashboard: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="en_cours">Commandes en cours</SelectItem>
+                  <SelectItem value="En cours de livraison">En cours de livraison</SelectItem>
                   <SelectItem value="Livrée">Commandes livrées</SelectItem>
                   <SelectItem value="Annulée">Commandes annulées</SelectItem>
                   <SelectItem value="toutes">Toutes les commandes</SelectItem>
