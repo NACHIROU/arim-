@@ -4,12 +4,16 @@ from bson import ObjectId
 
 from app.schemas.users import UserOut
 
+
 class ShopBase(BaseModel):
     name: str = Field(..., example="Boutique Kpayou")
-    description: Optional[str] = Field(None, example="Spécialiste en accessoires de téléphone")
+    description: Optional[str] = Field(
+        None, example="Spécialiste en accessoires de téléphone"
+    )
     location: str = Field(..., example="Cotonou")
     category: Optional[str] = Field(None, example="Électronique & Multimédia")
     images: List[str] = Field(default=[], example=["url1.jpg", "url2.jpg"])
+
 
 class ShopOut(ShopBase):
     # On a un seul champ 'id' qui est un alias pour '_id'
@@ -31,6 +35,7 @@ class ShopOut(ShopBase):
         arbitrary_types_allowed=True,
         json_encoders={ObjectId: str},
     )
+
 
 # Nouveau schéma qui hérite de ShopOut et ajoute le contact
 class ShopWithContact(ShopOut):

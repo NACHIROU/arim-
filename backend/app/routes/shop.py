@@ -16,6 +16,7 @@ router = APIRouter()
 # == Routes Sécurisées (pour le Dashboard du Marchand)
 # ===============================================================
 
+
 @router.post("/create-shop/", response_model=ShopOut)
 async def create_shop(
     name: str = Form(...),
@@ -23,7 +24,7 @@ async def create_shop(
     location: str = Form(...),
     category: str = Form(...),
     images: list[UploadFile] = File(...),
-    current_user: UserOut = Depends(get_current_merchant)
+    current_user: UserOut = Depends(get_current_merchant),
 ):
     image_urls = await upload_images_to_cloudinary(images)
     geolocation = None
@@ -31,13 +32,21 @@ async def create_shop(
         try:
             response = await client.get(
                 "https://nominatim.openstreetmap.org/search",
-                params={"q": location, "format": "json", "limit": 1, "countrycodes": "bj"},
-                headers={"User-Agent": "AriminApp/1.0"}
+                params={
+                    "q": location,
+                    "format": "json",
+                    "limit": 1,
+                    "countrycodes": "bj",
+                },
+                headers={"User-Agent": "AriminApp/1.0"},
             )
             response.raise_for_status()
             if response.json():
                 loc_data = response.json()[0]
-                geolocation = {"type": "Point", "coordinates": [float(loc_data["lon"]), float(loc_data["lat"])]}
+                geolocation = {
+                    "type": "Point",
+                    "coordinates": [float(loc_data["lon"]), float(loc_data["lat"])],
+                }
         except Exception as e:
             print(f"Avertissement géocodage : {e}")
 
@@ -50,14 +59,16 @@ async def create_shop(
         "owner_id": ObjectId(current_user.id),
         "geolocation": geolocation,
         "is_published": False,
-        "contact_phone": current_user.phone
+        "contact_phone": current_user.phone,
     }
-    
+
     new_shop_result = await shops.insert_one(shop_data)
     created_shop_from_db = await shops.find_one({"_id": new_shop_result.inserted_id})
     if not created_shop_from_db:
-        raise HTTPException(status_code=500, detail="Erreur : création de la boutique échouée.")
-        
+        raise HTTPException(
+            status_code=500, detail="Erreur : création de la boutique échouée."
+        )
+
     return ShopOut(**created_shop_from_db)
 
 
@@ -68,7 +79,9 @@ async def get_my_shops(current_user: UserOut = Depends(get_current_merchant)):
 
 
 @router.get("/my-shops/{shop_id}/products", response_model=List[ProductOut])
-async def get_my_shop_products(shop_id: str, current_user: UserOut = Depends(get_current_merchant)):
+async def get_my_shop_products(
+    shop_id: str, current_user: UserOut = Depends(get_current_merchant)
+):
     """
     Récupère les produits d'une boutique spécifique appartenant au marchand connecté.
     """
@@ -76,13 +89,17 @@ async def get_my_shop_products(shop_id: str, current_user: UserOut = Depends(get
         raise HTTPException(status_code=400, detail="ID de boutique invalide")
 
     # 1. Sécurité : On vérifie que la boutique appartient bien au marchand connecté
-    shop_data = await shops.find_one({"_id": ObjectId(shop_id), "owner_id": ObjectId(current_user.id)})
+    shop_data = await shops.find_one(
+        {"_id": ObjectId(shop_id), "owner_id": ObjectId(current_user.id)}
+    )
     if not shop_data:
-        raise HTTPException(status_code=404, detail="Boutique non trouvée ou non autorisée.")
+        raise HTTPException(
+            status_code=404, detail="Boutique non trouvée ou non autorisée."
+        )
 
     # 2. Si c'est bon, on récupère les produits
     products_cursor = products.find({"shop_id": ObjectId(shop_id)})
-    
+
     # 3. On enrichit chaque produit avec les infos de la boutique
     product_list = []
     async for product in products_cursor:
@@ -91,13 +108,12 @@ async def get_my_shop_products(shop_id: str, current_user: UserOut = Depends(get
             "shop": {
                 "_id": shop_data.get("_id"),
                 "name": shop_data.get("name"),
-                "contact_phone": shop_data.get("contact_phone")
-            }
+                "contact_phone": shop_data.get("contact_phone"),
+            },
         }
         product_list.append(ProductOut.model_validate(product_info))
-        
-    return product_list
 
+    return product_list
 
 
 @router.put("/update-shop/{shop_id}", response_model=ShopOut)
@@ -108,7 +124,7 @@ async def update_shop(
     location: str = Form(None),
     category: str = Form(None),
     images: Optional[List[UploadFile]] = File(None),
-    current_user: UserOut = Depends(get_current_merchant)
+    current_user: UserOut = Depends(get_current_merchant),
 ):
     if not ObjectId.is_valid(shop_id):
         raise HTTPException(status_code=400, detail="ID de boutique invalide")
@@ -120,9 +136,12 @@ async def update_shop(
 
     # Préparation des données à mettre à jour
     update_data = {}
-    if name is not None: update_data["name"] = name
-    if description is not None: update_data["description"] = description
-    if category is not None: update_data["category"] = category
+    if name is not None:
+        update_data["name"] = name
+    if description is not None:
+        update_data["description"] = description
+    if category is not None:
+        update_data["category"] = category
 
     # --- Logique de Géocodage si la localisation change ---
     if location is not None:
@@ -132,16 +151,24 @@ async def update_shop(
             try:
                 response = await client.get(
                     "https://nominatim.openstreetmap.org/search",
-                    params={"q": location, "format": "json", "limit": 1, "countrycodes": "bj"},
-                    headers={"User-Agent": "AriminApp/1.0"}
+                    params={
+                        "q": location,
+                        "format": "json",
+                        "limit": 1,
+                        "countrycodes": "bj",
+                    },
+                    headers={"User-Agent": "AriminApp/1.0"},
                 )
                 response.raise_for_status()
                 if response.json():
                     loc_data = response.json()[0]
-                    geolocation = {"type": "Point", "coordinates": [float(loc_data["lon"]), float(loc_data["lat"])]}
+                    geolocation = {
+                        "type": "Point",
+                        "coordinates": [float(loc_data["lon"]), float(loc_data["lat"])],
+                    }
             except Exception as e:
                 print(f"Avertissement géocodage lors de la mise à jour : {e}")
-        
+
         update_data["geolocation"] = geolocation
 
     # Si de nouvelles images sont envoyées, on les téléverse et on met à jour le lien
@@ -155,38 +182,59 @@ async def update_shop(
         raise HTTPException(status_code=400, detail="Aucune donnée à mettre à jour")
 
     await shops.update_one({"_id": ObjectId(shop_id)}, {"$set": update_data})
-    
+
     updated_shop = await shops.find_one({"_id": ObjectId(shop_id)})
     return ShopOut(**updated_shop)
 
+
 @router.delete("/delete-shop/{shop_id}", response_model=dict)
-async def delete_shop(shop_id: str, current_user: UserOut = Depends(get_current_merchant)):
-    if not ObjectId.is_valid(shop_id): raise HTTPException(status_code=400, detail="ID invalide")
+async def delete_shop(
+    shop_id: str, current_user: UserOut = Depends(get_current_merchant)
+):
+    if not ObjectId.is_valid(shop_id):
+        raise HTTPException(status_code=400, detail="ID invalide")
     shop = await shops.find_one({"_id": ObjectId(shop_id)})
     if not shop or shop["owner_id"] != ObjectId(current_user.id):
-        raise HTTPException(status_code=403, detail="Accès refusé ou boutique non trouvée")
-    await products.delete_many({"shop_id": ObjectId(shop_id)}) # Supprime les produits associés
+        raise HTTPException(
+            status_code=403, detail="Accès refusé ou boutique non trouvée"
+        )
+    await products.delete_many(
+        {"shop_id": ObjectId(shop_id)}
+    )  # Supprime les produits associés
     await shops.delete_one({"_id": ObjectId(shop_id)})
     return {"message": "Boutique et produits associés supprimés"}
 
+
 @router.patch("/publish/{shop_id}", response_model=dict)
-async def publish_shop(shop_id: str, current_user: UserOut = Depends(get_current_merchant)):
-    if not ObjectId.is_valid(shop_id): raise HTTPException(status_code=400, detail="ID invalide")
+async def publish_shop(
+    shop_id: str, current_user: UserOut = Depends(get_current_merchant)
+):
+    if not ObjectId.is_valid(shop_id):
+        raise HTTPException(status_code=400, detail="ID invalide")
     shop = await shops.find_one({"_id": ObjectId(shop_id)})
     if not shop or shop["owner_id"] != ObjectId(current_user.id):
-        raise HTTPException(status_code=403, detail="Accès refusé ou boutique non trouvée")
+        raise HTTPException(
+            status_code=403, detail="Accès refusé ou boutique non trouvée"
+        )
     await shops.update_one({"_id": ObjectId(shop_id)}, {"$set": {"is_published": True}})
     return {"message": "Boutique publiée avec Succès ✅ "}
 
+
 @router.patch("/unpublish/{shop_id}", response_model=dict)
-async def unpublish_shop(shop_id: str, current_user: UserOut = Depends(get_current_merchant)):
-    if not ObjectId.is_valid(shop_id): raise HTTPException(status_code=400, detail="ID invalide")
+async def unpublish_shop(
+    shop_id: str, current_user: UserOut = Depends(get_current_merchant)
+):
+    if not ObjectId.is_valid(shop_id):
+        raise HTTPException(status_code=400, detail="ID invalide")
     shop = await shops.find_one({"_id": ObjectId(shop_id)})
     if not shop or shop["owner_id"] != ObjectId(current_user.id):
-        raise HTTPException(status_code=403, detail="Accès refusé ou boutique non trouvée")
-    await shops.update_one({"_id": ObjectId(shop_id)}, {"$set": {"is_published": False}})
+        raise HTTPException(
+            status_code=403, detail="Accès refusé ou boutique non trouvée"
+        )
+    await shops.update_one(
+        {"_id": ObjectId(shop_id)}, {"$set": {"is_published": False}}
+    )
     return {"message": "Boutique dépubliée avec Succès ✅ "}
-
 
 
 @router.get("/reverse-geocode/")
@@ -200,7 +248,7 @@ async def reverse_geocode_location(lat: float, lon: float):
             response = await client.get(
                 "https://nominatim.openstreetmap.org/reverse",
                 params={"lat": lat, "lon": lon, "format": "json"},
-                headers={"User-Agent": "AriminApp/1.0"}
+                headers={"User-Agent": "AriminApp/1.0"},
             )
             response.raise_for_status()
             data = response.json()
@@ -209,14 +257,17 @@ async def reverse_geocode_location(lat: float, lon: float):
                 address = data["display_name"]
         except Exception as e:
             print(f"Erreur de géocodage inversé: {e}")
-            raise HTTPException(status_code=500, detail="Le service de géolocalisation a échoué.")
-    
+            raise HTTPException(
+                status_code=500, detail="Le service de géolocalisation a échoué."
+            )
+
     return {"address": address}
 
 
 # ===============================================================
 # == Routes Publiques (pour les visiteurs du site)
 # ===============================================================
+
 
 @router.get("/public-shops/", response_model=List[ShopOut])
 async def get_public_shops():
@@ -225,20 +276,23 @@ async def get_public_shops():
     """
     pipeline = [
         {"$match": {"is_published": True}},
-        {"$lookup": {
-            "from": "users",
-            "localField": "owner_id",
-            "foreignField": "_id",
-            "as": "owner_details"
-        }},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "owner_id",
+                "foreignField": "_id",
+                "as": "owner_details",
+            }
+        },
         {"$unwind": "$owner_details"},
-        {"$match": {"owner_details.is_active": True}}
+        {"$match": {"owner_details.is_active": True}},
     ]
-    
+
     shops_cursor = shops.aggregate(pipeline)
-    
+
     # --- CORRECTION : On utilise bien le modèle ShopOut ici ---
     return [ShopOut(**shop) async for shop in shops_cursor]
+
 
 @router.get("/retrieve-shop/{shop_id}", response_model=ShopWithContact)
 async def retrieve_public_shop(shop_id: str):
@@ -252,20 +306,25 @@ async def retrieve_public_shop(shop_id: str):
         # 1. On trouve la boutique par son ID et on s'assure qu'elle est publiée
         {"$match": {"_id": ObjectId(shop_id), "is_published": True}},
         # 2. On joint les informations du propriétaire
-        {"$lookup": {
-            "from": "users",
-            "localField": "owner_id",
-            "foreignField": "_id",
-            "as": "owner_details"
-        }},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "owner_id",
+                "foreignField": "_id",
+                "as": "owner_details",
+            }
+        },
         {"$unwind": "$owner_details"},
         # 3. On ne garde le résultat que si le propriétaire est actif
-        {"$match": {"owner_details.is_active": True}}
+        {"$match": {"owner_details.is_active": True}},
     ]
-    
+
     result = await shops.aggregate(pipeline).to_list(length=1)
     if not result:
-        raise HTTPException(status_code=404, detail="Boutique non trouvée, non publiée, ou propriétaire inactif.")
+        raise HTTPException(
+            status_code=404,
+            detail="Boutique non trouvée, non publiée, ou propriétaire inactif.",
+        )
 
     return ShopWithContact(**result[0])
 
@@ -282,30 +341,40 @@ async def get_public_products_by_shop(shop_id: str):
     # 1. On valide que la boutique parente est bien visible par le public
     validation_pipeline = [
         {"$match": {"_id": ObjectId(shop_id), "is_published": True}},
-        {"$lookup": {"from": "users", "localField": "owner_id", "foreignField": "_id", "as": "owner_details"}},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "owner_id",
+                "foreignField": "_id",
+                "as": "owner_details",
+            }
+        },
         {"$unwind": "$owner_details"},
-        {"$match": {"owner_details.is_active": True}}
+        {"$match": {"owner_details.is_active": True}},
     ]
     valid_shop_list = await shops.aggregate(validation_pipeline).to_list(length=1)
     if not valid_shop_list:
-        raise HTTPException(status_code=404, detail="Boutique non trouvée, non publiée, ou propriétaire inactif.")
-    
+        raise HTTPException(
+            status_code=404,
+            detail="Boutique non trouvée, non publiée, ou propriétaire inactif.",
+        )
+
     shop_data = valid_shop_list[0]
-    
+
     # 2. Si la boutique est valide, on récupère ses produits
     products_cursor = products.find({"shop_id": ObjectId(shop_id)})
-    
+
     # 3. On enrichit chaque produit avec les infos COMPLÈTES de la boutique
     product_list = []
     async for product in products_cursor:
         product_info = {
             **product,
             "shop": {
-                "_id": shop_data.get("_id"), # <-- C'EST CETTE LIGNE QUI MANQUAIT
+                "_id": shop_data.get("_id"),  # <-- C'EST CETTE LIGNE QUI MANQUAIT
                 "name": shop_data.get("name"),
-                "contact_phone": shop_data.get("contact_phone")
-            }
+                "contact_phone": shop_data.get("contact_phone"),
+            },
         }
         product_list.append(ProductWithShopInfo.model_validate(product_info))
-        
+
     return product_list

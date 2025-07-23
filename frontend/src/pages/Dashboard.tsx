@@ -113,8 +113,13 @@ const Dashboard: React.FC = () => {
     }
   };
   
-  const handlePublishToggle = async (id: string, isPublished: boolean) => {
+const handlePublishToggle = async (id: string, isPublished: boolean) => {
+    // Si la boutique est publiée (isPublished = true), l'action est de "dépublier".
     const action = isPublished ? 'dépublier' : 'publier';
+    if (!window.confirm(`Êtes-vous sûr de vouloir ${action} cette boutique ?`)) return;
+    
+    // --- CORRECTION DE LA LOGIQUE ---
+    // Si elle est déjà publiée, on appelle "unpublish". Sinon, on appelle "publish".
     const endpoint = isPublished ? `/shops/unpublish/${id}` : `/shops/publish/${id}`;
     
     try {

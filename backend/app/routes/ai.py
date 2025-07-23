@@ -6,7 +6,7 @@ from app.schemas.ai import GenerationRequest
 
 # Configuration du client Google AI avec votre clé
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-pro')
+model = genai.GenerativeModel("gemini-pro")
 router = APIRouter()
 
 
@@ -16,9 +16,11 @@ async def generate_description(request: GenerationRequest):
         raise HTTPException(status_code=400, detail="Le nom ne peut pas être vide.")
 
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel("gemini-1.5-flash")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Impossible d'initialiser le modèle d'IA: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Impossible d'initialiser le modèle d'IA: {e}"
+        )
 
     # --- NOUVELLE LOGIQUE DE PROMPT ---
 
@@ -42,4 +44,6 @@ async def generate_description(request: GenerationRequest):
         return {"description": response.text}
     except Exception as e:
         print(f"Erreur API Google: {e}")
-        raise HTTPException(status_code=500, detail="Le service de génération de texte a échoué.")
+        raise HTTPException(
+            status_code=500, detail="Le service de génération de texte a échoué."
+        )

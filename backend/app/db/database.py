@@ -1,8 +1,8 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from dotenv import load_dotenv
-load_dotenv()
 
+load_dotenv()
 
 
 # MongoDB connection
@@ -18,4 +18,3 @@ products = database.get_collection("products")
 reviews = database.get_collection("reviews")
 suggestions = database.get_collection("suggestions")
 orders = database.get_collection("orders")
-

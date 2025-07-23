@@ -10,6 +10,7 @@ from bson import ObjectId
 
 router = APIRouter()
 
+
 @router.post("/", response_model=SuggestionOut)
 async def create_suggestion(suggestion_data: SuggestionCreate):
     """
@@ -21,7 +22,7 @@ async def create_suggestion(suggestion_data: SuggestionCreate):
         "message": suggestion_data.message,
         "status": "nouveau",
         "created_at": datetime.utcnow(),
-        "admin_reply": None
+        "admin_reply": None,
     }
     result = await suggestions.insert_one(new_suggestion)
     created_suggestion = await suggestions.find_one({"_id": result.inserted_id})

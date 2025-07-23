@@ -4,6 +4,7 @@ from bson import ObjectId
 
 from app.schemas.pydantic_object_id import PydanticObjectId
 
+
 class ProductBase(BaseModel):
     name: str
     description: Optional[str] = ""
@@ -13,16 +14,20 @@ class ProductBase(BaseModel):
 class ProductCreate(ProductBase):
     shop_id: str
 
+
 class ProductUpdate(BaseModel):
     name: Optional[str]
     description: Optional[str]
     price: Optional[float]
     image_url: Optional[str]
+
+
 # Schéma pour les informations de la boutique imbriquées
 class ShopInfo(BaseModel):
-    id: PydanticObjectId = Field(..., alias="_id") # L'API renverra "id"
+    id: PydanticObjectId = Field(..., alias="_id")  # L'API renverra "id"
     name: str
     contact_phone: Optional[str] = None
+
 
 # Le schéma final et unique pour un produit renvoyé par l'API
 class ProductOut(BaseModel):
@@ -38,15 +43,21 @@ class ProductOut(BaseModel):
         from_attributes=True,
         populate_by_name=True,
         arbitrary_types_allowed=True,
-        json_encoders={ PydanticObjectId: str }
+        json_encoders={PydanticObjectId: str},
     )
 
+
 class ShopInfo(BaseModel):
-    id: PydanticObjectId = Field(..., alias="_id") # On utilise 'id' avec un alias '_id'
+    id: PydanticObjectId = Field(
+        ..., alias="_id"
+    )  # On utilise 'id' avec un alias '_id'
     name: str
     contact_phone: Optional[str] = None
 
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True, arbitrary_types_allowed=True)
+    model_config = ConfigDict(
+        from_attributes=True, populate_by_name=True, arbitrary_types_allowed=True
+    )
+
 
 class ProductWithShopInfo(ProductOut):
     shop: Optional[ShopInfo] = None

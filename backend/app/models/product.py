@@ -3,7 +3,15 @@ from bson import ObjectId
 
 
 class Product:
-    def __init__(self, name: str, description: str, price: float, image_url: str, shop_id: ObjectId, id: ObjectId = None):
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        price: float,
+        image_url: str,
+        shop_id: ObjectId,
+        id: ObjectId = None,
+    ):
         self.id = id
         self.name = name
         self.description = description

@@ -14,6 +14,7 @@ router = APIRouter()
 # == Routes Sécurisées (pour le Dashboard du Marchand)
 # ===============================================================
 
+
 @router.post("/create-products/", response_model=ProductOut)
 async def create_product(
     shop_id: str = Form(...),
@@ -21,22 +22,31 @@ async def create_product(
     description: str = Form(...),
     price: float = Form(...),
     images: List[UploadFile] = File(...),
-    current_user: UserOut = Depends(get_current_merchant)
+    current_user: UserOut = Depends(get_current_merchant),
 ):
     # 1. Vérifier que la boutique appartient bien au marchand (sécurité)
-    shop = await shops.find_one({"_id": ObjectId(shop_id), "owner_id": ObjectId(current_user.id)})
+    shop = await shops.find_one(
+        {"_id": ObjectId(shop_id), "owner_id": ObjectId(current_user.id)}
+    )
     if not shop:
-        raise HTTPException(status_code=403, detail="Action non autorisée sur cette boutique.")
+        raise HTTPException(
+            status_code=403, detail="Action non autorisée sur cette boutique."
+        )
 
     # 2. Gérer les images
     image_urls = await upload_images_to_cloudinary(images)
     if not image_urls:
-        raise HTTPException(status_code=500, detail="Erreur lors du téléversement des images.")
+        raise HTTPException(
+            status_code=500, detail="Erreur lors du téléversement des images."
+        )
 
     # 3. Créer le document produit
     product_data = {
-        "name": name, "description": description, "price": price,
-        "images": image_urls, "shop_id": ObjectId(shop_id)
+        "name": name,
+        "description": description,
+        "price": price,
+        "images": image_urls,
+        "shop_id": ObjectId(shop_id),
     }
     result = await products.insert_one(product_data)
     created_product = await products.find_one({"_id": result.inserted_id})
@@ -45,7 +55,7 @@ async def create_product(
     created_product["shop"] = {
         "_id": shop.get("_id"),
         "name": shop.get("name"),
-        "contact_phone": shop.get("contact_phone")
+        "contact_phone": shop.get("contact_phone"),
     }
 
     # Conversion manuelle des IDs
@@ -54,6 +64,8 @@ async def create_product(
     created_product["shop"]["_id"] = str(created_product["shop"]["_id"])
 
     return ProductOut.model_validate(created_product)
+
+
 @router.put("/update-products/{product_id}", response_model=ProductOut)
 async def update_product(
     product_id: str,
@@ -73,20 +85,25 @@ async def update_product(
     if not product_to_update:
         raise HTTPException(status_code=404, detail="Produit non trouvé")
 
-    shop_of_product = await shops.find_one({"_id": product_to_update['shop_id']})
-    if not shop_of_product or shop_of_product['owner_id'] != ObjectId(current_user.id):
+    shop_of_product = await shops.find_one({"_id": product_to_update["shop_id"]})
+    if not shop_of_product or shop_of_product["owner_id"] != ObjectId(current_user.id):
         raise HTTPException(status_code=403, detail="Action non autorisée")
 
     update_data = {}
-    if name is not None: update_data["name"] = name
-    if description is not None: update_data["description"] = description
-    if price is not None: update_data["price"] = price
+    if name is not None:
+        update_data["name"] = name
+    if description is not None:
+        update_data["description"] = description
+    if price is not None:
+        update_data["price"] = price
     if images:
         image_urls = await upload_images_to_cloudinary(images)
         if image_urls:
             update_data["images"] = image_urls
         else:
-            raise HTTPException(status_code=500, detail="Échec du téléversement de l'image")
+            raise HTTPException(
+                status_code=500, detail="Échec du téléversement de l'image"
+            )
 
     if not update_data:
         raise HTTPException(status_code=400, detail="Aucune donnée à mettre à jour")
@@ -95,8 +112,11 @@ async def update_product(
     updated_product = await products.find_one({"_id": object_id})
     return ProductOut(**updated_product)
 
+
 @router.delete("/products/{product_id}", response_model=dict)
-async def delete_product(product_id: str, current_user: UserOut = Depends(get_current_merchant)):
+async def delete_product(
+    product_id: str, current_user: UserOut = Depends(get_current_merchant)
+):
     try:
         object_id = ObjectId(product_id)
     except Exception:
@@ -107,15 +127,18 @@ async def delete_product(product_id: str, current_user: UserOut = Depends(get_cu
     if not product_to_delete:
         raise HTTPException(status_code=404, detail="Produit non trouvé")
 
-    shop = await shops.find_one({"_id": product_to_delete['shop_id']})
-    if not shop or shop['owner_id'] != ObjectId(current_user.id):
+    shop = await shops.find_one({"_id": product_to_delete["shop_id"]})
+    if not shop or shop["owner_id"] != ObjectId(current_user.id):
         raise HTTPException(status_code=403, detail="Action non autorisée")
 
     result = await products.delete_one({"_id": object_id})
     if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Produit non trouvé lors de la suppression")
+        raise HTTPException(
+            status_code=404, detail="Produit non trouvé lors de la suppression"
+        )
 
     return {"message": "Produit supprimé avec Succès ✅ "}
+
 
 # ===============================================================
 # == Routes Publiques (pour les visiteurs du site)
@@ -134,19 +157,29 @@ async def get_public_products_by_shop(shop_id: str):
     # 1. On valide que la boutique parente est bien visible par le public
     validation_pipeline = [
         {"$match": {"_id": ObjectId(shop_id), "is_published": True}},
-        {"$lookup": {"from": "users", "localField": "owner_id", "foreignField": "_id", "as": "owner_details"}},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "owner_id",
+                "foreignField": "_id",
+                "as": "owner_details",
+            }
+        },
         {"$unwind": "$owner_details"},
-        {"$match": {"owner_details.is_active": True}}
+        {"$match": {"owner_details.is_active": True}},
     ]
     valid_shop_list = await shops.aggregate(validation_pipeline).to_list(length=1)
     if not valid_shop_list:
-        raise HTTPException(status_code=404, detail="Boutique non trouvée, non publiée, ou propriétaire inactif.")
-    
+        raise HTTPException(
+            status_code=404,
+            detail="Boutique non trouvée, non publiée, ou propriétaire inactif.",
+        )
+
     shop_data = valid_shop_list[0]
-    
+
     # 2. Si la boutique est valide, on récupère ses produits
     products_cursor = products.find({"shop_id": ObjectId(shop_id)})
-    
+
     # 3. On enrichit chaque produit avec les infos de la boutique avant de le renvoyer
     product_list = []
     async for product in products_cursor:
@@ -155,11 +188,13 @@ async def get_public_products_by_shop(shop_id: str):
             "shop": {
                 "_id": shop_data.get("_id"),
                 "name": shop_data.get("name"),
-                "contact_phone": shop_data.get("contact_phone")
-            }
+                "contact_phone": shop_data.get("contact_phone"),
+                "category": shop_data.get("category"),
+                "location": shop_data.get("location")
+            },
         }
         product_list.append(ProductWithShopInfo.model_validate(product_info))
-        
+
     return product_list
 
 
@@ -176,30 +211,55 @@ async def get_public_product_by_id(product_id: str):
 
     pipeline = [
         {"$match": {"_id": object_id}},
-        {"$lookup": {"from": "shops", "localField": "shop_id", "foreignField": "_id", "as": "shop_details"}},
+        {
+            "$lookup": {
+                "from": "shops",
+                "localField": "shop_id",
+                "foreignField": "_id",
+                "as": "shop_details",
+            }
+        },
         {"$unwind": "$shop_details"},
         {"$match": {"shop_details.is_published": True}},
-        
         # --- On ajoute la vérification du statut du marchand ---
-        {"$lookup": {"from": "users", "localField": "shop_details.owner_id", "foreignField": "_id", "as": "owner_details"}},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "shop_details.owner_id",
+                "foreignField": "_id",
+                "as": "owner_details",
+            }
+        },
         {"$unwind": "$owner_details"},
         {"$match": {"owner_details.is_active": True}},
-        
         # Le $project reste le même
-        {"$project": {
-                "_id": 1, "name": 1, "description": 1, "price": 1,
-                "images": 1, "shop_id": 1,
+        {
+            "$project": {
+                "_id": 1,
+                "name": 1,
+                "description": 1,
+                "price": 1,
+                "images": 1,
+                "shop_id": 1,
                 "seller": "$owner_details.first_name",
-                "shop": {"_id": "$shop_details._id", "name": "$shop_details.name", "contact_phone": "$shop_details.contact_phone"}
+                "shop": {
+                    "_id": "$shop_details._id",
+                    "name": "$shop_details.name",
+                    "contact_phone": "$shop_details.contact_phone",
+                },
             }
-        }
+        },
     ]
-    
+
     result_list = await products.aggregate(pipeline).to_list(length=1)
     if not result_list:
-        raise HTTPException(status_code=404, detail="Produit non trouvé, non publié, ou son vendeur est inactif")
-        
+        raise HTTPException(
+            status_code=404,
+            detail="Produit non trouvé, non publié, ou son vendeur est inactif",
+        )
+
     return result_list[0]
+
 
 @router.get("/public-products/", response_model=List[ProductWithShopInfo])
 async def get_public_products():
@@ -209,29 +269,32 @@ async def get_public_products():
     """
     pipeline = [
         # Étape 1 : Joindre les informations de la boutique
-        {"$lookup": {
-            "from": "shops",
-            "localField": "shop_id",
-            "foreignField": "_id",
-            "as": "shop_details"
-        }},
+        {
+            "$lookup": {
+                "from": "shops",
+                "localField": "shop_id",
+                "foreignField": "_id",
+                "as": "shop_details",
+            }
+        },
         {"$unwind": "$shop_details"},
-        
         # Étape 2 : Joindre les informations du propriétaire de la boutique
-        {"$lookup": {
-            "from": "users",
-            "localField": "shop_details.owner_id",
-            "foreignField": "_id",
-            "as": "owner_details"
-        }},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "shop_details.owner_id",
+                "foreignField": "_id",
+                "as": "owner_details",
+            }
+        },
         {"$unwind": "$owner_details"},
-
         # Étape 3 : Filtrer pour ne garder que les produits valides
-        {"$match": {
-            "shop_details.is_published": True,
-            "owner_details.is_active": True
-        }},
-
+        {
+            "$match": {
+                "shop_details.is_published": True,
+                "owner_details.is_active": True,
+            }
+        },
         # Étape 4 : Projeter la forme finale de la donnée
         {
             "$project": {
@@ -244,15 +307,15 @@ async def get_public_products():
                 "shop": {
                     "_id": "$shop_details._id",
                     "name": "$shop_details.name",
-                    "contact_phone": "$shop_details.contact_phone"
-                }
+                    "contact_phone": "$shop_details.contact_phone",
+                },
             }
         },
-        {"$limit": 50}
+        {"$limit": 50},
     ]
-    
+
     product_list_from_db = await products.aggregate(pipeline).to_list(length=None)
-    
+
     # Conversion manuelle des IDs pour la validation Pydantic
     for p in product_list_from_db:
         p["_id"] = str(p["_id"])

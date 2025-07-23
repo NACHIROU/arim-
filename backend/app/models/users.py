@@ -1,6 +1,7 @@
 from typing import Optional
 from bson import ObjectId
 
+
 # Fonction utilitaire pour transformer les objets MongoDB
 def user_helper(user: dict) -> dict:
     return {

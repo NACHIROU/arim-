@@ -1,6 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import users, auth, shop, product, search, reviews, ai, admin, suggestions, orders, dashboard
+from app.routes import (
+    users,
+    auth,
+    shop,
+    product,
+    search,
+    reviews,
+    ai,
+    admin,
+    suggestions,
+    orders,
+    dashboard,
+)
 from fastapi.openapi.utils import get_openapi
 from fastapi.security import OAuth2PasswordBearer
 
@@ -11,7 +23,7 @@ app = FastAPI()
 
 app.include_router(users.router, tags=["Users"])
 app.include_router(auth.router, tags=["Auth"])
-app.include_router(shop.router, prefix="/shops", tags=["Shops"])   
+app.include_router(shop.router, prefix="/shops", tags=["Shops"])
 app.include_router(product.router, prefix="/products", tags=["Products"])
 app.include_router(search.router, prefix="/search", tags=["Search"])
 app.include_router(reviews.router, prefix="/reviews", tags=["Reviews"])
@@ -23,8 +35,8 @@ app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 
 
 origins = [
-    "http://localhost:8080", # Pour votre développement local
-    "https://ahimin.onrender.com", # Remplacez par l'URL de votre frontend déployé
+    "http://localhost:8080",  # Pour votre développement local
+    "https://ahimin.onrender.com",  # Remplacez par l'URL de votre frontend déployé
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -33,6 +45,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 def custom_openapi():
     if app.openapi_schema:
@@ -56,7 +69,9 @@ def custom_openapi():
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
+
 app.openapi = custom_openapi
+
 
 @app.get("/")
 async def root():

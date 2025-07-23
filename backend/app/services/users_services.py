@@ -6,8 +6,10 @@ from app.db.database import users
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
+
 
 async def create_user(user: UserCreate) -> dict:
     # Vérifier si l'email est déjà utilisé
@@ -31,5 +33,5 @@ async def create_user(user: UserCreate) -> dict:
         "email": created_user["email"],
         "role": created_user["role"],
         "phone": created_user.get("phone"),
-        "location": created_user.get("location")
+        "location": created_user.get("location"),
     }
