@@ -30,7 +30,7 @@ const Dashboard: React.FC = () => {
 
   // États pour les commandes
   const [groupedOrders, setGroupedOrders] = useState<ShopWithOrders[]>([]);
-  const [orderStatusFilter, setOrderStatusFilter] = useState<string>("En attente"); 
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>("En attente");
   const token = localStorage.getItem('token');
 
   // --- Fonctions de chargement des données ---
@@ -76,11 +76,11 @@ const Dashboard: React.FC = () => {
   const fetchOrders = useCallback(async () => {
     if (!token) return;
     
-    let url = `${import.meta.env.VITE_API_BASE_URL}/dashboard/orders`;
-    // On utilise le bon nom de paramètre : "status_filter"
-    if (orderStatusFilter !== "toutes") {
-      url += `?status_filter=${orderStatusFilter}`;
-    }
+    // --- On construit l'URL de manière plus simple ---
+    const params = new URLSearchParams();
+    params.append('status_filter', orderStatusFilter);
+    
+    const url = `${import.meta.env.VITE_API_BASE_URL}/dashboard/orders?${params.toString()}`;
 
     try {
       const response = await fetch(url, {
@@ -88,7 +88,7 @@ const Dashboard: React.FC = () => {
       });
       if (response.ok) setGroupedOrders(await response.json());
     } catch (error) { console.error("Erreur chargement commandes:", error); }
-  }, [token, orderStatusFilter]);
+  }, [token, orderStatusFilter])
 
   useEffect(() => {
     if (activeTab === 'commandes') {
@@ -116,14 +116,20 @@ const Dashboard: React.FC = () => {
   const handlePublishToggle = async (id: string, isPublished: boolean) => {
     const action = isPublished ? 'dépublier' : 'publier';
     const endpoint = isPublished ? `/shops/unpublish/${id}` : `/shops/publish/${id}`;
+    
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`, {
-        method: "PATCH", headers: { Authorization: `Bearer ${token}` }
+        method: "PATCH", 
+        headers: { Authorization: `Bearer ${token}` }
       });
-      if (response.ok) fetchBoutiques();
-      else toast({ title: "Erreur", description: "L'opération a échoué.", variant: "destructive" });
+      if (response.ok) {
+        toast({ title: "Succès", description: `Boutique ${action}e avec succès.` });
+        fetchBoutiques();
+      } else {
+        toast({ title: "Erreur", description: "L'opération a échoué.", variant: "destructive" });
+      }
     } catch (error) { console.error(error); }
-  };
+};
 
   const handleDeleteShop = async (id: string) => {
     if (!window.confirm("Supprimer cette boutique et tous ses produits ?")) return;

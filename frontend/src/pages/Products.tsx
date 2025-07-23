@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const categories = [ "Toutes les catégories", "Alimentaire & Boissons", "Vêtements & Mode", "Santé & Beauté", "Électronique & Multimédia", "Maison & Jardin", "Construction & Bâtiment", "Autre" ];
 const locations = ["Toutes les villes", "Cotonou", "Porto-Novo", "Parakou", "Abomey-Calavi"];
+const priceRanges = ["Tous les prix", "0-5000", "5001-15000", "15001-50000", "50001-100000", "100001+"];
 
 const Products: React.FC = () => {
     const [products, setProducts] = useState<Produit[]>([]);
@@ -17,6 +18,7 @@ const Products: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('Toutes les catégories');
     const [locationFilter, setLocationFilter] = useState('Toutes les villes');
+    const [priceFilter, setPriceFilter] = useState('Tous les prix');
 
     useEffect(() => {
         const fetchAllProducts = async () => {
@@ -34,15 +36,29 @@ const Products: React.FC = () => {
     }, []);
 
     const filteredProducts = useMemo(() => {
-        return products.filter(product => {
-            const searchMatch = searchTerm.length === 0 || product.name.toLowerCase().includes(searchTerm.toLowerCase());
-            const categoryMatch = categoryFilter === 'Toutes les catégories' || product.shop?.category === categoryFilter;            
-            const locationMatch = locationFilter === 'Toutes les villes' || 
-                (product.shop?.location && product.shop.location.toLowerCase().includes(locationFilter.toLowerCase()));
-            
-            return searchMatch && categoryMatch && locationMatch;
-        });
-    }, [products, searchTerm, categoryFilter, locationFilter]);
+        let items = products;
+
+        if (searchTerm) {
+            items = items.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+        }
+        if (categoryFilter !== 'Tous') {
+            items = items.filter(p => p.shop?.category === categoryFilter);
+        }
+        if (locationFilter !== 'Toutes les villes') {
+            items = items.filter(p => p.shop?.location?.toLowerCase().includes(locationFilter.toLowerCase()));
+        }
+        if (priceFilter !== 'Tous les prix') {
+            if (priceFilter.includes('+')) {
+                const min = parseInt(priceFilter.replace('+', ''));
+                items = items.filter(p => p.price >= min);
+            } else {
+                const [min, max] = priceFilter.split('-').map(Number);
+                items = items.filter(p => p.price >= min && p.price <= max);
+            }
+        }
+        return items;
+    }, [products, searchTerm, categoryFilter, locationFilter, priceFilter]);
+
 
     if (isLoading) return <div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
     if (error) return <div className="text-center py-24 text-red-500">Erreur : {error}</div>;
@@ -75,6 +91,7 @@ const Products: React.FC = () => {
                                 <SelectTrigger className="h-12 w-full md:w-[200px] bg-orange-500 text-white"><SelectValue /></SelectTrigger>
                                 <SelectContent>{locations.map(loc => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}</SelectContent>
                             </Select>
+                                                        <Select value={priceFilter} onValueChange={setPriceFilter}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{priceRanges.map(p=><SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
                         </div>
                     </CardContent>
                 </Card>

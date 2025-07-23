@@ -12,7 +12,8 @@ router = APIRouter()
 @router.get("/orders", response_model=List[ShopWithOrders])
 async def get_merchant_orders_grouped(
     current_user: UserOut = Depends(get_current_merchant),
-    status_filter: Optional[str] = Query("En attente") ):
+    status_filter: Optional[str] = Query(None) # Le paramètre s'appelle 'status'
+):
     """
     Récupère les commandes du marchand, groupées par boutique, avec filtre de statut.
     """
@@ -31,10 +32,12 @@ async def get_merchant_orders_grouped(
     }
 
     # --- 3. On ajoute la logique de filtre en utilisant la bonne variable 'status' ---
-    if status_filter and status_filter != "toutes":
+    if status_filter == "en_cours":
+        match_filter["sub_orders.status"] = {"$in": ["En attente", "En cours de livraison"]}
+    elif status_filter and status_filter != "toutes":
         match_filter["sub_orders.status"] = status_filter
-    # Si 'status' est 'toutes' ou None, on n'ajoute pas de filtre sur le statut.
-
+    # Si status_filter est "toutes", on n'ajoute aucun filtre de statut.
+    
     # 4. Pipeline pour trouver les commandes
     pipeline = [
         {"$match": match_filter},
