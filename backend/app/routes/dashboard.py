@@ -9,16 +9,14 @@ from app.schemas.dashboard import ShopWithOrders
 from app.core.dependencies import get_current_merchant
 
 router = APIRouter()
-
 @router.get("/orders", response_model=List[ShopWithOrders])
 async def get_merchant_orders_grouped(
     current_user: UserOut = Depends(get_current_merchant),
-    status: Optional[str] = Query(None)
-):
+    status_filter: Optional[str] = Query("En attente") ):
     """
     Récupère les commandes du marchand, groupées par boutique, avec filtre de statut.
     """
-    # 1. Récupérer les boutiques du marchand (inchangé)
+    # 1. Récupérer les boutiques du marchand
     merchant_shops_cursor = shops.find({"owner_id": ObjectId(current_user.id)})
     merchant_shops = await merchant_shops_cursor.to_list(length=None)
     if not merchant_shops:
@@ -32,11 +30,11 @@ async def get_merchant_orders_grouped(
         "is_archived": False
     }
 
-    # --- 3. On ajoute la logique de filtre par statut ---
-    if status == "en_cours":
-        pipeline.insert(1, {"$match": {"sub_orders.status": {"$nin": ["Livrée", "Annulée"]}}})
-    elif status and status != "toutes":
-        pipeline.insert(1, {"$match": {"sub_orders.status": status}})
+    # --- 3. On ajoute la logique de filtre en utilisant la bonne variable 'status' ---
+    if status_filter and status_filter != "toutes":
+        match_filter["sub_orders.status"] = status_filter
+    # Si 'status' est 'toutes' ou None, on n'ajoute pas de filtre sur le statut.
+
     # 4. Pipeline pour trouver les commandes
     pipeline = [
         {"$match": match_filter},
@@ -46,7 +44,7 @@ async def get_merchant_orders_grouped(
     ]
     all_relevant_orders = await orders.aggregate(pipeline).to_list(length=None)
 
-    # 3. Organiser les commandes par boutique en Python
+    # 5. Organiser les commandes par boutique en Python
     response_data = []
     for shop in merchant_shops:
         shop_id_str = str(shop["_id"])
@@ -61,7 +59,6 @@ async def get_merchant_orders_grouped(
                     sub["shop_id"] = str(sub["shop_id"])
                 orders_for_this_shop.append(order)
 
-        # On ajoute le groupe (même s'il n'y a pas de commande)
         response_data.append({
             "shop_id": shop_id_str,
             "shop_name": shop["name"],

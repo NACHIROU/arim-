@@ -30,8 +30,7 @@ const Dashboard: React.FC = () => {
 
   // États pour les commandes
   const [groupedOrders, setGroupedOrders] = useState<ShopWithOrders[]>([]);
-  const [orderStatusFilter, setOrderStatusFilter] = useState<string>("en_cours"); 
-
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>("En attente"); 
   const token = localStorage.getItem('token');
 
   // --- Fonctions de chargement des données ---
@@ -78,8 +77,9 @@ const Dashboard: React.FC = () => {
     if (!token) return;
     
     let url = `${import.meta.env.VITE_API_BASE_URL}/dashboard/orders`;
+    // On utilise le bon nom de paramètre : "status_filter"
     if (orderStatusFilter !== "toutes") {
-      url += `?status=${orderStatusFilter}`;
+      url += `?status_filter=${orderStatusFilter}`;
     }
 
     try {
@@ -266,18 +266,18 @@ const handleEditShop = (id: string) => {
           <div className="mt-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-semibold">Mes Commandes Reçues</h2>
-              <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
-                <SelectTrigger className="w-[240px]">
-                  <SelectValue placeholder="Filtrer par statut" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en_cours">Commandes en cours</SelectItem>
-                  <SelectItem value="En cours de livraison">En cours de livraison</SelectItem>
-                  <SelectItem value="Livrée">Commandes livrées</SelectItem>
-                  <SelectItem value="Annulée">Commandes annulées</SelectItem>
-                  <SelectItem value="toutes">Toutes les commandes</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
+                  <SelectTrigger className="w-[240px]">
+                    <SelectValue placeholder="Filtrer par statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="En attente">En attente</SelectItem>
+                    <SelectItem value="En cours de livraison">En cours de livraison</SelectItem>
+                    <SelectItem value="Livrée">Commandes livrées</SelectItem>
+                    <SelectItem value="Annulée">Commandes annulées</SelectItem>
+                    <SelectItem value="toutes">Toutes les commandes</SelectItem>
+                  </SelectContent>
+                </Select>
             </div>
             <OrdersList 
               groupedOrders={groupedOrders} 
