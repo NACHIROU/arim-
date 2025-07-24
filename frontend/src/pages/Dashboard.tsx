@@ -119,8 +119,8 @@ const handlePublishToggle = async (id: string, isPublished: boolean) => {
 
     // --- On appelle la nouvelle route admin ---
     const endpoint = isPublished 
-      ? `/shops/unpublish/${id}` 
-      : `/shops/publish/${id}`;
+      ? `/shops/publish/${id}` 
+      : `/shops/unpublish/${id}`;
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`, {
