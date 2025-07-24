@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import PublicBoutiqueCard from '@/components/PublicBoutiqueCard';
-import { Loader2, Store, Search, Filter, MapPin } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import { Boutique } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -48,39 +48,50 @@ const Shops: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Toutes nos Boutiques</h1>
-          <p className="text-lg text-muted-foreground">Explorez les commerces locaux partenaires.</p>
+      <div className="container mx-auto px-4 py-8 sm:py-16">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Toutes nos Boutiques</h1>
+          <p className="text-base sm:text-lg text-muted-foreground">Explorez les commerces locaux partenaires.</p>
         </div>
 
-        <Card className="mb-12 shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4 items-center">
+        <Card className="mb-8 sm:mb-12 shadow-lg">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col lg:flex-row gap-4 items-center">
               <div className="relative flex-1 w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
                 <Input 
                   placeholder="Rechercher par nom..." 
-                  className="pl-10 h-12 bg-secondary/50 text-black border-0 focus:ring-2 focus:ring-primary rounded-xl"
+                  className="pl-10 h-12 bg-secondary/50 border-0 focus:ring-2 focus:ring-primary rounded-xl"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  
                 />
               </div>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="h-12 w-full md:w-[200px] bg-orange-500 text-white"><SelectValue /></SelectTrigger>
-                <SelectContent>{categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
+                <SelectTrigger className="h-12 w-full lg:w-[200px] bg-orange-500 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
               <Select value={locationFilter} onValueChange={setLocationFilter}>
-                <SelectTrigger className="h-12 w-full md:w-[200px] bg-orange-500 text-white"><SelectValue /></SelectTrigger>
-                <SelectContent>{locations.map(loc => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}</SelectContent>
+                <SelectTrigger className="h-12 w-full lg:w-[200px] bg-blue-500 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {locations.map(loc => (
+                    <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
           </CardContent>
         </Card>
 
         {filteredBoutiques.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
             {filteredBoutiques.map((boutique) => (
               <PublicBoutiqueCard key={boutique._id} boutique={boutique} />
             ))}

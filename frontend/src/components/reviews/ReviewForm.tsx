@@ -65,62 +65,52 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ shopId, onReviewSubmitted }) =>
     }
   };
 
+
   return (
-    <Card className="bg-muted/30">
+    <Card className="bg-orange-50 border-orange-200 shadow-lg mb-8">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-primary" />
-          Laissez votre avis
+        <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+          <MessageSquare className="h-5 w-5 text-orange-500" />
+          Laissez votre avis sur cette boutique
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
-            <label className="text-sm font-medium text-foreground">Votre note</label>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`h-7 w-7 cursor-pointer transition-all duration-200 ${
-                      (hoverRating || rating) >= star 
-                        ? 'text-warning fill-warning scale-110' 
-                        : 'text-muted hover:text-warning/50'
-                    }`}
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    onClick={() => setRating(star)}
-                  />
-                ))}
-              </div>
-              {rating > 0 && (
-                <span className="text-sm text-muted-foreground font-medium">
-                  {rating}/5 étoiles
-                </span>
-              )}
+            <label className="text-sm font-medium text-gray-700">Votre note</label>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={`h-8 w-8 cursor-pointer transition-all duration-200 ${
+                    (hoverRating || rating) >= star 
+                      ? 'text-yellow-400 fill-yellow-400 scale-110' 
+                      : 'text-gray-300 hover:text-yellow-300'
+                  }`}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  onClick={() => setRating(star)}
+                />
+              ))}
             </div>
           </div>
           
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-foreground">Votre commentaire</label>
+          <div className="space-y-2">
             <Textarea
-              placeholder="Partagez votre expérience avec cette boutique..."
+              placeholder="Partagez votre expérience..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={4}
-              className="resize-none"
+              className="resize-none bg-white/50 border-orange-200 focus:ring-orange-400"
             />
-            <p className="text-xs text-muted-foreground">
-              Minimum 10 caractères ({message.length}/10)
-            </p>
           </div>
           
           <Button 
             type="submit" 
             disabled={isSubmitting || rating === 0 || message.length < 10}
-            className="w-full"
+            className="w-full bg-orange-500 text-white shadow-lg hover:shadow-xl transition-all"
           >
-            {isSubmitting ? "Envoi en cours..." : "Publier mon avis"}
+            {isSubmitting ? "Envoi..." : "Publier mon avis"}
           </Button>
         </form>
       </CardContent>
