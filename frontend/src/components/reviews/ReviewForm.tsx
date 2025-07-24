@@ -104,10 +104,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ shopId, onReviewSubmitted }) =>
               className="resize-none bg-white/50 border-orange-200 focus:ring-orange-400"
             />
           </div>
-          
-          <Button 
-            type="submit" 
-            disabled={isSubmitting || rating === 0 || message.length < 10}
+
+          <Button
+            type="submit"
+            disabled={isSubmitting} // On ne le désactive que pendant l'envoi
             className="w-full bg-orange-500 text-white shadow-lg hover:shadow-xl transition-all"
           >
             {isSubmitting ? "Envoi..." : "Publier mon avis"}
