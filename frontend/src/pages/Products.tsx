@@ -89,7 +89,7 @@ const Products: React.FC = () => {
                                 </SelectContent>
                             </Select>
                             <Select value={locationFilter} onValueChange={setLocationFilter}>
-                                <SelectTrigger className="h-12 w-full lg:w-[200px] bg-blue-500 text-white">
+                                <SelectTrigger className="h-12 w-full lg:w-[200px] bg-orange-500 text-white">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -99,7 +99,7 @@ const Products: React.FC = () => {
                                 </SelectContent>
                             </Select>
                             <Select value={priceFilter} onValueChange={setPriceFilter}>
-                                <SelectTrigger className="h-12 w-full lg:w-[200px] bg-green-500 text-white">
+                                <SelectTrigger className="h-12 w-full lg:w-[200px] bg-orange-500 text-white">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>

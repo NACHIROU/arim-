@@ -280,7 +280,7 @@ const handleEditShop = (id: string) => {
                   <SelectTrigger className="w-[240px]">
                     <SelectValue placeholder="Filtrer par statut" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-color-gray-100">
                     <SelectItem value="En attente">En attente</SelectItem>
                     <SelectItem value="En cours de livraison">En cours de livraison</SelectItem>
                     <SelectItem value="Livrée">Commandes livrées</SelectItem>

@@ -108,11 +108,11 @@ const formatPhoneNumberForWhatsApp = (phone?: string) => {
                           <SelectTrigger className="w-[180px]">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="En attente">En attente</SelectItem>
-                            <SelectItem value="En cours de livraison">En cours de livraison</SelectItem>
-                            <SelectItem value="Livrée">Livrée</SelectItem>
-                            <SelectItem value="Annulée">Annulée</SelectItem>
+                          <SelectContent className='bg-gray-100'>
+                            <SelectItem value="En attente" className='bg-gray-300'>En attente</SelectItem>
+                            <SelectItem value="En cours de livraison" className='bg-orange-300'>En cours de livraison</SelectItem>
+                            <SelectItem value="Livrée" className='bg-green-300'>Livrée</SelectItem>
+                            <SelectItem value="Annulée" className='bg-red-300'>Annulée</SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>

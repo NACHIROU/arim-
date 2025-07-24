@@ -119,8 +119,8 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
 
   return (
     <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm mb-8">
-      <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-t-lg">
-        <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+      <CardHeader className="bg-orange-400 rounded-t-lg">
+        <CardTitle className="text-2xl text-white font-bold flex items-center gap-2">
           {isEditing ? 'Modifier le produit' : 'Ajouter un nouveau produit'}
         </CardTitle>
       </CardHeader>
@@ -238,7 +238,7 @@ const ProduitForm: React.FC<ProduitFormProps> = ({
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 px-8"
+              className="bg-orange-500 hover:to-accent/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 px-8"
             >
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isEditing ? 'Mettre à jour' : 'Ajouter le produit'}
