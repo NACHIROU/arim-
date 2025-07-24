@@ -308,6 +308,8 @@ async def get_public_products():
                     "_id": "$shop_details._id",
                     "name": "$shop_details.name",
                     "contact_phone": "$shop_details.contact_phone",
+                    "category": "$shop_details.category",
+                    "location": "$shop_details.location",
                 },
             }
         },
