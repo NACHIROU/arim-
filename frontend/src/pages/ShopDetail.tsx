@@ -115,8 +115,8 @@ const ShopDetail: React.FC = () => {
         </AspectRatio>
       </div>
 
-      <div className="container pb-16 md:pb-24">
-        <div className="max-w-4xl mx-auto -mt-32 relative bg-background p-8 rounded-lg shadow-lg mb-12">
+      <div className="container pb-16 md:pb-24 bg-white mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto -mt-32 relative bg-white p-8 rounded-lg shadow-lg mb-12">
            <div className="flex flex-col md:flex-row gap-6 items-start">
             <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold shrink-0">{shop.name.charAt(0).toUpperCase()}</div>
             <div className="flex-1">
@@ -160,7 +160,7 @@ const ShopDetail: React.FC = () => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
                   placeholder="Rechercher dans cette boutique..."
-                  className="pl-9"
+                  className="pl-9 bg-gray-100 border-0 focus:ring-2 focus:ring-primary rounded-lg h-12"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />

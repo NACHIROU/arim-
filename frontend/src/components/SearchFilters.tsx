@@ -45,7 +45,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onFiltersChange }) => {
             placeholder="Rechercher un produit, une boutique..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input pl-12 h-14 text-black bg-secondary/50 border-0 focus:ring-2 focus:ring-primary rounded-xl"
+            className="search-input pl-12 h-14 text-black bg-gray-100 border-0 focus:ring-2 focus:ring-primary rounded-xl"
             aria-label="Rechercher un produit ou une boutique"
           />
         </div>
