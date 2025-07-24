@@ -108,7 +108,7 @@ const Header: React.FC = () => {
 
           {!isLoggedIn ? (
             <div className="hidden md:flex items-center gap-2">
-              <Button variant="outline" asChild className="border-primary/30 hover:border-primary/80 transition-colors">
+              <Button variant="outline" asChild className="bg-white hover:bg-gray-100 transition-colors">
                 <Link to="/login">Se connecter</Link>
               </Button>
               <Button asChild className="bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md transition-all">

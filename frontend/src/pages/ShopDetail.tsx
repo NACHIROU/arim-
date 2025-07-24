@@ -110,12 +110,12 @@ const ShopDetail: React.FC = () => {
   return (
     <div>
       <div className="bg-white">
-        <AspectRatio ratio={16 / 5} className="bg-muted">
+        <AspectRatio ratio={16 / 5} className="bg-white">
           <img src={(shop.images && shop.images.length > 0) ? shop.images[0] : 'https://via.placeholder.com/1280x400?text=Bienvenue'} alt={shop.name} className="object-cover w-full h-full" />
         </AspectRatio>
       </div>
 
-      <div className="container pb-16 md:pb-24 bg-white mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container pb-16 md:pb-24 bg-white mx-auto px-4 sm:px-6 lg:px-8 ">
         <div className="max-w-4xl mx-auto -mt-32 relative bg-white p-8 rounded-lg shadow-lg mb-12">
            <div className="flex flex-col md:flex-row gap-6 items-start">
             <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold shrink-0">{shop.name.charAt(0).toUpperCase()}</div>
@@ -133,9 +133,8 @@ const ShopDetail: React.FC = () => {
                     <Phone className="h-4 w-4 mr-2" /> Appeler
                   </a>
                 </Button>
-                <Button asChild variant="outline" disabled={!canContact}>
+                <Button asChild variant="outline" disabled={!canContact} className="bg-gray-100">
                   <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                    {/* 2. On utilise la nouvelle icône */}
                     <FaWhatsapp className="h-5 w-5 mr-2 text-green-500" /> Envoyer un message
                   </a>
                 </Button>
