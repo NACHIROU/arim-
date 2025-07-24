@@ -128,7 +128,7 @@ const handlePublishToggle = async (id: string, isPublished: boolean) => {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!response.ok) throw new Error("L'opération a échoué.");
-      toast({ title: "Succès", description: `Boutique ${action}e.` });
+      toast({ title: "Succès", description: `Boutique ${action}.` });
       fetchBoutiques();
     } catch (error) {
       toast({ title: "Erreur", description: (error as Error).message, variant: "destructive" });
