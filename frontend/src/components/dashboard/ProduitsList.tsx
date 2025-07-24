@@ -59,7 +59,7 @@ const ProduitsList: React.FC<ProduitsListProps> = ({ produits = [], onEdit, onDe
                 <h4 className="font-semibold text-lg text-foreground truncate group-hover:text-primary transition-colors duration-300">
                   {produit.name}
                 </h4>
-                <div className="bg-gradient-to-r from-primary to-accent text-white px-3 py-1 rounded-full inline-block">
+                <div className="bg-orange-600 text-white px-3 py-1 rounded-full inline-block">
                   <p className="font-bold text-sm">{produit.price.toLocaleString('fr-FR')} FCFA</p>
                 </div>
               </CardContent>

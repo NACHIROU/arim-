@@ -8,6 +8,23 @@ import { Package, Store, User, Calendar, Phone } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { Button } from '@/components/ui/button';
 
+
+
+const getStatusColorClass = (status: string) => {
+  switch (status) {
+    case 'En attente':
+      return 'bg-gray-100 text-gray-800';
+    case 'En cours de livraison':
+      return 'bg-orange-100 text-orange-800';
+    case 'Livrée':
+      return 'bg-green-100 text-green-800';
+    case 'Annulée':
+      return 'bg-red-100 text-red-800';
+    default:
+      return 'bg-secondary text-secondary-foreground';
+  }
+};
+
 interface OrdersListProps {
   groupedOrders: ShopWithOrders[];
   onStatusChange: (orderId: string, shopId: string, newStatus: string) => void;
@@ -105,14 +122,13 @@ const formatPhoneNumberForWhatsApp = (phone?: string) => {
                           defaultValue={relevantSubOrder.status}
                           onValueChange={(newStatus) => onStatusChange(order._id, relevantSubOrder.shop_id, newStatus)}
                         >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue />
+                      <SelectTrigger className={`w-[180px] ${getStatusColorClass(relevantSubOrder.status)}`}>                            <SelectValue />
                           </SelectTrigger>
                           <SelectContent className='bg-gray-100'>
-                            <SelectItem value="En attente" className='bg-gray-300'>En attente</SelectItem>
-                            <SelectItem value="En cours de livraison" className='bg-orange-300'>En cours de livraison</SelectItem>
-                            <SelectItem value="Livrée" className='bg-green-300'>Livrée</SelectItem>
-                            <SelectItem value="Annulée" className='bg-red-300'>Annulée</SelectItem>
+                            <SelectItem value="En attente" className='bg-gray-600'>En attente</SelectItem>
+                            <SelectItem value="En cours de livraison" className='bg-orange-600'>En cours de livraison</SelectItem>
+                            <SelectItem value="Livrée" className='bg-green-600'>Livrée</SelectItem>
+                            <SelectItem value="Annulée" className='bg-red-600'>Annulée</SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>

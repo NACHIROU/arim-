@@ -277,10 +277,10 @@ const handleEditShop = (id: string) => {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-semibold">Mes Commandes Reçues</h2>
                 <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
-                  <SelectTrigger className="w-[240px]">
-                    <SelectValue placeholder="Filtrer par statut" />
+                  <SelectTrigger className="w-[240px] bg-gray-100">
+                    <SelectValue placeholder="Filtrer par statut" />    
                   </SelectTrigger>
-                  <SelectContent className="bg-color-gray-100">
+                  <SelectContent className="w-[240px]">
                     <SelectItem value="En attente">En attente</SelectItem>
                     <SelectItem value="En cours de livraison">En cours de livraison</SelectItem>
                     <SelectItem value="Livrée">Commandes livrées</SelectItem>
