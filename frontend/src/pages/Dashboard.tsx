@@ -114,7 +114,7 @@ const Dashboard: React.FC = () => {
   };
   
 const handlePublishToggle = async (id: string, isPublished: boolean) => {
-    const action = isPublished ? 'dépublier' : 'publier';
+    const action = isPublished ? 'publier' : 'dépublier';
     if (!window.confirm(`Voulez-vous vraiment ${action} cette boutique ?`)) return;
 
     // --- On appelle la nouvelle route admin ---

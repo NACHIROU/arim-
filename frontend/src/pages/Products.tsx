@@ -66,6 +66,8 @@ const Products: React.FC = () => {
                     <CardContent className="p-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <Input placeholder="Rechercher par nom..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                            <Select value={categoryFilter} onValueChange={setCategoryFilter}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{categories.map(c=><SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
+                            <Select value={locationFilter} onValueChange={setLocationFilter}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{locations.map(l=><SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent></Select>
                             <Select value={priceFilter} onValueChange={setPriceFilter}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{priceRanges.map(p=><SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
                         </div>
                     </CardContent>
