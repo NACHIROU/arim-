@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Boutique, Produit } from '@/types';
 import { jwtDecode } from 'jwt-decode';
@@ -8,7 +8,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Star, Package, Loader2, Phone, MessageCircle } from 'lucide-react';
+import { Star, Package, Loader2, Phone, MessageCircle, Search } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 
 // Custom Components
@@ -16,6 +16,7 @@ import ProductCard from '@/components/ProductCard';
 import NotFound from './NotFound';
 import ReviewForm from '@/components/reviews/ReviewForm';
 import ReviewCard from '@/components/reviews/ReviewCard';
+import { Input } from '@/components/ui/input';
 
 // Interfaces
 interface Review {
@@ -40,7 +41,7 @@ const ShopDetail: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
-
+  const [searchTerm, setSearchTerm] = useState('');
   const fetchReviews = useCallback(async () => {
     if (!shopId) return;
     try {
@@ -52,6 +53,15 @@ const ShopDetail: React.FC = () => {
       console.error("Erreur lors du chargement des avis:", error);
     }
   }, [shopId]);
+
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm) {
+      return products;
+    }
+    return products.filter(p => 
+      p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [products, searchTerm]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -99,7 +109,7 @@ const ShopDetail: React.FC = () => {
 
   return (
     <div>
-      <div className="mb-12 bg-slate-200">
+      <div className="bg-white">
         <AspectRatio ratio={16 / 5} className="bg-muted">
           <img src={(shop.images && shop.images.length > 0) ? shop.images[0] : 'https://via.placeholder.com/1280x400?text=Bienvenue'} alt={shop.name} className="object-cover w-full h-full" />
         </AspectRatio>
@@ -142,15 +152,31 @@ const ShopDetail: React.FC = () => {
           </TabsList>
           
           <TabsContent value="products" className="mt-8">
-            <h2 className="text-3xl font-bold mb-8">Produits de {shop.name}</h2>
-            {products.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {products.map((product) => (
-                  <ProductCard key={product._id} product={product} />
-                ))}   
+            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+              <h2 className="text-3xl font-bold">Produits de {shop.name}</h2>
+              
+              {/* --- 3. On ajoute la barre de recherche --- */}
+              <div className="relative w-full md:w-auto md:min-w-[300px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Rechercher dans cette boutique..."
+                  className="pl-9"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-            ) : (<p className="text-center text-muted-foreground py-10">Cette boutique n'a pas encore de produits.</p>)}
+            </div>
+
+            {/* --- 4. On affiche la liste filtrée --- */}
+            {filteredProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {filteredProducts.map((product) => (
+                  <ProductCard key={product._id} product={product} />
+                ))}
+              </div>
+            ) : (<p className="text-center text-muted-foreground py-10">Aucun produit ne correspond à votre recherche dans cette boutique.</p>)}
           </TabsContent>
+
 
           <TabsContent value="about" className="mt-8 prose max-w-none">
              <h2 className="text-3xl font-bold mb-4">À propos de {shop.name}</h2>

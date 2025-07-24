@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Produit } from '@/types';
-import { Loader2, ArrowLeft, Package, Trash2, Store } from 'lucide-react';
+import { Loader2, ArrowLeft, Package, Trash2, Store, Search } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
+import { Input } from '@/components/ui/input';
 
 const AdminProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Produit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState(''); // État pour la recherche
   const token = localStorage.getItem('token');
 
   const fetchProducts = useCallback(async () => {
@@ -27,7 +29,7 @@ const AdminProductsPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [token, navigate, toast]);
+  }, [token, navigate, toast, searchTerm]);
 
   useEffect(() => {
     fetchProducts();
@@ -63,7 +65,20 @@ const AdminProductsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4 max-w-7xl">
-        {/* Header */}
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Liste de tous les produits</CardTitle>
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input 
+                placeholder="Rechercher un produit..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 border-gray-300 focus-visible:ring-orange-400"
+              />
+            </div>
+          </div>
+        </CardHeader>
         <div className="flex items-center gap-4 mb-8">
           <Button 
             variant="outline" 

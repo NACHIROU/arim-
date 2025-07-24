@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Boutique } from '@/types';
-import { Loader2, ArrowLeft, Store, Trash2, Eye, EyeOff, User } from 'lucide-react';
+import { Loader2, ArrowLeft, Store, Trash2, Eye, EyeOff, User, Search } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 
 interface AdminBoutique extends Boutique {
   owner_details: {
@@ -20,6 +21,7 @@ const AdminShopsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState(''); // État pour la recherche
   const token = localStorage.getItem('token');
 
   const fetchShops = useCallback(async () => {
@@ -35,7 +37,7 @@ const AdminShopsPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [token, navigate, toast]);
+  }, [token, navigate, toast, searchTerm]);
 
   useEffect(() => {
     fetchShops();
@@ -107,12 +109,20 @@ const handlePublishToggle = async (shopId: string, isPublished: boolean) => {
 
         {/* Shops Table */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Store className="h-5 w-5" />
-              Liste des boutiques
-            </CardTitle>
-          </CardHeader>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Liste des boutiques</CardTitle>
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input 
+                placeholder="Rechercher une boutique..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-gray-300"
+              />
+            </div>
+          </div>
+        </CardHeader>
           <CardContent className="p-0">
             <div className="rounded-b-lg overflow-hidden">
               <Table>

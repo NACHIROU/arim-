@@ -19,7 +19,7 @@ const SearchBar = ({ placeholder, value, onChange }: SearchBarProps) => {
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="search-input border-0 focus:ring-0"
+          className="search-input border-0 focus:ring-0 bg-gray-200"
         />
       </div>
     </div>

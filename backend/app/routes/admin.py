@@ -349,22 +349,20 @@ async def get_platform_stats(admin_user: UserOut = Depends(get_current_admin)):
 
 # --- NOUVELLE ROUTE : Lister toutes les boutiques ---
 @router.get("/shops", response_model=List[ShopWithOwner])
-async def get_all_shops(admin_user: UserOut = Depends(get_current_admin)):
-    """
-    Liste toutes les boutiques de la plateforme, enrichies avec les infos du propriétaire.
-    Gère les boutiques orphelines.
-    """
-    pipeline = [
-        {
-            "$lookup": {
-                "from": "users",
-                "localField": "owner_id",
-                "foreignField": "_id",
-                "as": "owner_details",
-            }
-        },
-        {"$unwind": {"path": "$owner_details", "preserveNullAndEmptyArrays": True}},
-    ]
+async def get_all_shops(
+    admin_user: UserOut = Depends(get_current_admin),
+    search: Optional[str] = Query(None) # On ajoute le paramètre de recherche
+):
+    pipeline = []
+    # On ajoute le filtre de recherche s'il est présent
+    if search:
+        pipeline.append({"$match": {"name": {"$regex": search, "$options": "i"}}})
+    
+    pipeline.extend([
+        {"$lookup": {"from": "users", "localField": "owner_id", "foreignField": "_id", "as": "owner_details"}},
+        {"$unwind": {"path": "$owner_details", "preserveNullAndEmptyArrays": True}}
+    ])
+
     all_shops = await shops.aggregate(pipeline).to_list(length=None)
 
     # Conversion manuelle des IDs
@@ -391,17 +389,17 @@ async def get_all_shops(admin_user: UserOut = Depends(get_current_admin)):
 
 # --- NOUVELLE ROUTE : Lister tous les produits ---
 @router.get("/products", response_model=List[ProductWithShopInfo])
-async def get_all_products(admin_user: UserOut = Depends(get_current_admin)):
-    # On réutilise la même logique que pour les produits publics
-    pipeline = [
-        {
-            "$lookup": {
-                "from": "shops",
-                "localField": "shop_id",
-                "foreignField": "_id",
-                "as": "shop_details",
-            }
-        },
+async def get_all_products(
+    admin_user: UserOut = Depends(get_current_admin),
+    search: Optional[str] = Query(None) # On ajoute le paramètre de recherche
+):
+    pipeline = []
+    # On ajoute le filtre de recherche s'il est présent
+    if search:
+        pipeline.append({"$match": {"name": {"$regex": search, "$options": "i"}}})
+
+    pipeline.extend([
+        {"$lookup": {"from": "shops", "localField": "shop_id", "foreignField": "_id", "as": "shop_details"}},
         {"$unwind": "$shop_details"},
         {
             "$project": {
@@ -413,7 +411,7 @@ async def get_all_products(admin_user: UserOut = Depends(get_current_admin)):
                 "shop": {"_id": "$shop_details._id", "name": "$shop_details.name"},
             }
         },
-    ]
+    ])
     product_list = await products.aggregate(pipeline).to_list(length=None)
     for p in product_list:
         p["_id"] = str(p["_id"])

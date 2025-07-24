@@ -73,7 +73,7 @@ const Products: React.FC = () => {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
                                 <Input 
                                     placeholder="Rechercher par nom..." 
-                                    className="pl-10 h-12 bg-secondary/50 border-0 focus:ring-2 focus:ring-primary rounded-xl"
+                                    className="pl-10 h-12 bg-secondary/50 border-0 focus:ring-2 focus:ring-primary rounded-xl bg-gray-200"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
