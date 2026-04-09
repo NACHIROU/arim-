@@ -53,13 +53,13 @@ const ProductDetail: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 flex items-center justify-center">
+      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
         <div className="text-center space-y-6">
           <div className="relative">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-r from-orange-400 to-amber-400 flex items-center justify-center mx-auto">
+            <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center mx-auto">
               <Loader2 className="h-10 w-10 animate-spin text-white" />
             </div>
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-400 to-amber-400 animate-pulse opacity-20"></div>
+            <div className="absolute inset-0 rounded-full bg-primary animate-pulse opacity-20"></div>
           </div>
           <p className="text-xl font-medium text-gray-600">Chargement du produit...</p>
         </div>
@@ -69,7 +69,7 @@ const ProductDetail: React.FC = () => {
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 flex items-center justify-center">
+      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
         <Card className="p-8 text-center shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-3xl">
           <div className="text-red-500 text-xl font-semibold">Erreur : {error || "Produit introuvable."}</div>
         </Card>
@@ -85,7 +85,7 @@ const ProductDetail: React.FC = () => {
   const imageList = Array.isArray(product.images) ? product.images : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+    <div className="min-h-screen bg-orange-50">
       <div className="container mx-auto px-4 py-8 md:py-16 max-w-7xl">
         {/* Breadcrumb élégant */}
         {product.shop && (
@@ -108,7 +108,7 @@ const ProductDetail: React.FC = () => {
                   alt={product.name}
                   className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
               </div>
               
             </div>
@@ -138,7 +138,7 @@ const ProductDetail: React.FC = () => {
             {/* En-tête produit premium */}
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <Badge variant="secondary" className="bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 border-0 px-4 py-2 rounded-full font-semibold">
+                <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-0 px-4 py-2 rounded-full font-semibold">
                   <Star className="w-3 h-3 mr-1" />
                   Premium
                 </Badge>
@@ -150,7 +150,7 @@ const ProductDetail: React.FC = () => {
                 )}
               </div>
               
-              <h1 className="text-4xl lg:text-6xl font-black leading-tight bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+              <h1 className="text-4xl lg:text-6xl font-black leading-tight text-gray-900">
                 {product.name}
               </h1>
 
@@ -165,11 +165,11 @@ const ProductDetail: React.FC = () => {
             </div>
 
             {/* Prix avec design ultra premium */}
-            <Card className="bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border-0 shadow-2xl rounded-3xl overflow-hidden">
+            <Card className="bg-orange-50/50 border-orange-100 shadow-2xl rounded-3xl overflow-hidden">
               <CardContent className="p-8">
                 <div className="text-center">
                   <p className="text-sm text-orange-600 font-semibold mb-2 uppercase tracking-wider">Prix</p>
-                  <p className="text-6xl font-black bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+                  <p className="text-6xl font-black text-primary">
                     {product.price.toLocaleString('fr-FR')}
                     <span className="text-2xl ml-2 text-gray-500 font-normal">FCFA</span>
                   </p>
@@ -182,7 +182,7 @@ const ProductDetail: React.FC = () => {
               <Button 
                 size="lg" 
                 onClick={() => addToCart(product)}
-                className="h-16 text-lg font-bold bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 border-0 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+                className="h-16 text-lg font-bold bg-primary hover:bg-primary/90 border-0 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
               >
                 <ShoppingCart className="h-6 w-6 mr-3" /> 
                 Ajouter au panier

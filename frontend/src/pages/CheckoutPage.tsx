@@ -215,7 +215,7 @@ const CheckoutPage: React.FC = () => {
                   <Button 
                     type="submit" 
                     disabled={isSubmitting || cartItems.length === 0} 
-                    className="w-full mt-6 h-12 text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg transition-all"
+                    className="w-full mt-6 h-12 text-lg bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transition-all"
                   >
                     {isSubmitting ? (
                       <>

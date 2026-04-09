@@ -60,7 +60,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onFiltersChange }) => {
       </div>
 
       {showFilters && (
-        <div className="filters-panel mt-6 p-6 bg-gradient-to-r from-secondary/30 to-accent/20 rounded-xl">
+        <div className="filters-panel mt-6 p-6 bg-secondary/10 rounded-xl">
           <div className="filters-grid grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="filter-group space-y-3">
               <label className="flex items-center gap-2 text-foreground font-semibold">

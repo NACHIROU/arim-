@@ -71,7 +71,7 @@ const SuggestionsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+      <div className="flex justify-center items-center h-screen bg-orange-50">
         <div className="text-center space-y-4">
           <Loader2 className="h-12 w-12 animate-spin text-orange-500 mx-auto" />
           <p className="text-gray-600">Chargement des suggestions...</p>
@@ -81,7 +81,7 @@ const SuggestionsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50/30 to-amber-50/20">
+    <div className="min-h-screen bg-orange-50/50">
       <div className="container mx-auto py-8 space-y-6">
         <div className="flex items-center gap-4">
           <Button 
@@ -182,7 +182,7 @@ const SuggestionsPage: React.FC = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Message original :</label>
-                <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-l-4 border-orange-300 p-4 rounded-r-lg">
+                <div className="bg-orange-50 shadow-sm border-l-4 border-orange-300 p-4 rounded-r-lg">
                   <p className="text-gray-700 italic leading-relaxed">
                     "{replyingTo?.message}"
                   </p>
@@ -215,7 +215,7 @@ const SuggestionsPage: React.FC = () => {
               <Button 
                 onClick={handleReplySubmit} 
                 disabled={isSubmittingReply || replyMessage.length < 5}
-                className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-lg hover:shadow-xl transition-all"
+                className="bg-primary hover:bg-primary/90 text-white shadow-lg hover:shadow-xl transition-all"
               >
                 {isSubmittingReply && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Envoyer la réponse

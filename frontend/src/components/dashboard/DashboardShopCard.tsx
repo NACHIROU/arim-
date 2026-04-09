@@ -23,7 +23,7 @@ const DashboardShopCard: React.FC<DashboardShopCardProps> = ({
   return (
     <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/90 backdrop-blur-sm">
       <CardHeader className="p-0 relative overflow-hidden">
-        <div className="aspect-video bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center relative">
+        <div className="aspect-video bg-orange-50 flex items-center justify-center relative">
           {boutique.images ? (
             <img 
               src={boutique.images[0]} 
@@ -33,7 +33,7 @@ const DashboardShopCard: React.FC<DashboardShopCardProps> = ({
           ) : (
             <Store className="h-16 w-16 text-primary opacity-50" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           
           {/* Status Badge */}
           <div className="absolute top-3 right-3">
@@ -74,7 +74,7 @@ const DashboardShopCard: React.FC<DashboardShopCardProps> = ({
         )}
       </CardContent>
       
-      <CardFooter className="p-3 bg-gradient-to-r from-orange-50 to-yellow-50 border-t border-orange-100">
+      <CardFooter className="p-3 bg-orange-50/50 border-t border-orange-100">
         <div className="flex justify-between items-center w-full gap-2">
           <Button
             variant="ghost"

@@ -103,7 +103,7 @@ const Index: React.FC = () => {
 
   if (loadingInitial) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
           <p className="text-muted-foreground">Chargement ...</p>
@@ -114,7 +114,7 @@ const Index: React.FC = () => {
   
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="text-6xl">⚠️</div>
           <h2 className="text-2xl font-bold text-destructive">Erreur de chargement</h2>
@@ -125,12 +125,12 @@ const Index: React.FC = () => {
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30">
+    <div className="min-h-screen bg-background">
       <section 
         className="relative text-center py-32 text-white bg-cover bg-center"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/40"></div>
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
         <div className="relative z-10 container px-4">
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="space-y-4">
@@ -188,7 +188,7 @@ const Index: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-br from-secondary/20 to-accent/10">
+      <section className="py-20 bg-secondary/10">
         <div className="container px-4">
           <div className="text-center mb-16">
             <div className="flex items-center justify-center gap-3 mb-4">

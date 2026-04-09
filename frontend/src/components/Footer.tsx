@@ -37,17 +37,17 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <footer className="relative overflow-hidden bg-gray-900 border-t border-border">
       {/* Decorative background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-transparent to-amber-500/5"></div>
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-amber-500"></div>
+      <div className="absolute inset-0 bg-black/10"></div>
+      <div className="absolute top-0 left-0 w-full h-1 bg-primary"></div>
       
       <div className="relative container py-16 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-12">
         
         {/* Colonne 1: Logo et description moderne */}
         <div className="md:col-span-3 lg:col-span-1">
           <Link to="/" className="flex items-center gap-3 mb-6 group">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <Store className="h-6 w-6 text-white" />
             </div>
             <span className="font-black text-2xl text-white">Ahimin</span>
@@ -71,7 +71,7 @@ const Footer: React.FC = () => {
         {/* Colonne 2: Formulaire moderne */}
         <div className="md:col-span-2 lg:col-span-2">
           <h3 className="font-black mb-6 text-2xl flex items-center gap-3 text-white">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <MessageSquare className="h-4 w-4 text-white" />
             </div>
             Une suggestion ? Écrivez-nous !
@@ -108,7 +108,7 @@ const Footer: React.FC = () => {
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 border-0 rounded-xl h-12 px-8 font-bold transition-all duration-300 transform hover:scale-105"
+              className="bg-primary hover:bg-primary/90 border-0 rounded-xl h-12 px-8 font-bold transition-all duration-300 transform hover:scale-105"
             >
               {isSubmitting ? 'Envoi en cours...' : 'Envoyer'}
             </Button>
@@ -118,7 +118,7 @@ const Footer: React.FC = () => {
         {/* Colonne 3: Liens modernes */}
         <div className="lg:col-span-1">
           <h3 className="font-black mb-6 text-2xl flex items-center gap-3 text-white">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Phone className="h-4 w-4 text-white" />
             </div>
             Contact

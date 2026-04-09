@@ -42,7 +42,7 @@ const ProduitsList: React.FC<ProduitsListProps> = ({ produits = [], onEdit, onDe
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProduits.map((produit) => (
             <Card key={produit._id} className="group overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/90 backdrop-blur-sm">
-              <div className="aspect-square bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center rounded-t-lg relative overflow-hidden">
+              <div className="aspect-square bg-orange-50 flex items-center justify-center rounded-t-lg relative overflow-hidden">
                 {produit.images && produit.images.length > 0 ? (
                   <img 
                     src={produit.images[0]} 
@@ -52,7 +52,7 @@ const ProduitsList: React.FC<ProduitsListProps> = ({ produits = [], onEdit, onDe
                 ) : (
                   <Package className="h-16 w-16 text-primary opacity-50" />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               
               <CardContent className="p-4 space-y-2">
@@ -64,7 +64,7 @@ const ProduitsList: React.FC<ProduitsListProps> = ({ produits = [], onEdit, onDe
                 </div>
               </CardContent>
               
-              <CardFooter className="p-3 flex justify-end gap-2 bg-gradient-to-r from-orange-50 to-yellow-50 border-t border-orange-100">
+              <CardFooter className="p-3 flex justify-end gap-2 bg-orange-50/50 border-t border-orange-100">
                 <Button 
                   type="button" 
                   variant="ghost" 
@@ -88,7 +88,7 @@ const ProduitsList: React.FC<ProduitsListProps> = ({ produits = [], onEdit, onDe
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl border-2 border-dashed border-orange-200">
+        <div className="text-center py-16 bg-orange-50 rounded-xl border-2 border-dashed border-orange-200">
           <Package className="h-16 w-16 text-primary mx-auto mb-4 opacity-50" />
           <p className="text-lg text-muted-foreground">
             {searchTerm ? 'Aucun produit trouvé pour cette recherche.' : 'Aucun produit trouvé pour cette boutique.'}

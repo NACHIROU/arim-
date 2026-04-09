@@ -85,7 +85,7 @@ const AdminUserDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
           <p className="text-muted-foreground">Chargement du profil utilisateur...</p>
@@ -96,7 +96,7 @@ const AdminUserDetailPage: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <UserIcon className="h-16 w-16 text-muted-foreground mx-auto" />
           <h2 className="text-2xl font-bold">Utilisateur non trouvé</h2>
@@ -112,7 +112,7 @@ const AdminUserDetailPage: React.FC = () => {
   const totalProducts = Object.values(productsByShop).reduce((acc, products) => acc + products.length, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -135,7 +135,7 @@ const AdminUserDetailPage: React.FC = () => {
           <Card className="lg:col-span-2 shadow-lg border-border/50">
             <CardHeader className="pb-4">
               <div className="flex items-start gap-4">
-                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-2xl font-bold">
+                <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold">
                   {user.first_name?.[0]?.toUpperCase() || '?'}
                 </div>
                 <div className="flex-1">
@@ -202,11 +202,11 @@ const AdminUserDetailPage: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="text-center p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
+                <div className="text-center p-4 bg-primary/10 rounded-lg">
                   <div className="text-2xl font-bold text-primary">{shops.length}</div>
                   <div className="text-sm text-muted-foreground">Boutique{shops.length > 1 ? 's' : ''}</div>
                 </div>
-                <div className="text-center p-4 bg-gradient-to-r from-secondary/20 to-accent/20 rounded-lg">
+                <div className="text-center p-4 bg-secondary/20 rounded-lg">
                   <div className="text-2xl font-bold text-foreground">{totalProducts}</div>
                   <div className="text-sm text-muted-foreground">Produit{totalProducts > 1 ? 's' : ''}</div>
                 </div>
@@ -229,7 +229,7 @@ const AdminUserDetailPage: React.FC = () => {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                        <div className="h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
                           <Store className="h-6 w-6 text-white" />
                         </div>
                         <div>

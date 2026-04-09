@@ -87,7 +87,7 @@ export const CartPanel: React.FC = () => {
                 <span className="text-primary">{totalPrice.toLocaleString('fr-FR')} FCFA</span>
               </div>
               <SheetClose asChild>
-                <Button asChild className="w-full text-lg h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg transition-all">
+                <Button asChild className="w-full text-lg h-12 bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transition-all">
                   <Link to="/checkout">Valider la commande</Link>
                 </Button>
               </SheetClose>

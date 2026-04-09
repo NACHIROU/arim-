@@ -24,7 +24,7 @@ const ShopCard = ({ id, imageUrl, name, description, category }: ShopCardProps) 
               alt={name} 
               className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" 
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"></div>
             
             {/* Badge catégorie en overlay */}
             <div className="absolute top-4 left-4">

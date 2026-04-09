@@ -28,7 +28,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               alt={product.name} 
               className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" 
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+            <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px]"></div>
           </AspectRatio>
         </Link>
         
