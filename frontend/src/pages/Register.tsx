@@ -95,15 +95,15 @@ const Register = () => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background py-12">
-      <Card className="mx-auto max-w-sm w-full">
-        <CardHeader>
-          <CardTitle className="text-2xl">Créer un compte</CardTitle>
-          <CardDescription>
-            Entrez vos informations pour créer un compte.
+    <div className="flex items-center justify-center min-h-screen bg-orange-50/30 py-16 px-4">
+      <Card className="mx-auto max-w-[550px] w-full shadow-2xl border-0 rounded-[2.5rem] overflow-hidden bg-white/90 backdrop-blur-xl">
+        <CardHeader className="space-y-2 text-center pt-12 pb-8">
+          <CardTitle className="text-4xl font-black tracking-tight text-gray-900">Rejoindre <span className="text-orange-500">Ahimin</span></CardTitle>
+          <CardDescription className="text-base font-semibold text-gray-600">
+            Créez votre compte en quelques instants.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-10 pb-12">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -111,55 +111,56 @@ const Register = () => {
                   control={form.control}
                   name="prenom"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Prénom</FormLabel>
-                      <FormControl>
-                        <Input placeholder="John" {...field} className="bg-gray-100" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="nom"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nom</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Doe" {...field} className="bg-gray-100" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="font-bold text-gray-700">Prénom</FormLabel>
                     <FormControl>
-                      <Input placeholder="nom@exemple.com" {...field} className="bg-gray-100" />
+                      <Input placeholder="John" {...field} className="h-12 border-orange-100 focus:border-orange-500 rounded-xl" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="nom"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold text-gray-700">Nom</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Doe" {...field} className="h-12 border-orange-100 focus:border-orange-500 rounded-xl" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-bold text-gray-700">Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="nom@exemple.com" {...field} className="h-12 border-orange-100 focus:border-orange-500 rounded-xl" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="telephone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
+                    <FormLabel className="flex items-center gap-2 font-bold text-gray-700">
+                      <Phone className="h-4 w-4 text-orange-500" />
                       Téléphone
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="+229 12 34 56 78" {...field} className="bg-gray-100" />
+                      <Input placeholder="+229 12 34 56 78" {...field} className="h-12 border-orange-100 focus:border-orange-500 rounded-xl" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -171,46 +172,47 @@ const Register = () => {
                 name="whatsapp"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4" />
-                      Lien WhatsApp (Optionnel)
+                    <FormLabel className="flex items-center gap-2 font-bold text-gray-700 text-sm">
+                      <MessageSquare className="h-4 w-4 text-green-500" />
+                      Lien WhatsApp
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="https://wa.me/..." {...field} className="bg-gray-100" />
+                      <Input placeholder="https://wa.me/..." {...field} className="h-12 border-orange-100 focus:border-orange-500 rounded-xl text-xs" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="ville"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ville</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Cotonou" {...field} className="bg-gray-100" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="quartier"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Quartier</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Haie Vive" {...field} className="bg-gray-100" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+            <div className="grid grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="ville"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold text-gray-700">Ville</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Cotonou" {...field} className="h-12 border-orange-100 focus:border-orange-500 rounded-xl" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="quartier"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold text-gray-700">Quartier</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Haie Vive" {...field} className="h-12 border-orange-100 focus:border-orange-500 rounded-xl" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
               <FormField
                 control={form.control}
@@ -247,43 +249,45 @@ const Register = () => {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mot de passe</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} className="bg-gray-100" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-bold text-gray-700">Mot de passe</FormLabel>
+                      <FormControl>
+                        <Input type="password" {...field} className="h-12 border-orange-100 focus:border-orange-500 rounded-xl" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirmer le mot de passe</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} className="bg-gray-100" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-bold text-gray-700">Confirmation</FormLabel>
+                      <FormControl>
+                        <Input type="password" {...field} className="h-12 border-orange-100 focus:border-orange-500 rounded-xl" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Création du compte..." : "Créer un compte"}
+              <Button type="submit" className="w-full h-14 text-lg font-black bg-orange-500 hover:bg-orange-600 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 rounded-2xl" disabled={loading}>
+                {loading ? "Création en cours..." : "Rejoindre maintenant"}
               </Button>
             </form>
           </Form>
 
-          <div className="mt-4 text-center text-sm">
+          <div className="mt-8 text-center text-sm font-medium text-gray-600">
             Vous avez déjà un compte ?{" "}
-            <Link to="/login" className="underline">
+            <Link to="/login" className="text-orange-600 font-black hover:underline">
               Se connecter
             </Link>
           </div>

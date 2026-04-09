@@ -133,16 +133,16 @@ const Index: React.FC = () => {
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
         <div className="relative z-10 container px-4">
           <div className="max-w-4xl mx-auto space-y-8">
-            <div className="space-y-4">
-              <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-                Pourquoi chercher loin ce qui est tout près ?
+            <div className="space-y-6">
+              <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-tight">
+                Pourquoi chercher loin ce qui est <span className="text-orange-500">tout près ?</span>
               </h1>
-              <p className="max-w-2xl mx-auto text-xl text-slate-200 leading-relaxed">
-                Trouvez facilement des produits et services, juste à côté de vous.
+              <p className="max-w-2xl mx-auto text-xl md:text-2xl text-slate-200 leading-relaxed font-medium">
+                Trouvez facilement des produits et services de qualité, juste à côté de vous. Simple, rapide et local.
               </p>
             </div>
             
-            <div className="relative" ref={searchContainerRef}>
+            <div className="relative mt-12 bg-white/10 backdrop-blur-xl p-2 rounded-2xl border border-white/20 shadow-2xl" ref={searchContainerRef}>
               <SearchFilters onFiltersChange={setFilters} />
               {isDropdownVisible && (
                 <SearchResultsDropdown
@@ -156,16 +156,43 @@ const Index: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-20 bg-white/80 backdrop-blur-sm">
+      {/* Modern Features Section */}
+      <section className="py-24 bg-white">
         <div className="container px-4">
-          <div className="text-center mb-16">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <Star className="h-8 w-8 text-primary" />
-              <h2 className="text-4xl font-bold text-foreground">Boutiques à la Une</h2>
-              <Star className="h-8 w-8 text-primary" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+            <div className="space-y-4 p-8 rounded-3xl hover:bg-orange-50/50 transition-colors duration-300">
+              <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Sparkles className="h-8 w-8 text-orange-600" />
+              </div>
+              <h3 className="text-2xl font-black">Qualité Locale</h3>
+              <p className="text-muted-foreground leading-relaxed">Nous sélectionnons les meilleures boutiques de votre quartier pour vous garantir satisfaction.</p>
             </div>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Découvrez les boutiques les plus populaires de votre région
+            <div className="space-y-4 p-8 rounded-3xl hover:bg-orange-50/50 transition-colors duration-300">
+              <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <TrendingUp className="h-8 w-8 text-orange-600" />
+              </div>
+              <h3 className="text-2xl font-black">Tendances Actuelles</h3>
+              <p className="text-muted-foreground leading-relaxed">Découvrez ce qui fait fureur autour de vous en temps réel avec nos algorithmes intelligents.</p>
+            </div>
+            <div className="space-y-4 p-8 rounded-3xl hover:bg-orange-50/50 transition-colors duration-300">
+              <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Star className="h-8 w-8 text-orange-600" />
+              </div>
+              <h3 className="text-2xl font-black">Confiance Vérifiée</h3>
+              <p className="text-muted-foreground leading-relaxed">Chaque boutique et chaque produit est soigneusement vérifié pour votre sécurité.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24 bg-orange-50/30">
+        <div className="container px-4">
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-4xl md:text-5xl font-black text-foreground tracking-tight">
+              Boutiques <span className="text-orange-500">à la Une</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
+              Soutenez les commerçants locaux et découvrez des pépites à deux pas de chez vous.
             </p>
           </div>
           
@@ -188,16 +215,14 @@ const Index: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-20 bg-secondary/10">
+      <section className="py-24 bg-white border-t border-orange-100">
         <div className="container px-4">
-          <div className="text-center mb-16">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <TrendingUp className="h-8 w-8 text-primary" />
-              <h2 className="text-4xl font-bold text-foreground">Nos derniers produits</h2>
-              <TrendingUp className="h-8 w-8 text-primary" />
-            </div>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Les nouveautés et tendances du moment
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-4xl md:text-5xl font-black text-foreground tracking-tight">
+              Nos derniers <span className="text-orange-500">produits</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
+              Les nouveautés les plus fraîches dénichées spécialement pour vous.
             </p>
           </div>
           

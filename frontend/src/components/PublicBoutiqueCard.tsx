@@ -12,7 +12,7 @@ interface PublicBoutiqueCardProps {
 const PublicBoutiqueCard = ({ boutique }: PublicBoutiqueCardProps) => {
   return (
     <Link to={`/shops/${boutique._id}`} className="block h-full group">
-      <Card className="overflow-hidden h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border-0 bg-white/90 backdrop-blur-sm">
+      <Card className="overflow-hidden h-full flex flex-col group transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 border-0 bg-white shadow-xl rounded-[2rem]">
         <CardHeader className="p-0 relative overflow-hidden">
           <AspectRatio ratio={16 / 9}>
             <img 
@@ -41,22 +41,21 @@ const PublicBoutiqueCard = ({ boutique }: PublicBoutiqueCardProps) => {
         </CardHeader>
         
         <CardContent className="p-6 space-y-4">
-          <div className="space-y-2">
-            <h3 className="font-semibold text-xl text-foreground group-hover:text-primary transition-colors duration-200">
+          <div className="space-y-3">
+            <h3 className="font-black text-xl text-gray-900 group-hover:text-orange-500 transition-colors duration-300 line-clamp-1 leading-tight">
               {boutique.name}
             </h3>
-            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+            <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed font-medium">
               {boutique.description}
             </p>
           </div>
-          
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center">
-              <MapPin className="h-3 w-3 mr-1 text-primary" />
-              <span>Voir l'emplacement</span>
+          <div className="flex items-center justify-between mt-auto pt-2">
+            <div className="flex items-center text-xs font-bold text-gray-400">
+              <MapPin className="h-3 w-3 mr-1 text-orange-500" />
+              <span>Détails de l'emplacement</span>
             </div>
-            <div className="text-primary font-semibold">
-              Découvrir →
+            <div className="text-orange-500 font-black text-sm uppercase tracking-widest">
+              Visiter →
             </div>
           </div>
         </CardContent>

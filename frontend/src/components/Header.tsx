@@ -60,19 +60,21 @@ const Header: React.FC = () => {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo + Navigation */}
         <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2 group">
-            <Store className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-lg">Ahimin</span>
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:rotate-6 transition-transform">
+              <Store className="h-6 w-6" />
+            </div>
+            <span className="font-black text-2xl tracking-tighter text-gray-900 group-hover:text-orange-500 transition-colors">Ahimin</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm">
             {navLinks.map((link) => (
               <Link 
                 key={link.href} 
                 to={link.href} 
-                className={`transition-colors relative ${
+                className={`transition-all duration-300 relative px-2 py-1 font-bold ${
                   location.pathname === link.href 
-                    ? "text-foreground font-medium after:content-[''] after:absolute after:w-full after:h-0.5 after:bg-primary after:bottom-[-18px] after:left-0" 
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-orange-600 after:content-[''] after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:bg-orange-500 after:rounded-full" 
+                    : "text-gray-500 hover:text-orange-500"
                 }`}
               >
                 {link.label}

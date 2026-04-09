@@ -68,25 +68,25 @@ const Login = () => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <Card className="mx-auto max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl">Se connecter</CardTitle>
-          <CardDescription>
-            Entrez votre email ci-dessous pour vous connecter à votre compte.
+    <div className="flex items-center justify-center min-h-screen bg-orange-50/30 px-4">
+      <Card className="mx-auto max-w-[450px] w-full shadow-2xl border-0 rounded-3xl overflow-hidden bg-white/80 backdrop-blur-xl">
+        <CardHeader className="space-y-2 text-center pt-10 pb-6">
+          <CardTitle className="text-3xl font-black tracking-tight">Bon retour !</CardTitle>
+          <CardDescription className="text-base font-medium">
+            Entrez vos accès pour continuer votre expérience.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-8 pb-10">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="font-bold text-gray-700">Email</FormLabel>
                     <FormControl>
-                      <Input className="bg-gray-100" placeholder="nom@exemple.com" {...field} />
+                      <Input className="h-12 border-orange-100 focus:border-orange-500 focus:ring-orange-500 transition-all rounded-xl" placeholder="jean.dupont@exemple.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -97,23 +97,26 @@ const Login = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mot de passe</FormLabel>
+                    <div className="flex items-center justify-between">
+                      <FormLabel className="font-bold text-gray-700">Mot de passe</FormLabel>
+                      <Link to="#" className="text-sm text-orange-600 font-bold hover:underline">Oublié ?</Link>
+                    </div>
                     <FormControl>
-                      <Input type="password" className="bg-gray-100" {...field} />
+                      <Input type="password" className="h-12 border-orange-100 focus:border-orange-500 focus:ring-orange-500 transition-all rounded-xl" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full h-14 text-lg font-black bg-orange-500 hover:bg-orange-600 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 rounded-2xl">
                 Se connecter
               </Button>
             </form>
           </Form>
-          <div className="mt-4 text-center text-sm">
-            Vous n'avez pas de compte ?{" "}
-            <Link to="/register" className="underline">
-              S'inscrire
+          <div className="mt-8 text-center text-sm font-medium text-gray-600">
+            Nouveau parmi nous ?{" "}
+            <Link to="/register" className="text-orange-600 font-black hover:underline">
+              Créer un compte
             </Link>
           </div>
         </CardContent>
