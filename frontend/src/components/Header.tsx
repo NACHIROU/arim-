@@ -8,6 +8,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useCart } from '@/context/CartContext';
 import { CartPanel } from './CartPanel';
 import { Badge } from '@/components/ui/badge';
+import { Logo } from './Logo';
 
 interface DecodedToken {
   role: string;
@@ -17,7 +18,8 @@ interface DecodedToken {
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  const [userRole, setUserRole] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const { itemCount } = useCart();
 
   useEffect(() => {
@@ -56,64 +58,65 @@ const Header: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
-      <div className="container flex h-16 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
+      <div className="container flex h-16 items-center justify-between px-4 sm:px-8">
         {/* Logo + Navigation */}
-        <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:rotate-6 transition-transform">
-              <Store className="h-6 w-6" />
-            </div>
-            <span className="font-black text-2xl tracking-tighter text-gray-900 group-hover:text-orange-500 transition-colors">Ahimin</span>
+        <div className="flex items-center gap-8">
+          <Link to="/" className="flex items-center group py-0.5" aria-label="Ahimin Accueil">
+            <Logo className="h-9 w-auto group-hover:scale-105 transition-transform duration-200" />
           </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm">
-            {navLinks.map((link) => (
-              <Link 
-                key={link.href} 
-                to={link.href} 
-                className={`transition-all duration-300 relative px-2 py-1 font-bold ${
-                  location.pathname === link.href 
-                    ? "text-orange-600 after:content-[''] after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:bg-orange-500 after:rounded-full" 
-                    : "text-gray-500 hover:text-orange-500"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.href;
+              return (
+                <Link 
+                  key={link.href} 
+                  to={link.href} 
+                  className={`px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors duration-200 ${
+                    isActive 
+                      ? "text-orange-600 bg-orange-50/80" 
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
-        {/* Boutons de droite */}
-        <div className="flex items-center gap-2">
+        {/* Actions Droite */}
+        <div className="flex items-center gap-2.5">
           <Sheet>
             <SheetTrigger asChild>
               <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative hover:bg-muted/70 transition-colors"
+                variant="outline" 
+                size="sm" 
+                className="relative h-10 px-3.5 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-xl flex items-center gap-2 transition-colors"
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-4 w-4 text-orange-500" />
+                <span className="hidden sm:inline text-xs font-semibold">Panier</span>
                 {itemCount > 0 && (
                   <Badge 
-                    variant="destructive" 
-                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs shadow-sm animate-in fade-in-50 zoom-in-95"
+                    className="h-5 min-w-5 px-1.5 bg-orange-500 text-white flex items-center justify-center text-[11px] font-bold rounded-full border-0"
                   >
                     {itemCount}
                   </Badge>
                 )}
               </Button>
             </SheetTrigger>
-            <SheetContent className="border-l border-border/60">
+            <SheetContent className="border-l border-slate-200 bg-white">
               <CartPanel />
             </SheetContent>
           </Sheet>
 
           {!isLoggedIn ? (
             <div className="hidden md:flex items-center gap-2">
-              <Button variant="outline" asChild className="bg-white hover:bg-gray-100 transition-colors">
-                <Link to="/login">Se connecter</Link>
+              <Button variant="ghost" asChild className="h-10 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-100 rounded-xl">
+                <Link to="/login">Connexion</Link>
               </Button>
-              <Button asChild className="bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md transition-all">
+              <Button asChild className="h-10 px-4 text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded-xl shadow-sm transition-all">
                 <Link to="/register">S'inscrire</Link>
               </Button>
             </div>
@@ -121,39 +124,39 @@ const Header: React.FC = () => {
             <div className="hidden md:flex">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/70 transition-colors">
+                  <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-slate-100 text-slate-700">
                     <UserCircle2 className="h-6 w-6" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 border-border/60 shadow-lg animate-in fade-in-80 zoom-in-95 slide-in-from-top-5">
-                  <DropdownMenuLabel className="text-primary">Mon Compte</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild className="cursor-pointer hover:bg-muted focus:bg-muted">
-                    <Link to="/profil" className="flex w-full items-center">
-                      <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                <DropdownMenuContent align="end" className="w-56 border-slate-200 shadow-lg rounded-xl p-1">
+                  <DropdownMenuLabel className="text-xs font-bold text-slate-400 uppercase px-2 py-1.5">Mon Compte</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-100" />
+                  <DropdownMenuItem asChild className="rounded-lg cursor-pointer font-medium text-slate-700 hover:text-slate-900 focus:bg-slate-50">
+                    <Link to="/profil" className="flex w-full items-center py-2 px-2">
+                      <User className="h-4 w-4 mr-2 text-slate-400" />
                       Mon Profil
                     </Link>
                   </DropdownMenuItem>
                   {userRole === 'merchant' && (
-                    <DropdownMenuItem asChild className="cursor-pointer hover:bg-muted focus:bg-muted">
-                      <Link to="/dashboard" className="flex w-full items-center">
-                        <Store className="h-4 w-4 mr-2 text-muted-foreground" />
-                        Mon Dashboard
+                    <DropdownMenuItem asChild className="rounded-lg cursor-pointer font-medium text-slate-700 hover:text-slate-900 focus:bg-slate-50">
+                      <Link to="/dashboard" className="flex w-full items-center py-2 px-2">
+                        <Store className="h-4 w-4 mr-2 text-orange-500" />
+                        Dashboard Vendeur
                       </Link>
                     </DropdownMenuItem>
                   )}
                   {userRole === 'admin' && (
-                    <DropdownMenuItem asChild className="cursor-pointer hover:bg-muted focus:bg-muted">
-                      <Link to="/admin/dashboard" className="flex w-full items-center">
-                        <Settings className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <DropdownMenuItem asChild className="rounded-lg cursor-pointer font-medium text-slate-700 hover:text-slate-900 focus:bg-slate-50">
+                      <Link to="/admin/dashboard" className="flex w-full items-center py-2 px-2">
+                        <Settings className="h-4 w-4 mr-2 text-slate-400" />
                         Dashboard Admin
                       </Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="bg-slate-100" />
                   <DropdownMenuItem 
                     onClick={() => handleLogout()} 
-                    className="text-destructive focus:text-destructive hover:bg-destructive/10 focus:bg-destructive/10 cursor-pointer"
+                    className="rounded-lg text-rose-600 focus:text-rose-600 hover:bg-rose-50 focus:bg-rose-50 cursor-pointer font-medium py-2 px-2"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
                     Se déconnecter
@@ -163,28 +166,28 @@ const Header: React.FC = () => {
             </div>
           )}
 
+          {/* Menu Mobile */}
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="hover:bg-muted/70 transition-colors">
+                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-slate-100 text-slate-700">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="border-r border-border/60">
+              <SheetContent side="left" className="border-r border-slate-200 bg-white">
                 <div className="grid gap-6 py-6">
-                  <Link to="/" className="flex items-center gap-2 mb-4">
-                    <Store className="h-6 w-6 text-primary" />
-                    <span className="font-bold text-xl">Ahimin</span>
+                  <Link to="/" className="flex items-center mb-2" aria-label="Ahimin Accueil">
+                    <Logo className="h-8 w-auto" />
                   </Link>
-                  <nav className="grid gap-3">
+                  <nav className="grid gap-1">
                     {navLinks.map((link) => (
                       <SheetClose asChild key={link.href}>
                         <Link 
                           to={link.href} 
-                          className={`flex w-full items-center py-2 text-lg font-medium pl-2 rounded-md ${
+                          className={`flex w-full items-center py-2.5 px-3 text-base font-semibold rounded-xl ${
                             location.pathname === link.href 
-                              ? "text-primary bg-muted" 
-                              : "hover:bg-muted/50"
+                              ? "text-orange-600 bg-orange-50" 
+                              : "text-slate-600 hover:bg-slate-50"
                           }`}
                         >
                           {link.label}
@@ -192,10 +195,10 @@ const Header: React.FC = () => {
                       </SheetClose>
                     ))}
                   </nav>
-                  <div className="border-t pt-6 mt-2">
+                  <div className="border-t border-slate-100 pt-6 mt-2">
                     {!isLoggedIn ? (
-                      <div className="grid gap-3">
-                        <Button variant="outline" className="w-full justify-start pl-2" asChild>
+                      <div className="grid gap-2">
+                        <Button variant="outline" className="w-full justify-start rounded-xl font-semibold border-slate-200" asChild>
                           <SheetClose asChild>
                             <Link to="/login">
                               <User className="mr-2 h-4 w-4" />
@@ -203,7 +206,7 @@ const Header: React.FC = () => {
                             </Link>
                           </SheetClose>
                         </Button>
-                        <Button className="w-full justify-start pl-2 bg-primary" asChild>
+                        <Button className="w-full justify-start rounded-xl font-semibold bg-orange-500 hover:bg-orange-600 text-white" asChild>
                           <SheetClose asChild>
                             <Link to="/register">
                               <UserCircle2 className="mr-2 h-4 w-4" />
@@ -213,44 +216,34 @@ const Header: React.FC = () => {
                         </Button>
                       </div>
                     ) : (
-                       <div className="grid gap-3">
-                          <Button variant="outline" className="w-full justify-start pl-2" asChild>
+                      <div className="grid gap-2">
+                        <Button variant="outline" className="w-full justify-start rounded-xl font-semibold border-slate-200" asChild>
+                          <SheetClose asChild>
+                            <Link to="/profil">
+                              <User className="mr-2 h-4 w-4" />
+                              Mon Profil
+                            </Link>
+                          </SheetClose>
+                        </Button>
+                        {userRole === 'merchant' && (
+                          <Button variant="outline" className="w-full justify-start rounded-xl font-semibold border-slate-200" asChild>
                             <SheetClose asChild>
-                              <Link to="/profil">
-                                <User className="mr-2 h-4 w-4" />
-                                Mon Profil
+                              <Link to="/dashboard">
+                                <Store className="mr-2 h-4 w-4 text-orange-500" />
+                                Dashboard
                               </Link>
                             </SheetClose>
                           </Button>
-                          {userRole === 'merchant' && 
-                            <Button variant="outline" className="w-full justify-start pl-2" asChild>
-                              <SheetClose asChild>
-                                <Link to="/dashboard">
-                                  <Store className="mr-2 h-4 w-4" />
-                                  Dashboard
-                                </Link>
-                              </SheetClose>
-                            </Button>
-                          }
-                          {userRole === 'admin' && 
-                            <Button variant="outline" className="w-full justify-start pl-2" asChild>
-                              <SheetClose asChild>
-                                <Link to="/admin/dashboard">
-                                  <Settings className="mr-2 h-4 w-4" />
-                                  Dashboard Admin
-                                </Link>
-                              </SheetClose>
-                            </Button>
-                          }
-                          <Button 
-                            variant="destructive" 
-                            className="w-full justify-start pl-2 mt-4" 
-                            onClick={() => handleLogout()}
-                          >
-                            <LogOut className="mr-2 h-4 w-4" />
-                            Se déconnecter
-                          </Button>
-                       </div>
+                        )}
+                        <Button 
+                          variant="destructive" 
+                          className="w-full justify-start rounded-xl font-semibold mt-4 bg-rose-600 hover:bg-rose-700" 
+                          onClick={() => handleLogout()}
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Se déconnecter
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>

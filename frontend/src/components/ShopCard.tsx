@@ -1,9 +1,10 @@
-
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge';
-import { Store, MapPin } from 'lucide-react';
+import { Store, MapPin, ArrowRight } from 'lucide-react';
+import ImageWithFallback from './ui/ImageWithFallback';
 
 interface ShopCardProps {
   id: string;
@@ -16,39 +17,44 @@ interface ShopCardProps {
 const ShopCard = ({ id, imageUrl, name, description, category }: ShopCardProps) => {
   return (
     <Link to={`/shops/${id}`} className="block h-full group">
-      <Card className="overflow-hidden h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border-0 bg-white/90 backdrop-blur-sm">
-        <CardHeader className="p-0 relative overflow-hidden">
-          <AspectRatio ratio={16 / 9}>
-            <img 
+      <Card className="h-full flex flex-col bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_24px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300">
+        <CardHeader className="p-0 relative overflow-hidden bg-slate-100">
+          <AspectRatio ratio={16 / 10}>
+            <ImageWithFallback 
               src={imageUrl} 
               alt={name} 
-              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" 
+              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out" 
             />
-            <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"></div>
             
             {/* Badge catégorie en overlay */}
-            <div className="absolute top-4 left-4">
-              <Badge variant="secondary" className="bg-white/90 text-foreground shadow-lg">
-                <Store className="h-3 w-3 mr-1" />
+            <div className="absolute top-3 left-3 z-10">
+              <Badge variant="secondary" className="bg-white/95 text-slate-800 border border-slate-200/60 shadow-sm text-xs font-semibold px-2.5 py-1 rounded-md">
+                <Store className="h-3 w-3 mr-1 text-orange-500" />
                 {category}
               </Badge>
             </div>
           </AspectRatio>
         </CardHeader>
         
-        <CardContent className="p-6 space-y-4">
-          <div className="space-y-2">
-            <h3 className="font-semibold text-xl text-foreground group-hover:text-primary transition-colors duration-200">
+        <CardContent className="p-5 flex-grow flex flex-col justify-between space-y-3">
+          <div className="space-y-1.5">
+            <h3 className="font-bold text-lg text-slate-900 group-hover:text-orange-600 transition-colors duration-200 line-clamp-1 leading-snug">
               {name}
             </h3>
-            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
               {description}
             </p>
           </div>
           
-          <div className="flex items-center text-xs text-muted-foreground">
-            <MapPin className="h-3 w-3 mr-1 text-primary" />
-            <span>Voir l'emplacement</span>
+          <div className="flex items-center justify-between pt-3 border-t border-slate-100/80 mt-auto">
+            <div className="flex items-center text-xs font-medium text-slate-500">
+              <MapPin className="h-3.5 w-3.5 mr-1 text-orange-500" />
+              <span>Voir l'emplacement</span>
+            </div>
+            <div className="text-orange-600 font-semibold text-xs flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+              <span>Découvrir</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </div>
           </div>
         </CardContent>
       </Card>

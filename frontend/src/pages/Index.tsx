@@ -5,16 +5,16 @@ import ProductCard from "@/components/ProductCard";
 import { Button } from '@/components/ui/button';
 import SearchFilters, { FiltersState } from '@/components/SearchFilters';
 import SearchResultsDropdown from '@/components/SearchResultsDropdown';
-import { Loader2, Sparkles, TrendingUp, Star } from 'lucide-react';
+import { Sparkles, TrendingUp, ShieldCheck, ArrowRight, Store, Package } from 'lucide-react';
 import { Boutique, Produit } from '@/types';
 import { useClickOutside } from '@/hooks/useClickOutside';
+import { dataService } from '@/lib/dataService';
 import heroImage from '@/assets/images/hero-header.jpg';
 
 const Index: React.FC = () => {
-  const [shops, setShops] = useState<Boutique[]>([]);
-  const [products, setProducts] = useState<Produit[]>([]);
-  const [loadingInitial, setLoadingInitial] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Chargement instantané sans blocage
+  const [shops, setShops] = useState<Boutique[]>(() => dataService.getInitialShops());
+  const [products, setProducts] = useState<Produit[]>(() => dataService.getInitialProducts());
   
   const [filters, setFilters] = useState<FiltersState | null>(null);
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -27,30 +27,13 @@ const Index: React.FC = () => {
   };
   const searchContainerRef = useClickOutside(closeDropdown);
 
-  // Effet pour charger les données initiales de la page
+  // Synchronisation avec l'API Render en arrière-plan (sans bloquer l'affichage)
   useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        setLoadingInitial(true);
-        const [shopsResponse, productsResponse] = await Promise.all([
-          fetch(`${import.meta.env.VITE_API_BASE_URL}/shops/public-shops/`),
-          fetch(`${import.meta.env.VITE_API_BASE_URL}/products/public-products/`)
-        ]);
-        if (!shopsResponse.ok || !productsResponse.ok) {
-          throw new Error("Erreur lors de la récupération des données initiales.");
-        }
-        setShops(await shopsResponse.json());
-        setProducts(await productsResponse.json());
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Erreur inconnue.");
-      } finally {
-        setLoadingInitial(false);
-      }
-    };
-    fetchInitialData();
+    dataService.syncShops(setShops);
+    dataService.syncProducts(setProducts);
   }, []);
 
-  // useEffect qui déclenche la recherche lorsque les filtres changent
+  // Déclencheur de recherche
   useEffect(() => {
     const shouldSearch = filters && (
       filters.searchTerm.trim().length >= 2 ||
@@ -75,74 +58,63 @@ const Index: React.FC = () => {
       if (filters.location !== 'Toutes les villes') params.append('location', filters.location);
       
       try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
-        });
-        params.append('lat', String(position.coords.latitude));
-        params.append('lon', String(position.coords.longitude));
-      } catch (geoError) {
-        console.warn("Géolocalisation refusée ou impossible. Recherche sans proximité.");
-      }
-
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/search/?${params.toString()}`);
-        if (!response.ok) throw new Error("Erreur de l'API de recherche");
-        const data = await response.json();
-        setSearchResults(data);
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
+        if (!baseUrl) throw new Error("No API URL");
+        
+        const response = await fetch(`${baseUrl}/search/?${params.toString()}`);
+        if (response.ok) {
+          const data = await response.json();
+          setSearchResults(data);
+          return;
+        }
       } catch (searchError) {
-        console.error("Erreur de recherche:", searchError);
-        setSearchResults([]);
+        // Recherche locale instantanée de fallback si Render dort
+        const query = (filters.searchTerm || '').toLowerCase();
+        const localProdResults = products
+          .filter(p => !query || p.name.toLowerCase().includes(query))
+          .slice(0, 5)
+          .map(p => ({
+            type: 'product' as const,
+            data: { id: p._id, name: p.name, images: p.images, shop_name: p.shop?.name }
+          }));
+
+        const localShopResults = shops
+          .filter(s => !query || s.name.toLowerCase().includes(query))
+          .slice(0, 3)
+          .map(s => ({
+            type: 'shop' as const,
+            data: { id: s._id, name: s.name, images: s.images }
+          }));
+
+        setSearchResults([...localProdResults, ...localShopResults]);
       } finally {
         setIsSearching(false);
       }
     };
 
     executeSearch();
+  }, [filters, products, shops]);
 
-  }, [filters]);
-
-  if (loadingInitial) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-          <p className="text-muted-foreground">Chargement ...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="text-6xl">⚠️</div>
-          <h2 className="text-2xl font-bold text-destructive">Erreur de chargement</h2>
-          <p className="text-muted-foreground">{error}</p>
-        </div>
-      </div>
-    );
-  }
-  
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50/50">
+      {/* Hero Section Moderne & Nette */}
       <section 
-        className="relative text-center py-32 text-white bg-cover bg-center"
+        className="relative text-center py-20 md:py-28 text-white bg-slate-900 bg-cover bg-center overflow-hidden"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-        <div className="relative z-10 container px-4">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <div className="space-y-6">
-              <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-tight">
-                Pourquoi chercher loin ce qui est <span className="text-orange-500">tout près ?</span>
-              </h1>
-              <p className="max-w-2xl mx-auto text-xl md:text-2xl text-slate-200 leading-relaxed font-medium">
-                Trouvez facilement des produits et services de qualité, juste à côté de vous. Simple, rapide et local.
-              </p>
-            </div>
+        <div className="absolute inset-0 bg-slate-950/70"></div>
+        <div className="relative z-10 container px-4 sm:px-6">
+          <div className="max-w-3xl mx-auto space-y-6">
             
-            <div className="relative mt-12 bg-white/10 backdrop-blur-xl p-2 rounded-2xl border border-white/20 shadow-2xl" ref={searchContainerRef}>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight text-white">
+              Pourquoi chercher loin ce qui est tout près ?
+            </h1>
+            
+            <p className="max-w-xl mx-auto text-base sm:text-lg text-slate-300 font-normal leading-relaxed">
+              Découvrez les commerçants de votre quartier, achetez en toute confiance et soutenez l'économie locale.
+            </p>
+            
+            <div className="relative mt-8 max-w-2xl mx-auto" ref={searchContainerRef}>
               <SearchFilters onFiltersChange={setFilters} />
               {isDropdownVisible && (
                 <SearchResultsDropdown
@@ -157,92 +129,105 @@ const Index: React.FC = () => {
       </section>
 
       {/* Modern Features Section */}
-      <section className="py-24 bg-white">
-        <div className="container px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-            <div className="space-y-4 p-8 rounded-3xl hover:bg-orange-50/50 transition-colors duration-300">
-              <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Sparkles className="h-8 w-8 text-orange-600" />
+      <section className="py-16 bg-white border-b border-slate-200/70">
+        <div className="container px-4 sm:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-6 rounded-2xl border border-slate-200/80 bg-slate-50/40 hover:bg-white hover:border-slate-300 transition-all duration-200 shadow-sm">
+              <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center text-orange-600 mb-4">
+                <Sparkles className="h-6 w-6" />
               </div>
-              <h3 className="text-2xl font-black">Qualité Locale</h3>
-              <p className="text-muted-foreground leading-relaxed">Nous sélectionnons les meilleures boutiques de votre quartier pour vous garantir satisfaction.</p>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">Commerces Sélectionnés</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Des boutiques authentiques et vérifiées à proximité immédiate pour des achats en toute sérénité.
+              </p>
             </div>
-            <div className="space-y-4 p-8 rounded-3xl hover:bg-orange-50/50 transition-colors duration-300">
-              <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <TrendingUp className="h-8 w-8 text-orange-600" />
+
+            <div className="p-6 rounded-2xl border border-slate-200/80 bg-slate-50/40 hover:bg-white hover:border-slate-300 transition-all duration-200 shadow-sm">
+              <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center text-orange-600 mb-4">
+                <TrendingUp className="h-6 w-6" />
               </div>
-              <h3 className="text-2xl font-black">Tendances Actuelles</h3>
-              <p className="text-muted-foreground leading-relaxed">Découvrez ce qui fait fureur autour de vous en temps réel avec nos algorithmes intelligents.</p>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">Tendances Locales</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Accédez aux nouveautés, aux meilleures offres et aux créations phares de votre ville.
+              </p>
             </div>
-            <div className="space-y-4 p-8 rounded-3xl hover:bg-orange-50/50 transition-colors duration-300">
-              <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Star className="h-8 w-8 text-orange-600" />
+
+            <div className="p-6 rounded-2xl border border-slate-200/80 bg-slate-50/40 hover:bg-white hover:border-slate-300 transition-all duration-200 shadow-sm">
+              <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center text-orange-600 mb-4">
+                <ShieldCheck className="h-6 w-6" />
               </div>
-              <h3 className="text-2xl font-black">Confiance Vérifiée</h3>
-              <p className="text-muted-foreground leading-relaxed">Chaque boutique et chaque produit est soigneusement vérifié pour votre sécurité.</p>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">Contact Direct & Facile</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Appelez ou échangez directement sur WhatsApp avec vos vendeurs sans intermédiaire superflu.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-24 bg-orange-50/30">
-        <div className="container px-4">
-          <div className="text-center mb-16 space-y-4">
-            <h2 className="text-4xl md:text-5xl font-black text-foreground tracking-tight">
-              Boutiques <span className="text-orange-500">à la Une</span>
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
-              Soutenez les commerçants locaux et découvrez des pépites à deux pas de chez vous.
-            </p>
+      {/* Boutiques à la Une */}
+      <section className="py-16 sm:py-20 bg-slate-50/60">
+        <div className="container px-4 sm:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold text-orange-600 uppercase tracking-wider mb-1">
+                <Store className="h-4 w-4" />
+                <span>Nos Partenaires</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Boutiques <span className="text-orange-500">à la une</span>
+              </h2>
+            </div>
+            <Link to="/shops" className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-600 hover:text-orange-700 transition-colors">
+              <span>Voir toutes les boutiques</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {shops.slice(0, 4).map((shop) => (
-              <div key={shop._id} className="group">
+              <div key={shop._id} className="h-full">
                 <PublicBoutiqueCard boutique={shop} />
               </div>
             ))}
           </div>
-          
-          <div className="text-center mt-16">
-            <Link to="/shops">
-              <Button size="lg" className="px-8 py-6 text-lg font-semibold bg-orange-500 hover:bg-orange-400 shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
-                <Sparkles className="h-5 w-5 mr-2" />
-                Voir toutes les boutiques
-              </Button>
-            </Link>
-          </div>
         </div>
       </section>
 
-      <section className="py-24 bg-white border-t border-orange-100">
-        <div className="container px-4">
-          <div className="text-center mb-16 space-y-4">
-            <h2 className="text-4xl md:text-5xl font-black text-foreground tracking-tight">
-              Nos derniers <span className="text-orange-500">produits</span>
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
-              Les nouveautés les plus fraîches dénichées spécialement pour vous.
-            </p>
+      {/* Derniers Produits */}
+      <section className="py-16 sm:py-20 bg-white border-t border-slate-200/70">
+        <div className="container px-4 sm:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold text-orange-600 uppercase tracking-wider mb-1">
+                <Package className="h-4 w-4" />
+                <span>Sélection Spéciale</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Derniers <span className="text-orange-500">produits ajoutés</span>
+              </h2>
+            </div>
+            <Link to="/products" className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-600 hover:text-orange-700 transition-colors">
+              <span>Voir tout le catalogue</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {products.slice(0, 8).map((product) => (
-              <div key={product._id} className="group">
-                <ProductCard
-                  product={product}
-                />
+              <div key={product._id} className="h-full">
+                <ProductCard product={product} />
               </div>
             ))}
           </div>
-          
-          <div className="text-center mt-16">
-            <Link to="/products">
-              <Button size="lg" className="px-8 py-6 text-lg font-semibold bg-orange-500 hover:bg-orange-400 shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
-                <Sparkles className="h-5 w-5 mr-2" />
-                Voir tous les produits
-              </Button>
-            </Link>
+
+          <div className="text-center mt-12">
+            <Button asChild size="lg" className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 h-12 shadow-sm transition-all">
+              <Link to="/products" className="flex items-center gap-2">
+                <span>Explorer tous les articles</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
