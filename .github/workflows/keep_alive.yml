@@ -1,0 +1,23 @@
+name: Keep Render Alive
+
+on:
+  schedule:
+    # Exécution toutes les 10 minutes (cron standard)
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Permet de tester le déclenchement manuel depuis l'onglet Actions sur GitHub
+
+jobs:
+  ping-api:
+    name: Ping Render API
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send keep-alive HTTP request
+        run: |
+          echo "Sending ping to https://apiahimin.onrender.com/ ..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://apiahimin.onrender.com/)
+          echo "Response code: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 400 ]; then
+            echo "API is awake and responded successfully."
+          else
+            echo "API returned status: $HTTP_STATUS"
+          fi
